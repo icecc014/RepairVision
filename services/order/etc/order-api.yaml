@@ -5,12 +5,12 @@ Timeout: 30000
 WorkerRpc:
   Etcd:
     Hosts:
-      - ${ETCD_ENDPOINTS}
+      - etcd:2379
     Key: worker-rpc
   Timeout: 30000
 MapRpc:
   Etcd:
     Hosts:
-      - ${ETCD_ENDPOINTS}
+      - etcd:2379
     Key: map-rpc
   Timeout: 30000

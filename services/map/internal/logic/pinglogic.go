@@ -26,5 +26,5 @@ func NewPingLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PingLogic {
 func (l *PingLogic) Ping(in *_map.Request) (*_map.Response, error) {
 	// todo: add your logic here and delete this line
 
-	return &_map.Response{}, nil
+	return &_map.Response{Pong: "map-rpc:" + in.Ping}, nil
 }

@@ -110,3 +110,11 @@
 - 每次 DB 结构变更：先改 02 DDL 与 `db/init` 迁移脚本，经人工确认后执行，不私自改表。
 - 每个里程碑完成：更新本文件进度状态并提交（commit 遵循 AGENTS.md 格式）。
 - 依赖版本冻结：P0 即锁定 go.mod/package-lock，之后不升级不换库。
+## 7. 阶段进度
+
+- [x] P0 工程骨架跑通（2026-09-07）
+  - `docker compose up -d --build` 一键启动，8 容器全部运行
+  - `GET /ping/p0` 经 nginx → order-api → worker-rpc/map-rpc 返回双链路 pong
+  - `/admin/` 与 `/m/` 页面均返回 200
+  - MySQL 初始化 3 库：order_db 6 表、worker_db 4 表、map_db 2 表
+- [ ] P1 MVP 最小业务闭环（进行中/未开始）

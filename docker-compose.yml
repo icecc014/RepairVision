@@ -44,7 +44,7 @@ services:
     networks: [repair-net]
 
   kafka:
-    image: apache/kafka:3.6.1
+    image: confluentinc/cp-kafka:7.6.1 # 内核 Apache Kafka 3.6.1
     restart: unless-stopped
     environment:
       KAFKA_NODE_ID: 1
@@ -58,9 +58,9 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      CLUSTER_ID: repairvision-p0-kraft-cluster
+      CLUSTER_ID: om3mBWuen0Cw-UtegkPqUg
     volumes:
-      - kafka-data:/tmp/kraft-combined-logs
+      - kafka-data:/var/lib/kafka/data
     networks: [repair-net]
 
   order-api:
