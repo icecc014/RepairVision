@@ -1,0 +1,23 @@
+{
+  "name": "repairvision-mobile-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "axios": "1.7.7",
+    "pinia": "2.2.3",
+    "vant": "4.9.4",
+    "vue": "3.4.30",
+    "vue-router": "4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.1.4",
+    "typescript": "5.4.5",
+    "vite": "5.4.11"
+  }
+}

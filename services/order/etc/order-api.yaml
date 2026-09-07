@@ -1,0 +1,16 @@
+Name: order-api
+Host: 0.0.0.0
+Port: 8888
+Timeout: 30000
+WorkerRpc:
+  Etcd:
+    Hosts:
+      - ${ETCD_ENDPOINTS}
+    Key: worker-rpc
+  Timeout: 30000
+MapRpc:
+  Etcd:
+    Hosts:
+      - ${ETCD_ENDPOINTS}
+    Key: map-rpc
+  Timeout: 30000

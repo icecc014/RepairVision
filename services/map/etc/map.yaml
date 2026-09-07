@@ -1,0 +1,7 @@
+Name: map-rpc
+ListenOn: 0.0.0.0:9002
+Etcd:
+  Hosts:
+    - ${ETCD_ENDPOINTS}
+  Key: map-rpc
+Timeout: 30000

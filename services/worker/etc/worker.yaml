@@ -1,0 +1,7 @@
+Name: worker-rpc
+ListenOn: 0.0.0.0:9001
+Etcd:
+  Hosts:
+    - ${ETCD_ENDPOINTS}
+  Key: worker-rpc
+Timeout: 30000

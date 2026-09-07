@@ -1,0 +1,16 @@
+syntax = "v1"
+
+type PingRequest {
+	Name string `path:"name"`
+}
+
+type PingResponse {
+	Worker string `json:"worker"`
+	Map    string `json:"map"`
+}
+
+service order-api {
+	@handler PingHandler
+	get /ping/:name (PingRequest) returns (PingResponse)
+}
+
