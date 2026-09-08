@@ -16,6 +16,7 @@ import (
 	"order/internal/store"
 	"order/internal/svc"
 	"order/internal/types"
+	"order/internal/ws"
 	"worker/workerclient"
 )
 
@@ -154,6 +155,16 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
+	status := store.StatusPending
+	workerID := int64(0)
+	if best != nil {
+		status = store.StatusDispatched
+		workerID = best.workerID
+	}
+	l.svcCtx.WS.PublishOrder(ws.OrderEvent{
+		Type: "order_changed", OrderId: orderID, OrderNo: orderNo,
+		BuildingId: buildingID, WorkerId: workerID, Status: status,
+	})
 	return &types.CreateOrderResponse{OrderId: orderID, OrderNo: orderNo}, nil
 }
 

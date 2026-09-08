@@ -9,6 +9,7 @@ import (
 	"order/internal/store"
 	"order/internal/svc"
 	"order/internal/types"
+	"order/internal/ws"
 )
 
 type CancelOrderLogic struct {
@@ -36,6 +37,12 @@ func (l *CancelOrderLogic) CancelOrder(req *types.OrderIdRequest) (resp *types.E
 	}
 	if !affected {
 		return nil, errs.Conflict("工单不存在或已开工，无法取消")
+	}
+	if order, err := store.FindOrder(l.ctx, l.svcCtx.DB, req.Id); err == nil {
+		l.svcCtx.WS.PublishOrder(ws.OrderEvent{
+			Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
+			BuildingId: order.BuildingID, Status: order.Status,
+		})
 	}
 	return &types.EmptyResponse{}, nil
 }

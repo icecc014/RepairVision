@@ -10,8 +10,10 @@ import (
 	"order/internal/config"
 	"order/internal/errs"
 	"order/internal/handler"
+	"order/internal/oplog"
 	"order/internal/seed"
 	"order/internal/svc"
+	"order/internal/ws"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -55,6 +57,12 @@ func main() {
 	})
 
 	server := rest.MustNewServer(c.RestConf)
+	server.Use(oplog.Middleware(ctx.DB))
+	server.AddRoute(rest.Route{
+		Method:  http.MethodGet,
+		Path:    "/ws/orders",
+		Handler: ws.Handler(ctx.WS, c.Auth.AccessSecret),
+	})
 	defer server.Stop()
 
 	handler.RegisterHandlers(server, ctx)

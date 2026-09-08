@@ -200,6 +200,35 @@ type LoginResponse struct {
 	User  UserInfo `json:"user"`
 }
 
+type OperationLogItem struct {
+	Id           int64  `json:"id"`
+	UserId       int64  `json:"userId,optional"`
+	Username     string `json:"username,optional"`
+	Role         int64  `json:"role,optional"`
+	Module       string `json:"module"`
+	Action       string `json:"action"`
+	Method       string `json:"method"`
+	Path         string `json:"path"`
+	RequestBody  string `json:"requestBody"`
+	ResponseCode int64  `json:"responseCode"`
+	Ip           string `json:"ip"`
+	CostMs       int64  `json:"costMs"`
+	CreatedAt    string `json:"createdAt"`
+}
+
+type OperationLogListRequest struct {
+	Page    int64  `form:"page,optional"`
+	Size    int64  `form:"size,optional"`
+	Module  string `form:"module,optional"`
+	Action  string `form:"action,optional"`
+	Keyword string `form:"keyword,optional"`
+}
+
+type OperationLogListResponse struct {
+	Total int64              `json:"total"`
+	List  []OperationLogItem `json:"list"`
+}
+
 type OrderDetailResponse struct {
 	Order OrderItem `json:"order"`
 }

@@ -251,6 +251,35 @@ type AdminBuildingIdRequest {
 	Id int64 `path:"id"`
 }
 
+type OperationLogItem {
+	Id           int64  `json:"id"`
+	UserId       int64  `json:"userId,optional"`
+	Username     string `json:"username,optional"`
+	Role         int64  `json:"role,optional"`
+	Module       string `json:"module"`
+	Action       string `json:"action"`
+	Method       string `json:"method"`
+	Path         string `json:"path"`
+	RequestBody  string `json:"requestBody"`
+	ResponseCode int64  `json:"responseCode"`
+	Ip           string `json:"ip"`
+	CostMs       int64  `json:"costMs"`
+	CreatedAt    string `json:"createdAt"`
+}
+
+type OperationLogListRequest {
+	Page    int64  `form:"page,optional"`
+	Size    int64  `form:"size,optional"`
+	Module  string `form:"module,optional"`
+	Action  string `form:"action,optional"`
+	Keyword string `form:"keyword,optional"`
+}
+
+type OperationLogListResponse {
+	Total int64              `json:"total"`
+	List  []OperationLogItem `json:"list"`
+}
+
 service order-api {
 	@handler PingHandler
 	get /ping/:name (PingRequest) returns (PingResponse)
@@ -332,5 +361,8 @@ service order-api {
 
 	@handler AdminBuildingDeleteHandler
 	delete /api/admin/buildings/:id (AdminBuildingIdRequest) returns (EmptyResponse)
+
+	@handler AdminOperationLogsHandler
+	get /api/admin/logs (OperationLogListRequest) returns (OperationLogListResponse)
 }
 
