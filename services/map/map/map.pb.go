@@ -349,6 +349,118 @@ func (x *SaveBuildingRequest) GetBuilding() *Building {
 	return nil
 }
 
+type FaultMarkerUpsertRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	BuildingId    int64                  `protobuf:"varint,2,opt,name=building_id,json=buildingId,proto3" json:"building_id,omitempty"`
+	Floor         int64                  `protobuf:"varint,3,opt,name=floor,proto3" json:"floor,omitempty"`
+	RoomNumber    string                 `protobuf:"bytes,4,opt,name=room_number,json=roomNumber,proto3" json:"room_number,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FaultMarkerUpsertRequest) Reset() {
+	*x = FaultMarkerUpsertRequest{}
+	mi := &file_map_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FaultMarkerUpsertRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FaultMarkerUpsertRequest) ProtoMessage() {}
+
+func (x *FaultMarkerUpsertRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FaultMarkerUpsertRequest.ProtoReflect.Descriptor instead.
+func (*FaultMarkerUpsertRequest) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *FaultMarkerUpsertRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *FaultMarkerUpsertRequest) GetBuildingId() int64 {
+	if x != nil {
+		return x.BuildingId
+	}
+	return 0
+}
+
+func (x *FaultMarkerUpsertRequest) GetFloor() int64 {
+	if x != nil {
+		return x.Floor
+	}
+	return 0
+}
+
+func (x *FaultMarkerUpsertRequest) GetRoomNumber() string {
+	if x != nil {
+		return x.RoomNumber
+	}
+	return ""
+}
+
+type FaultMarkerOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FaultMarkerOrderRequest) Reset() {
+	*x = FaultMarkerOrderRequest{}
+	mi := &file_map_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FaultMarkerOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FaultMarkerOrderRequest) ProtoMessage() {}
+
+func (x *FaultMarkerOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FaultMarkerOrderRequest.ProtoReflect.Descriptor instead.
+func (*FaultMarkerOrderRequest) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *FaultMarkerOrderRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
 type BuildingIdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -358,7 +470,7 @@ type BuildingIdRequest struct {
 
 func (x *BuildingIdRequest) Reset() {
 	*x = BuildingIdRequest{}
-	mi := &file_map_proto_msgTypes[6]
+	mi := &file_map_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -370,7 +482,7 @@ func (x *BuildingIdRequest) String() string {
 func (*BuildingIdRequest) ProtoMessage() {}
 
 func (x *BuildingIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_map_proto_msgTypes[6]
+	mi := &file_map_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -383,7 +495,7 @@ func (x *BuildingIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildingIdRequest.ProtoReflect.Descriptor instead.
 func (*BuildingIdRequest) Descriptor() ([]byte, []int) {
-	return file_map_proto_rawDescGZIP(), []int{6}
+	return file_map_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *BuildingIdRequest) GetId() int64 {
@@ -402,7 +514,7 @@ type BuildingResponse struct {
 
 func (x *BuildingResponse) Reset() {
 	*x = BuildingResponse{}
-	mi := &file_map_proto_msgTypes[7]
+	mi := &file_map_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -414,7 +526,7 @@ func (x *BuildingResponse) String() string {
 func (*BuildingResponse) ProtoMessage() {}
 
 func (x *BuildingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_map_proto_msgTypes[7]
+	mi := &file_map_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -427,7 +539,7 @@ func (x *BuildingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildingResponse.ProtoReflect.Descriptor instead.
 func (*BuildingResponse) Descriptor() ([]byte, []int) {
-	return file_map_proto_rawDescGZIP(), []int{7}
+	return file_map_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *BuildingResponse) GetBuilding() *Building {
@@ -462,18 +574,29 @@ const file_map_proto_rawDesc = "" +
 	"\x15ListBuildingsResponse\x12+\n" +
 	"\tbuildings\x18\x01 \x03(\v2\r.map.BuildingR\tbuildings\"@\n" +
 	"\x13SaveBuildingRequest\x12)\n" +
-	"\bbuilding\x18\x01 \x01(\v2\r.map.BuildingR\bbuilding\"#\n" +
+	"\bbuilding\x18\x01 \x01(\v2\r.map.BuildingR\bbuilding\"\x8d\x01\n" +
+	"\x18FaultMarkerUpsertRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\x12\x1f\n" +
+	"\vbuilding_id\x18\x02 \x01(\x03R\n" +
+	"buildingId\x12\x14\n" +
+	"\x05floor\x18\x03 \x01(\x03R\x05floor\x12\x1f\n" +
+	"\vroom_number\x18\x04 \x01(\tR\n" +
+	"roomNumber\"4\n" +
+	"\x17FaultMarkerOrderRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\"#\n" +
 	"\x11BuildingIdRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"=\n" +
 	"\x10BuildingResponse\x12)\n" +
-	"\bbuilding\x18\x01 \x01(\v2\r.map.BuildingR\bbuilding2\xef\x02\n" +
+	"\bbuilding\x18\x01 \x01(\v2\r.map.BuildingR\bbuilding2\xf4\x03\n" +
 	"\x03Map\x12#\n" +
 	"\x04Ping\x12\f.map.Request\x1a\r.map.Response\x12F\n" +
 	"\rListBuildings\x12\x19.map.ListBuildingsRequest\x1a\x1a.map.ListBuildingsResponse\x12<\n" +
 	"\vGetBuilding\x12\x16.map.BuildingIdRequest\x1a\x15.map.BuildingResponse\x12A\n" +
 	"\x0eCreateBuilding\x12\x18.map.SaveBuildingRequest\x1a\x15.map.BuildingResponse\x12A\n" +
 	"\x0eUpdateBuilding\x12\x18.map.SaveBuildingRequest\x1a\x15.map.BuildingResponse\x127\n" +
-	"\x0eDeleteBuilding\x12\x16.map.BuildingIdRequest\x1a\r.map.ResponseB\aZ\x05./mapb\x06proto3"
+	"\x0eDeleteBuilding\x12\x16.map.BuildingIdRequest\x1a\r.map.Response\x12A\n" +
+	"\x11UpsertFaultMarker\x12\x1d.map.FaultMarkerUpsertRequest\x1a\r.map.Response\x12@\n" +
+	"\x11RemoveFaultMarker\x12\x1c.map.FaultMarkerOrderRequest\x1a\r.map.ResponseB\aZ\x05./mapb\x06proto3"
 
 var (
 	file_map_proto_rawDescOnce sync.Once
@@ -487,38 +610,44 @@ func file_map_proto_rawDescGZIP() []byte {
 	return file_map_proto_rawDescData
 }
 
-var file_map_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_map_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_map_proto_goTypes = []any{
-	(*Request)(nil),               // 0: map.Request
-	(*Response)(nil),              // 1: map.Response
-	(*Building)(nil),              // 2: map.Building
-	(*ListBuildingsRequest)(nil),  // 3: map.ListBuildingsRequest
-	(*ListBuildingsResponse)(nil), // 4: map.ListBuildingsResponse
-	(*SaveBuildingRequest)(nil),   // 5: map.SaveBuildingRequest
-	(*BuildingIdRequest)(nil),     // 6: map.BuildingIdRequest
-	(*BuildingResponse)(nil),      // 7: map.BuildingResponse
+	(*Request)(nil),                  // 0: map.Request
+	(*Response)(nil),                 // 1: map.Response
+	(*Building)(nil),                 // 2: map.Building
+	(*ListBuildingsRequest)(nil),     // 3: map.ListBuildingsRequest
+	(*ListBuildingsResponse)(nil),    // 4: map.ListBuildingsResponse
+	(*SaveBuildingRequest)(nil),      // 5: map.SaveBuildingRequest
+	(*FaultMarkerUpsertRequest)(nil), // 6: map.FaultMarkerUpsertRequest
+	(*FaultMarkerOrderRequest)(nil),  // 7: map.FaultMarkerOrderRequest
+	(*BuildingIdRequest)(nil),        // 8: map.BuildingIdRequest
+	(*BuildingResponse)(nil),         // 9: map.BuildingResponse
 }
 var file_map_proto_depIdxs = []int32{
-	2, // 0: map.ListBuildingsResponse.buildings:type_name -> map.Building
-	2, // 1: map.SaveBuildingRequest.building:type_name -> map.Building
-	2, // 2: map.BuildingResponse.building:type_name -> map.Building
-	0, // 3: map.Map.Ping:input_type -> map.Request
-	3, // 4: map.Map.ListBuildings:input_type -> map.ListBuildingsRequest
-	6, // 5: map.Map.GetBuilding:input_type -> map.BuildingIdRequest
-	5, // 6: map.Map.CreateBuilding:input_type -> map.SaveBuildingRequest
-	5, // 7: map.Map.UpdateBuilding:input_type -> map.SaveBuildingRequest
-	6, // 8: map.Map.DeleteBuilding:input_type -> map.BuildingIdRequest
-	1, // 9: map.Map.Ping:output_type -> map.Response
-	4, // 10: map.Map.ListBuildings:output_type -> map.ListBuildingsResponse
-	7, // 11: map.Map.GetBuilding:output_type -> map.BuildingResponse
-	7, // 12: map.Map.CreateBuilding:output_type -> map.BuildingResponse
-	7, // 13: map.Map.UpdateBuilding:output_type -> map.BuildingResponse
-	1, // 14: map.Map.DeleteBuilding:output_type -> map.Response
-	9, // [9:15] is the sub-list for method output_type
-	3, // [3:9] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2,  // 0: map.ListBuildingsResponse.buildings:type_name -> map.Building
+	2,  // 1: map.SaveBuildingRequest.building:type_name -> map.Building
+	2,  // 2: map.BuildingResponse.building:type_name -> map.Building
+	0,  // 3: map.Map.Ping:input_type -> map.Request
+	3,  // 4: map.Map.ListBuildings:input_type -> map.ListBuildingsRequest
+	8,  // 5: map.Map.GetBuilding:input_type -> map.BuildingIdRequest
+	5,  // 6: map.Map.CreateBuilding:input_type -> map.SaveBuildingRequest
+	5,  // 7: map.Map.UpdateBuilding:input_type -> map.SaveBuildingRequest
+	8,  // 8: map.Map.DeleteBuilding:input_type -> map.BuildingIdRequest
+	6,  // 9: map.Map.UpsertFaultMarker:input_type -> map.FaultMarkerUpsertRequest
+	7,  // 10: map.Map.RemoveFaultMarker:input_type -> map.FaultMarkerOrderRequest
+	1,  // 11: map.Map.Ping:output_type -> map.Response
+	4,  // 12: map.Map.ListBuildings:output_type -> map.ListBuildingsResponse
+	9,  // 13: map.Map.GetBuilding:output_type -> map.BuildingResponse
+	9,  // 14: map.Map.CreateBuilding:output_type -> map.BuildingResponse
+	9,  // 15: map.Map.UpdateBuilding:output_type -> map.BuildingResponse
+	1,  // 16: map.Map.DeleteBuilding:output_type -> map.Response
+	1,  // 17: map.Map.UpsertFaultMarker:output_type -> map.Response
+	1,  // 18: map.Map.RemoveFaultMarker:output_type -> map.Response
+	11, // [11:19] is the sub-list for method output_type
+	3,  // [3:11] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_map_proto_init() }
@@ -532,7 +661,7 @@ func file_map_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_proto_rawDesc), len(file_map_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

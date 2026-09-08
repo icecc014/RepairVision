@@ -14,14 +14,16 @@ import (
 )
 
 type (
-	Building              = _map.Building
-	BuildingIdRequest     = _map.BuildingIdRequest
-	BuildingResponse      = _map.BuildingResponse
-	ListBuildingsRequest  = _map.ListBuildingsRequest
-	ListBuildingsResponse = _map.ListBuildingsResponse
-	Request               = _map.Request
-	Response              = _map.Response
-	SaveBuildingRequest   = _map.SaveBuildingRequest
+	Building                 = _map.Building
+	BuildingIdRequest        = _map.BuildingIdRequest
+	BuildingResponse         = _map.BuildingResponse
+	FaultMarkerOrderRequest  = _map.FaultMarkerOrderRequest
+	FaultMarkerUpsertRequest = _map.FaultMarkerUpsertRequest
+	ListBuildingsRequest     = _map.ListBuildingsRequest
+	ListBuildingsResponse    = _map.ListBuildingsResponse
+	Request                  = _map.Request
+	Response                 = _map.Response
+	SaveBuildingRequest      = _map.SaveBuildingRequest
 
 	Map interface {
 		Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
@@ -30,6 +32,8 @@ type (
 		CreateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
 		UpdateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
 		DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error)
+		UpsertFaultMarker(ctx context.Context, in *FaultMarkerUpsertRequest, opts ...grpc.CallOption) (*Response, error)
+		RemoveFaultMarker(ctx context.Context, in *FaultMarkerOrderRequest, opts ...grpc.CallOption) (*Response, error)
 	}
 
 	defaultMap struct {
@@ -71,4 +75,14 @@ func (m *defaultMap) UpdateBuilding(ctx context.Context, in *SaveBuildingRequest
 func (m *defaultMap) DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := _map.NewMapClient(m.cli.Conn())
 	return client.DeleteBuilding(ctx, in, opts...)
+}
+
+func (m *defaultMap) UpsertFaultMarker(ctx context.Context, in *FaultMarkerUpsertRequest, opts ...grpc.CallOption) (*Response, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.UpsertFaultMarker(ctx, in, opts...)
+}
+
+func (m *defaultMap) RemoveFaultMarker(ctx context.Context, in *FaultMarkerOrderRequest, opts ...grpc.CallOption) (*Response, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.RemoveFaultMarker(ctx, in, opts...)
 }

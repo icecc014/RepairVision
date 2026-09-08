@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"map/mapclient"
 	"order/internal/auth"
 	"order/internal/errs"
 	"order/internal/store"
@@ -39,6 +40,9 @@ func (l *CancelOrderLogic) CancelOrder(req *types.OrderIdRequest) (resp *types.E
 		return nil, errs.Conflict("工单不存在或已开工，无法取消")
 	}
 	if order, err := store.FindOrder(l.ctx, l.svcCtx.DB, req.Id); err == nil {
+		if _, markerErr := l.svcCtx.MapRpc.RemoveFaultMarker(l.ctx, &mapclient.FaultMarkerOrderRequest{OrderId: order.ID}); markerErr != nil {
+			logx.WithContext(l.ctx).Errorf("remove fault marker failed: %v", markerErr)
+		}
 		l.svcCtx.WS.PublishOrder(ws.OrderEvent{
 			Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
 			BuildingId: order.BuildingID, Status: order.Status,

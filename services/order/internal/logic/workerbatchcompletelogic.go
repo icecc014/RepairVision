@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"map/mapclient"
 	"order/internal/auth"
 	"order/internal/errs"
 	"order/internal/store"
@@ -39,6 +40,9 @@ func (l *WorkerBatchCompleteLogic) WorkerBatchComplete(req *types.BatchCompleteR
 		return nil, errs.Internal(err)
 	}
 	for _, id := range ids {
+		if _, markerErr := l.svcCtx.MapRpc.RemoveFaultMarker(l.ctx, &mapclient.FaultMarkerOrderRequest{OrderId: id}); markerErr != nil {
+			logx.WithContext(l.ctx).Errorf("remove fault marker failed: %v", markerErr)
+		}
 		l.svcCtx.WS.PublishOrder(ws.OrderEvent{
 			Type: "order_changed", OrderId: id, BuildingId: req.BuildingId,
 			WorkerId: identity.UID, Status: store.StatusCompleted,

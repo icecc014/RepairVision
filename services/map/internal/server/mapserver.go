@@ -52,3 +52,13 @@ func (s *MapServer) DeleteBuilding(ctx context.Context, in *_map.BuildingIdReque
 	l := logic.NewDeleteBuildingLogic(ctx, s.svcCtx)
 	return l.DeleteBuilding(in)
 }
+
+func (s *MapServer) UpsertFaultMarker(ctx context.Context, in *_map.FaultMarkerUpsertRequest) (*_map.Response, error) {
+	l := logic.NewUpsertFaultMarkerLogic(ctx, s.svcCtx)
+	return l.UpsertFaultMarker(in)
+}
+
+func (s *MapServer) RemoveFaultMarker(ctx context.Context, in *_map.FaultMarkerOrderRequest) (*_map.Response, error) {
+	l := logic.NewRemoveFaultMarkerLogic(ctx, s.svcCtx)
+	return l.RemoveFaultMarker(in)
+}

@@ -155,6 +155,11 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
+	if _, markerErr := l.svcCtx.MapRpc.UpsertFaultMarker(l.ctx, &mapclient.FaultMarkerUpsertRequest{
+		OrderId: orderID, BuildingId: buildingID, Floor: req.Floor, RoomNumber: req.Room,
+	}); markerErr != nil {
+		logx.WithContext(l.ctx).Errorf("upsert fault marker failed: %v", markerErr)
+	}
 	status := store.StatusPending
 	workerID := int64(0)
 	if best != nil {

@@ -19,12 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Map_Ping_FullMethodName           = "/map.Map/Ping"
-	Map_ListBuildings_FullMethodName  = "/map.Map/ListBuildings"
-	Map_GetBuilding_FullMethodName    = "/map.Map/GetBuilding"
-	Map_CreateBuilding_FullMethodName = "/map.Map/CreateBuilding"
-	Map_UpdateBuilding_FullMethodName = "/map.Map/UpdateBuilding"
-	Map_DeleteBuilding_FullMethodName = "/map.Map/DeleteBuilding"
+	Map_Ping_FullMethodName              = "/map.Map/Ping"
+	Map_ListBuildings_FullMethodName     = "/map.Map/ListBuildings"
+	Map_GetBuilding_FullMethodName       = "/map.Map/GetBuilding"
+	Map_CreateBuilding_FullMethodName    = "/map.Map/CreateBuilding"
+	Map_UpdateBuilding_FullMethodName    = "/map.Map/UpdateBuilding"
+	Map_DeleteBuilding_FullMethodName    = "/map.Map/DeleteBuilding"
+	Map_UpsertFaultMarker_FullMethodName = "/map.Map/UpsertFaultMarker"
+	Map_RemoveFaultMarker_FullMethodName = "/map.Map/RemoveFaultMarker"
 )
 
 // MapClient is the client API for Map service.
@@ -37,6 +39,8 @@ type MapClient interface {
 	CreateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
 	UpdateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
 	DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error)
+	UpsertFaultMarker(ctx context.Context, in *FaultMarkerUpsertRequest, opts ...grpc.CallOption) (*Response, error)
+	RemoveFaultMarker(ctx context.Context, in *FaultMarkerOrderRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type mapClient struct {
@@ -107,6 +111,26 @@ func (c *mapClient) DeleteBuilding(ctx context.Context, in *BuildingIdRequest, o
 	return out, nil
 }
 
+func (c *mapClient) UpsertFaultMarker(ctx context.Context, in *FaultMarkerUpsertRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, Map_UpsertFaultMarker_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mapClient) RemoveFaultMarker(ctx context.Context, in *FaultMarkerOrderRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, Map_RemoveFaultMarker_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MapServer is the server API for Map service.
 // All implementations must embed UnimplementedMapServer
 // for forward compatibility.
@@ -117,6 +141,8 @@ type MapServer interface {
 	CreateBuilding(context.Context, *SaveBuildingRequest) (*BuildingResponse, error)
 	UpdateBuilding(context.Context, *SaveBuildingRequest) (*BuildingResponse, error)
 	DeleteBuilding(context.Context, *BuildingIdRequest) (*Response, error)
+	UpsertFaultMarker(context.Context, *FaultMarkerUpsertRequest) (*Response, error)
+	RemoveFaultMarker(context.Context, *FaultMarkerOrderRequest) (*Response, error)
 	mustEmbedUnimplementedMapServer()
 }
 
@@ -144,6 +170,12 @@ func (UnimplementedMapServer) UpdateBuilding(context.Context, *SaveBuildingReque
 }
 func (UnimplementedMapServer) DeleteBuilding(context.Context, *BuildingIdRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteBuilding not implemented")
+}
+func (UnimplementedMapServer) UpsertFaultMarker(context.Context, *FaultMarkerUpsertRequest) (*Response, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertFaultMarker not implemented")
+}
+func (UnimplementedMapServer) RemoveFaultMarker(context.Context, *FaultMarkerOrderRequest) (*Response, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveFaultMarker not implemented")
 }
 func (UnimplementedMapServer) mustEmbedUnimplementedMapServer() {}
 func (UnimplementedMapServer) testEmbeddedByValue()             {}
@@ -274,6 +306,42 @@ func _Map_DeleteBuilding_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Map_UpsertFaultMarker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FaultMarkerUpsertRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).UpsertFaultMarker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_UpsertFaultMarker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).UpsertFaultMarker(ctx, req.(*FaultMarkerUpsertRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Map_RemoveFaultMarker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FaultMarkerOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).RemoveFaultMarker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_RemoveFaultMarker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).RemoveFaultMarker(ctx, req.(*FaultMarkerOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Map_ServiceDesc is the grpc.ServiceDesc for Map service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +372,14 @@ var Map_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteBuilding",
 			Handler:    _Map_DeleteBuilding_Handler,
+		},
+		{
+			MethodName: "UpsertFaultMarker",
+			Handler:    _Map_UpsertFaultMarker_Handler,
+		},
+		{
+			MethodName: "RemoveFaultMarker",
+			Handler:    _Map_RemoveFaultMarker_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
