@@ -3,6 +3,85 @@
 
 package types
 
+type AdminOrderListRequest struct {
+	Status     int64 `form:"status,optional"`
+	BuildingId int64 `form:"buildingId,optional"`
+}
+
+type CreateOrderRequest struct {
+	Room        string `json:"room"`
+	Floor       int64  `json:"floor"`
+	FaultType   string `json:"faultType"`
+	Description string `json:"description"`
+	BuildingId  int64  `json:"buildingId,optional"`
+}
+
+type CreateOrderResponse struct {
+	OrderId int64  `json:"orderId"`
+	OrderNo string `json:"orderNo"`
+}
+
+type EmptyResponse struct {
+}
+
+type FaultType struct {
+	Id   int64  `json:"id"`
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type FaultTypeListResponse struct {
+	List []FaultType `json:"list"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Token string   `json:"token"`
+	User  UserInfo `json:"user"`
+}
+
+type OrderDetailResponse struct {
+	Order OrderItem `json:"order"`
+}
+
+type OrderIdRequest struct {
+	Id int64 `path:"id"`
+}
+
+type OrderItem struct {
+	Id            int64  `json:"id"`
+	OrderNo       string `json:"orderNo"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	BuildingId    int64  `json:"buildingId"`
+	BuildingName  string `json:"buildingName"`
+	Room          string `json:"room"`
+	Floor         int64  `json:"floor"`
+	FaultType     string `json:"faultType"`
+	FaultTypeName string `json:"faultTypeName"`
+	Status        int64  `json:"status"`
+	StatusText    string `json:"statusText"`
+	WorkerId      int64  `json:"workerId,optional"`
+	WorkerName    string `json:"workerName,optional"`
+	ReporterId    int64  `json:"reporterId"`
+	ReporterName  string `json:"reporterName,optional"`
+	Source        string `json:"source"`
+	CreatedAt     string `json:"createdAt"`
+	UpdatedAt     string `json:"updatedAt"`
+}
+
+type OrderListRequest struct {
+	Status int64 `form:"status,optional"`
+}
+
+type OrderListResponse struct {
+	List []OrderItem `json:"list"`
+}
+
 type PingRequest struct {
 	Name string `path:"name"`
 }
@@ -10,4 +89,12 @@ type PingRequest struct {
 type PingResponse struct {
 	Worker string `json:"worker"`
 	Map    string `json:"map"`
+}
+
+type UserInfo struct {
+	Id         int64  `json:"id"`
+	Username   string `json:"username"`
+	Name       string `json:"name"`
+	Role       int64  `json:"role"`
+	BuildingId int64  `json:"buildingId,optional"`
 }

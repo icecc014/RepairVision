@@ -9,8 +9,124 @@ type PingResponse {
 	Map    string `json:"map"`
 }
 
+type LoginRequest {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type UserInfo {
+	Id         int64  `json:"id"`
+	Username   string `json:"username"`
+	Name       string `json:"name"`
+	Role       int64  `json:"role"`
+	BuildingId int64  `json:"buildingId,optional"`
+}
+
+type LoginResponse {
+	Token string   `json:"token"`
+	User  UserInfo `json:"user"`
+}
+
+type FaultType {
+	Id   int64  `json:"id"`
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type FaultTypeListResponse {
+	List []FaultType `json:"list"`
+}
+
+type OrderListRequest {
+	Status int64 `form:"status,optional"`
+}
+
+type AdminOrderListRequest {
+	Status     int64 `form:"status,optional"`
+	BuildingId int64 `form:"buildingId,optional"`
+}
+
+type OrderIdRequest {
+	Id int64 `path:"id"`
+}
+
+type CreateOrderRequest {
+	Room        string `json:"room"`
+	Floor       int64  `json:"floor"`
+	FaultType   string `json:"faultType"`
+	Description string `json:"description"`
+	BuildingId  int64  `json:"buildingId,optional"`
+}
+
+type CreateOrderResponse {
+	OrderId int64  `json:"orderId"`
+	OrderNo string `json:"orderNo"`
+}
+
+type OrderItem {
+	Id            int64  `json:"id"`
+	OrderNo       string `json:"orderNo"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	BuildingId    int64  `json:"buildingId"`
+	BuildingName  string `json:"buildingName"`
+	Room          string `json:"room"`
+	Floor         int64  `json:"floor"`
+	FaultType     string `json:"faultType"`
+	FaultTypeName string `json:"faultTypeName"`
+	Status        int64  `json:"status"`
+	StatusText    string `json:"statusText"`
+	WorkerId      int64  `json:"workerId,optional"`
+	WorkerName    string `json:"workerName,optional"`
+	ReporterId    int64  `json:"reporterId"`
+	ReporterName  string `json:"reporterName,optional"`
+	Source        string `json:"source"`
+	CreatedAt     string `json:"createdAt"`
+	UpdatedAt     string `json:"updatedAt"`
+}
+
+type OrderListResponse {
+	List []OrderItem `json:"list"`
+}
+
+type OrderDetailResponse {
+	Order OrderItem `json:"order"`
+}
+
+type EmptyResponse {}
+
 service order-api {
 	@handler PingHandler
 	get /ping/:name (PingRequest) returns (PingResponse)
+
+	@handler LoginHandler
+	post /api/login (LoginRequest) returns (LoginResponse)
+
+	@handler FaultTypesHandler
+	get /api/fault-types returns (FaultTypeListResponse)
+
+	@handler DormOrdersHandler
+	get /api/dorm/orders (OrderListRequest) returns (OrderListResponse)
+
+	@handler DormOrderDetailHandler
+	get /api/dorm/orders/:id (OrderIdRequest) returns (OrderDetailResponse)
+
+	@handler CreateOrderHandler
+	post /api/dorm/orders (CreateOrderRequest) returns (CreateOrderResponse)
+
+	@handler CancelOrderHandler
+	post /api/dorm/orders/:id/cancel (OrderIdRequest) returns (EmptyResponse)
+
+	@handler WorkerOrdersHandler
+	get /api/worker/orders (OrderListRequest) returns (OrderListResponse)
+
+	@handler StartOrderHandler
+	post /api/worker/orders/:id/start (OrderIdRequest) returns (EmptyResponse)
+
+	@handler CompleteOrderHandler
+	post /api/worker/orders/:id/complete (OrderIdRequest) returns (EmptyResponse)
+
+	@handler AdminOrdersHandler
+	get /api/admin/orders (AdminOrderListRequest) returns (OrderListResponse)
 }
 

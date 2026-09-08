@@ -10,16 +10,16 @@ import (
 	"order/internal/types"
 )
 
-func PingHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func StartOrderHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.PingRequest
+		var req types.OrderIdRequest
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, errs.BadRequest(err.Error()))
 			return
 		}
 
-		l := logic.NewPingLogic(r.Context(), svcCtx)
-		resp, err := l.Ping(&req)
+		l := logic.NewStartOrderLogic(r.Context(), svcCtx)
+		resp, err := l.StartOrder(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
