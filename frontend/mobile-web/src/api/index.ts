@@ -77,3 +77,29 @@ export function apiStartOrder(id: number): Promise<unknown> {
 export function apiCompleteOrder(id: number): Promise<unknown> {
   return http.post(`/worker/orders/${id}/complete`)
 }
+
+export interface WorkerMapBuilding {
+  id: number
+  code: string
+  name: string
+  posX: number
+  posY: number
+  width: number
+  height: number
+  floors: number
+  floorHeight: number
+  roomsPerFloor: number
+}
+
+export interface WorkerMapData {
+  buildings: WorkerMapBuilding[]
+  orders: OrderItem[]
+}
+
+export function apiWorkerMapData(): Promise<WorkerMapData> {
+  return http.get('/worker/map-data')
+}
+
+export function apiBatchComplete(buildingId: number, faultType: string): Promise<{ count: number }> {
+  return http.post('/worker/batch-complete', { buildingId, faultType })
+}

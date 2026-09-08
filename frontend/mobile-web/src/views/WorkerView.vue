@@ -8,7 +8,14 @@
       <button class="rv-logout" @click="emit('logout')">退出</button>
     </header>
 
-    <main class="rv-content">
+    <div class="mode-tabs">
+      <button class="mode-tab" :class="{ active: tab === 'orders' }" @click="tab = 'orders'">我的工单</button>
+      <button class="mode-tab" :class="{ active: tab === 'map' }" @click="tab = 'map'">报修地图</button>
+    </div>
+
+    <MapView v-if="tab === 'map'" />
+
+    <main v-else class="rv-content">
       <section class="rv-stats">
         <div class="rv-stat">
           <div class="rv-stat-num" style="color: #d97706">{{ todoCount }}</div>
@@ -86,6 +93,7 @@ import { computed, onMounted, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
 import { apiCompleteOrder, apiStartOrder, apiWorkerOrders } from '../api'
+import MapView from './MapView.vue'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -94,6 +102,7 @@ const auth = useAuthStore()
 type FilterValue = 'all' | 'todo' | 'working' | 'done'
 
 const orders = ref<OrderItem[]>([])
+const tab = ref<'orders' | 'map'>('orders')
 let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const loading = ref(false)
@@ -199,4 +208,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+</style>
+<style scoped>
+.mode-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 0;
+}
+.mode-tab {
+  padding: 8px 16px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mode-tab.active {
+  color: #fff;
+  background: #2563eb;
+  border-color: #2563eb;
+}
 </style>
