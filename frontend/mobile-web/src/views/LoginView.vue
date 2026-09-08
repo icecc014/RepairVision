@@ -66,7 +66,7 @@ async function onSubmit() {
     const data = await apiLogin(form.username, form.password)
     auth.setAuth(data.token, data.user)
     showToast('登录成功')
-    router.replace('/')
+    router.replace(data.user.role === 3 ? '/dorm' : '/worker')
   } catch (err) {
     showToast((err as Error).message || '登录失败')
   } finally {

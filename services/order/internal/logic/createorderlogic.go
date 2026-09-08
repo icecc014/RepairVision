@@ -48,11 +48,21 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		return nil, errs.Unauthorized("登录状态无效")
 	}
 	room := strings.TrimSpace(req.Room)
-	if room == "" || req.FaultType == "" || req.Floor <= 0 {
-		return nil, errs.BadRequest("房间、楼层和维修类型不能为空")
+	if room == "" || req.FaultType == "" {
+		return nil, errs.BadRequest("房间号和维修类型不能为空")
 	}
-	if !strings.HasPrefix(room, fmt.Sprintf("%d", req.Floor)) {
-		return nil, errs.BadRequest(fmt.Sprintf("楼层 %d 的房间号应以 %d 开头，如 %d01", req.Floor, req.Floor, req.Floor))
+	floor := req.Floor
+	if floor <= 0 {
+		if len(room) < 2 {
+			return nil, errs.BadRequest("房间号格式不正确，如 401 表示 4 层 01 房")
+		}
+		first := int(room[0] - '0')
+		if first < 1 || first > 9 {
+			return nil, errs.BadRequest("房间号第一位必须是楼层数字")
+		}
+		floor = int64(first)
+	} else if !strings.HasPrefix(room, fmt.Sprintf("%d", floor)) {
+		return nil, errs.BadRequest(fmt.Sprintf("楼层 %d 的房间号应以 %d 开头，如 %d01", floor, floor, floor))
 	}
 
 	faultType, err := store.FindFaultTypeByCode(l.ctx, l.svcCtx.DB, req.FaultType)
@@ -69,7 +79,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	}
 
 	// F16 粗粒度去重：同一楼栋/楼层/房间/类型，2小时内未关闭工单则阻止重复报修
-	dup, err := store.FindRecentDuplicateOrder(l.ctx, l.svcCtx.DB, buildingID, req.Floor, req.Room, req.FaultType, time.Now().Add(-2*time.Hour))
+	dup, err := store.FindRecentDuplicateOrder(l.ctx, l.svcCtx.DB, buildingID, floor, req.Room, req.FaultType, time.Now().Add(-2*time.Hour))
 	if err == nil && dup != nil {
 		return nil, errs.Conflict(fmt.Sprintf("该房间近期已有同类维修工单（%s），请勿重复报修", dup.OrderNo))
 	}
@@ -135,7 +145,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			Description: description,
 			BuildingID:  buildingID,
 			Room:        room,
-			Floor:       req.Floor,
+			Floor:       floor,
 			FaultType:   req.FaultType,
 			Status:      store.StatusPending,
 			IsMerged:    0,
@@ -160,7 +170,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		return nil, errs.Internal(err)
 	}
 	if _, markerErr := l.svcCtx.MapRpc.UpsertFaultMarker(l.ctx, &mapclient.FaultMarkerUpsertRequest{
-		OrderId: orderID, BuildingId: buildingID, Floor: req.Floor, RoomNumber: room,
+		OrderId: orderID, BuildingId: buildingID, Floor: floor, RoomNumber: room,
 	}); markerErr != nil {
 		logx.WithContext(l.ctx).Errorf("upsert fault marker failed: %v", markerErr)
 	}

@@ -155,7 +155,7 @@ type BatchCompleteResponse struct {
 
 type CreateOrderRequest struct {
 	Room        string `json:"room"`
-	Floor       int64  `json:"floor"`
+	Floor       int64  `json:"floor,optional"`
 	FaultType   string `json:"faultType"`
 	Description string `json:"description"`
 	BuildingId  int64  `json:"buildingId,optional"`

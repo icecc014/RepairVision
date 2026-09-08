@@ -6,7 +6,7 @@ const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('rv_token')
+  const token = sessionStorage.getItem('rv_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -23,8 +23,8 @@ http.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('rv_token')
-      localStorage.removeItem('rv_user')
+      sessionStorage.removeItem('rv_token')
+      sessionStorage.removeItem('rv_user')
       if (!location.pathname.startsWith('/login')) {
         location.href = '/m/login'
       }

@@ -93,11 +93,8 @@
           </button>
         </div>
 
-        <div class="rv-form-label">故障楼层</div>
-        <input v-model.number="createForm.floor" class="rv-form-field" type="number" min="1" placeholder="例如 3" />
-
         <div class="rv-form-label">房间号</div>
-        <input v-model="createForm.room" class="rv-form-field" :placeholder="`房间号需以楼层开头，如 ${createForm.floor}01`" />
+        <input v-model="createForm.room" class="rv-form-field" placeholder="只需填房间号，如 401 / 301" />
 
         <div class="rv-form-label">故障描述（可选）</div>
         <textarea
@@ -135,7 +132,7 @@ const loading = ref(false)
 const submitting = ref(false)
 const showCreate = ref(false)
 const filter = ref<FilterValue>('all')
-const createForm = reactive({ faultType: '', floor: 1, room: '', description: '' })
+const createForm = reactive({ faultType: '', room: '', description: '' })
 
 const pendingCount = computed(() => orders.value.filter((o) => o.status === 1 || o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
@@ -186,27 +183,27 @@ async function openCreate() {
     }
   }
   createForm.faultType = faultTypes.value[0]?.code || ''
-  createForm.floor = 1
   createForm.room = ''
   createForm.description = ''
   showCreate.value = true
 }
 
 async function submitCreate() {
-  if (!createForm.faultType || !createForm.room || !createForm.floor || createForm.floor < 1) {
-    showToast('请完整填写维修信息')
+  const room = createForm.room.trim()
+  if (!createForm.faultType || !room) {
+    showToast('请选择维修类型并填写房间号')
     return
   }
-  const room = createForm.room.trim()
-  if (!room.startsWith(String(createForm.floor))) {
-    showToast(`楼层 ${createForm.floor} 的房间号应以 ${createForm.floor} 开头，如 ${createForm.floor}01`)
+  const derivedFloor = Number(room.charAt(0))
+  if (!/^\d{2,4}$/.test(room) || derivedFloor < 1 || derivedFloor > 9) {
+    showToast('房间号格式不正确，如 401 表示 4 层 01 房')
     return
   }
   submitting.value = true
   try {
     await apiCreateOrder({
       faultType: createForm.faultType,
-      floor: Number(createForm.floor),
+      floor: derivedFloor,
       room: room,
       description: createForm.description.trim(),
     })
