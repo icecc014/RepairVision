@@ -67,3 +67,8 @@ func (s *WorkerServer) DisableUser(ctx context.Context, in *worker.IdRequest) (*
 	l := logic.NewDisableUserLogic(ctx, s.svcCtx)
 	return l.DisableUser(in)
 }
+
+func (s *WorkerServer) ListManagedBuildings(ctx context.Context, in *worker.IdRequest) (*worker.BuildingIdsResponse, error) {
+	l := logic.NewListManagedBuildingsLogic(ctx, s.svcCtx)
+	return l.ListManagedBuildings(in)
+}

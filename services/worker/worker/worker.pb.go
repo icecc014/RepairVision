@@ -949,6 +949,50 @@ func (x *IdRequest) GetId() int64 {
 	return 0
 }
 
+type BuildingIdsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           []int64                `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BuildingIdsResponse) Reset() {
+	*x = BuildingIdsResponse{}
+	mi := &file_worker_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildingIdsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildingIdsResponse) ProtoMessage() {}
+
+func (x *BuildingIdsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildingIdsResponse.ProtoReflect.Descriptor instead.
+func (*BuildingIdsResponse) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *BuildingIdsResponse) GetIds() []int64 {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
 type ResetPasswordRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -959,7 +1003,7 @@ type ResetPasswordRequest struct {
 
 func (x *ResetPasswordRequest) Reset() {
 	*x = ResetPasswordRequest{}
-	mi := &file_worker_proto_msgTypes[16]
+	mi := &file_worker_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -971,7 +1015,7 @@ func (x *ResetPasswordRequest) String() string {
 func (*ResetPasswordRequest) ProtoMessage() {}
 
 func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[16]
+	mi := &file_worker_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -984,7 +1028,7 @@ func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
 func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{16}
+	return file_worker_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ResetPasswordRequest) GetId() int64 {
@@ -1070,10 +1114,12 @@ const file_worker_proto_rawDesc = "" +
 	"\fbuilding_ids\x18\x06 \x03(\x03R\vbuildingIds\x12\x16\n" +
 	"\x06status\x18\a \x01(\x03R\x06status\"\x1b\n" +
 	"\tIdRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"B\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"'\n" +
+	"\x13BuildingIdsResponse\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\x03R\x03ids\"B\n" +
 	"\x14ResetPasswordRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword2\xb5\x04\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword2\xfd\x04\n" +
 	"\x06Worker\x12)\n" +
 	"\x04Ping\x12\x0f.worker.Request\x1a\x10.worker.Response\x124\n" +
 	"\x05Login\x12\x14.worker.LoginRequest\x1a\x15.worker.LoginResponse\x12X\n" +
@@ -1085,7 +1131,8 @@ const file_worker_proto_rawDesc = "" +
 	"\n" +
 	"UpdateUser\x12\x19.worker.UpdateUserRequest\x1a\x15.worker.UsersResponse\x12?\n" +
 	"\rResetPassword\x12\x1c.worker.ResetPasswordRequest\x1a\x10.worker.Response\x122\n" +
-	"\vDisableUser\x12\x11.worker.IdRequest\x1a\x10.worker.ResponseB\n" +
+	"\vDisableUser\x12\x11.worker.IdRequest\x1a\x10.worker.Response\x12F\n" +
+	"\x14ListManagedBuildings\x12\x11.worker.IdRequest\x1a\x1b.worker.BuildingIdsResponseB\n" +
 	"Z\b./workerb\x06proto3"
 
 var (
@@ -1100,7 +1147,7 @@ func file_worker_proto_rawDescGZIP() []byte {
 	return file_worker_proto_rawDescData
 }
 
-var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_worker_proto_goTypes = []any{
 	(*Request)(nil),                 // 0: worker.Request
 	(*Response)(nil),                // 1: worker.Response
@@ -1118,7 +1165,8 @@ var file_worker_proto_goTypes = []any{
 	(*CreateUserRequest)(nil),       // 13: worker.CreateUserRequest
 	(*UpdateUserRequest)(nil),       // 14: worker.UpdateUserRequest
 	(*IdRequest)(nil),               // 15: worker.IdRequest
-	(*ResetPasswordRequest)(nil),    // 16: worker.ResetPasswordRequest
+	(*BuildingIdsResponse)(nil),     // 16: worker.BuildingIdsResponse
+	(*ResetPasswordRequest)(nil),    // 17: worker.ResetPasswordRequest
 }
 var file_worker_proto_depIdxs = []int32{
 	3,  // 0: worker.LoginResponse.user:type_name -> worker.User
@@ -1133,19 +1181,21 @@ var file_worker_proto_depIdxs = []int32{
 	11, // 9: worker.Worker.ListUsers:input_type -> worker.ListUsersRequest
 	13, // 10: worker.Worker.CreateUser:input_type -> worker.CreateUserRequest
 	14, // 11: worker.Worker.UpdateUser:input_type -> worker.UpdateUserRequest
-	16, // 12: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
+	17, // 12: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
 	15, // 13: worker.Worker.DisableUser:input_type -> worker.IdRequest
-	1,  // 14: worker.Worker.Ping:output_type -> worker.Response
-	4,  // 15: worker.Worker.Login:output_type -> worker.LoginResponse
-	8,  // 16: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
-	10, // 17: worker.Worker.GetUsers:output_type -> worker.UsersResponse
-	12, // 18: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
-	10, // 19: worker.Worker.CreateUser:output_type -> worker.UsersResponse
-	10, // 20: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
-	1,  // 21: worker.Worker.ResetPassword:output_type -> worker.Response
-	1,  // 22: worker.Worker.DisableUser:output_type -> worker.Response
-	14, // [14:23] is the sub-list for method output_type
-	5,  // [5:14] is the sub-list for method input_type
+	15, // 14: worker.Worker.ListManagedBuildings:input_type -> worker.IdRequest
+	1,  // 15: worker.Worker.Ping:output_type -> worker.Response
+	4,  // 16: worker.Worker.Login:output_type -> worker.LoginResponse
+	8,  // 17: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
+	10, // 18: worker.Worker.GetUsers:output_type -> worker.UsersResponse
+	12, // 19: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
+	10, // 20: worker.Worker.CreateUser:output_type -> worker.UsersResponse
+	10, // 21: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
+	1,  // 22: worker.Worker.ResetPassword:output_type -> worker.Response
+	1,  // 23: worker.Worker.DisableUser:output_type -> worker.Response
+	16, // 24: worker.Worker.ListManagedBuildings:output_type -> worker.BuildingIdsResponse
+	15, // [15:25] is the sub-list for method output_type
+	5,  // [5:15] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -1162,7 +1212,7 @@ func file_worker_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_worker_proto_rawDesc), len(file_worker_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

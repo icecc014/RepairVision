@@ -14,6 +14,7 @@ import (
 )
 
 type (
+	BuildingIdsResponse     = worker.BuildingIdsResponse
 	BuildingWorkersRequest  = worker.BuildingWorkersRequest
 	BuildingWorkersResponse = worker.BuildingWorkersResponse
 	CreateUserRequest       = worker.CreateUserRequest
@@ -42,6 +43,7 @@ type (
 		UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error)
 		ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error)
 		DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
+		ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error)
 	}
 
 	defaultWorker struct {
@@ -98,4 +100,9 @@ func (m *defaultWorker) ResetPassword(ctx context.Context, in *ResetPasswordRequ
 func (m *defaultWorker) DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := worker.NewWorkerClient(m.cli.Conn())
 	return client.DisableUser(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ListManagedBuildings(ctx, in, opts...)
 }

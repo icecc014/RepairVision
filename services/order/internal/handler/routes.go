@@ -63,6 +63,16 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Handler: WorkerOrdersHandler(serverCtx),
 		},
 		{
+			Method:  http.MethodGet,
+			Path:    "/api/worker/map-data",
+			Handler: WorkerMapDataHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/api/worker/batch-complete",
+			Handler: WorkerBatchCompleteHandler(serverCtx),
+		},
+		{
 			Method:  http.MethodPost,
 			Path:    "/api/worker/orders/:id/start",
 			Handler: StartOrderHandler(serverCtx),

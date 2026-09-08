@@ -68,6 +68,27 @@ func ListOrdersByBuilding(ctx context.Context, conn sqlx.Session, buildingID, st
 	return orders, nil
 }
 
+func ListOrdersByBuildingIDs(ctx context.Context, conn sqlx.Session, buildingIDs []int64, activeOnly bool) ([]Order, error) {
+	if len(buildingIDs) == 0 {
+		return []Order{}, nil
+	}
+	placeholders := make([]string, len(buildingIDs))
+	args := make([]any, len(buildingIDs))
+	for i, id := range buildingIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	query := orderBase + "where building_id in (" + join(placeholders) + ")"
+	if activeOnly {
+		query += " and status in (1,2,3)"
+	}
+	query += " order by id desc"
+	var orders []Order
+	if err := conn.QueryRowsCtx(ctx, &orders, query, args...); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
 func ListOrdersByWorker(ctx context.Context, conn sqlx.Session, workerID, status int64) ([]Order, error) {
 	query := orderBase + "where worker_id = ?"
 	args := []any{workerID}
@@ -226,6 +247,38 @@ func StartOrder(ctx context.Context, conn sqlx.Session, orderID, workerID int64)
 	return affected > 0, err
 }
 
+type batchOrderRow struct {
+	ID int64 `db:"id"`
+}
+
+func BatchCompleteOrders(ctx context.Context, conn sqlx.Session, workerID, buildingID int64, faultType string) ([]int64, error) {
+	var rows []batchOrderRow
+	if err := conn.QueryRowsCtx(ctx, &rows,
+		`select id from orders where worker_id = ? and building_id = ? and fault_type = ? and status in (2,3)`,
+		workerID, buildingID, faultType); err != nil {
+		return nil, err
+	}
+	ids := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		ids = append(ids, row.ID)
+	}
+	if len(ids) == 0 {
+		return ids, nil
+	}
+	placeholders := make([]string, len(ids))
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	_, err := conn.ExecCtx(ctx,
+		"update orders set status = ? where id in ("+join(placeholders)+") and worker_id = ?",
+		append([]any{StatusCompleted}, append(args, workerID)...)...)
+	if err != nil {
+		return nil, err
+	}
+	return ids, nil
+}
 func CompleteOrder(ctx context.Context, conn sqlx.Session, orderID, workerID int64) (bool, error) {
 	result, err := conn.ExecCtx(ctx,
 		"update orders set status = ? where id = ? and worker_id = ? and status = ?",

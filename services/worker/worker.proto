@@ -95,6 +95,9 @@ message IdRequest {
   int64 id = 1;
 }
 
+message BuildingIdsResponse {
+  repeated int64 ids = 1;
+}
 message ResetPasswordRequest {
   int64 id = 1;
   string password = 2;
@@ -110,4 +113,5 @@ service Worker {
   rpc UpdateUser(UpdateUserRequest) returns(UsersResponse);
   rpc ResetPassword(ResetPasswordRequest) returns(Response);
   rpc DisableUser(IdRequest) returns(Response);
+  rpc ListManagedBuildings(IdRequest) returns(BuildingIdsResponse);
 }

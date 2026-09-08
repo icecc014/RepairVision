@@ -28,6 +28,7 @@ const (
 	Worker_UpdateUser_FullMethodName            = "/worker.Worker/UpdateUser"
 	Worker_ResetPassword_FullMethodName         = "/worker.Worker/ResetPassword"
 	Worker_DisableUser_FullMethodName           = "/worker.Worker/DisableUser"
+	Worker_ListManagedBuildings_FullMethodName  = "/worker.Worker/ListManagedBuildings"
 )
 
 // WorkerClient is the client API for Worker service.
@@ -43,6 +44,7 @@ type WorkerClient interface {
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error)
 	DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
+	ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error)
 }
 
 type workerClient struct {
@@ -143,6 +145,16 @@ func (c *workerClient) DisableUser(ctx context.Context, in *IdRequest, opts ...g
 	return out, nil
 }
 
+func (c *workerClient) ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BuildingIdsResponse)
+	err := c.cc.Invoke(ctx, Worker_ListManagedBuildings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WorkerServer is the server API for Worker service.
 // All implementations must embed UnimplementedWorkerServer
 // for forward compatibility.
@@ -156,6 +168,7 @@ type WorkerServer interface {
 	UpdateUser(context.Context, *UpdateUserRequest) (*UsersResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*Response, error)
 	DisableUser(context.Context, *IdRequest) (*Response, error)
+	ListManagedBuildings(context.Context, *IdRequest) (*BuildingIdsResponse, error)
 	mustEmbedUnimplementedWorkerServer()
 }
 
@@ -192,6 +205,9 @@ func (UnimplementedWorkerServer) ResetPassword(context.Context, *ResetPasswordRe
 }
 func (UnimplementedWorkerServer) DisableUser(context.Context, *IdRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method DisableUser not implemented")
+}
+func (UnimplementedWorkerServer) ListManagedBuildings(context.Context, *IdRequest) (*BuildingIdsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListManagedBuildings not implemented")
 }
 func (UnimplementedWorkerServer) mustEmbedUnimplementedWorkerServer() {}
 func (UnimplementedWorkerServer) testEmbeddedByValue()                {}
@@ -376,6 +392,24 @@ func _Worker_DisableUser_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Worker_ListManagedBuildings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).ListManagedBuildings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_ListManagedBuildings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).ListManagedBuildings(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Worker_ServiceDesc is the grpc.ServiceDesc for Worker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -418,6 +452,10 @@ var Worker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DisableUser",
 			Handler:    _Worker_DisableUser_Handler,
+		},
+		{
+			MethodName: "ListManagedBuildings",
+			Handler:    _Worker_ListManagedBuildings_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

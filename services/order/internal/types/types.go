@@ -137,6 +137,15 @@ type AdminUserUpdateRequest struct {
 	BuildingIds []int64 `json:"buildingIds,optional"`
 }
 
+type BatchCompleteRequest struct {
+	BuildingId int64  `json:"buildingId"`
+	FaultType  string `json:"faultType"`
+}
+
+type BatchCompleteResponse struct {
+	Count int64 `json:"count"`
+}
+
 type CreateOrderRequest struct {
 	Room        string `json:"room"`
 	Floor       int64  `json:"floor"`
@@ -238,18 +247,18 @@ type OrderIdRequest struct {
 }
 
 type OrderItem struct {
-	Id            int64  `json:"id"`
-	OrderNo       string `json:"orderNo"`
-	Title         string `json:"title"`
-	Description   string `json:"description"`
-	BuildingId    int64  `json:"buildingId"`
-	BuildingName  string `json:"buildingName"`
-	Room          string `json:"room"`
-	Floor         int64  `json:"floor"`
-	FaultType     string `json:"faultType"`
-	FaultTypeName string `json:"faultTypeName"`
-	Status        int64  `json:"status"`
-	StatusText    string `json:"statusText"`
+	Id            int64   `json:"id"`
+	OrderNo       string  `json:"orderNo"`
+	Title         string  `json:"title"`
+	Description   string  `json:"description"`
+	BuildingId    int64   `json:"buildingId"`
+	BuildingName  string  `json:"buildingName"`
+	Room          string  `json:"room"`
+	Floor         int64   `json:"floor"`
+	FaultType     string  `json:"faultType"`
+	FaultTypeName string  `json:"faultTypeName"`
+	Status        int64   `json:"status"`
+	StatusText    string  `json:"statusText"`
 	WorkerId      int64   `json:"workerId,optional"`
 	WorkerName    string  `json:"workerName,optional"`
 	DispatchScore float64 `json:"dispatchScore,optional"`
@@ -257,10 +266,10 @@ type OrderItem struct {
 	DistanceScore float64 `json:"distanceScore,optional"`
 	LoadScore     float64 `json:"loadScore,optional"`
 	ReporterId    int64   `json:"reporterId"`
-	ReporterName  string `json:"reporterName,optional"`
-	Source        string `json:"source"`
-	CreatedAt     string `json:"createdAt"`
-	UpdatedAt     string `json:"updatedAt"`
+	ReporterName  string  `json:"reporterName,optional"`
+	Source        string  `json:"source"`
+	CreatedAt     string  `json:"createdAt"`
+	UpdatedAt     string  `json:"updatedAt"`
 }
 
 type OrderListRequest struct {
@@ -286,4 +295,22 @@ type UserInfo struct {
 	Name       string `json:"name"`
 	Role       int64  `json:"role"`
 	BuildingId int64  `json:"buildingId,optional"`
+}
+
+type WorkerMapBuilding struct {
+	Id            int64   `json:"id"`
+	Code          string  `json:"code"`
+	Name          string  `json:"name"`
+	PosX          float64 `json:"posX"`
+	PosY          float64 `json:"posY"`
+	Width         float64 `json:"width"`
+	Height        float64 `json:"height"`
+	Floors        int64   `json:"floors"`
+	FloorHeight   float64 `json:"floorHeight"`
+	RoomsPerFloor int64   `json:"roomsPerFloor"`
+}
+
+type WorkerMapDataResponse struct {
+	Buildings []WorkerMapBuilding `json:"buildings"`
+	Orders    []OrderItem         `json:"orders"`
 }
