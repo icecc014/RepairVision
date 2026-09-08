@@ -109,6 +109,202 @@ func (x *Response) GetPong() string {
 	return ""
 }
 
+type Building struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	PosX          float64                `protobuf:"fixed64,4,opt,name=pos_x,json=posX,proto3" json:"pos_x,omitempty"`
+	PosY          float64                `protobuf:"fixed64,5,opt,name=pos_y,json=posY,proto3" json:"pos_y,omitempty"`
+	Width         float64                `protobuf:"fixed64,6,opt,name=width,proto3" json:"width,omitempty"`
+	Height        float64                `protobuf:"fixed64,7,opt,name=height,proto3" json:"height,omitempty"`
+	Floors        int64                  `protobuf:"varint,8,opt,name=floors,proto3" json:"floors,omitempty"`
+	FloorHeight   float64                `protobuf:"fixed64,9,opt,name=floor_height,json=floorHeight,proto3" json:"floor_height,omitempty"`
+	RoomsPerFloor int64                  `protobuf:"varint,10,opt,name=rooms_per_floor,json=roomsPerFloor,proto3" json:"rooms_per_floor,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Building) Reset() {
+	*x = Building{}
+	mi := &file_map_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Building) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Building) ProtoMessage() {}
+
+func (x *Building) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Building.ProtoReflect.Descriptor instead.
+func (*Building) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Building) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Building) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *Building) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Building) GetPosX() float64 {
+	if x != nil {
+		return x.PosX
+	}
+	return 0
+}
+
+func (x *Building) GetPosY() float64 {
+	if x != nil {
+		return x.PosY
+	}
+	return 0
+}
+
+func (x *Building) GetWidth() float64 {
+	if x != nil {
+		return x.Width
+	}
+	return 0
+}
+
+func (x *Building) GetHeight() float64 {
+	if x != nil {
+		return x.Height
+	}
+	return 0
+}
+
+func (x *Building) GetFloors() int64 {
+	if x != nil {
+		return x.Floors
+	}
+	return 0
+}
+
+func (x *Building) GetFloorHeight() float64 {
+	if x != nil {
+		return x.FloorHeight
+	}
+	return 0
+}
+
+func (x *Building) GetRoomsPerFloor() int64 {
+	if x != nil {
+		return x.RoomsPerFloor
+	}
+	return 0
+}
+
+type ListBuildingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBuildingsRequest) Reset() {
+	*x = ListBuildingsRequest{}
+	mi := &file_map_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBuildingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBuildingsRequest) ProtoMessage() {}
+
+func (x *ListBuildingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBuildingsRequest.ProtoReflect.Descriptor instead.
+func (*ListBuildingsRequest) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{3}
+}
+
+type ListBuildingsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Buildings     []*Building            `protobuf:"bytes,1,rep,name=buildings,proto3" json:"buildings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBuildingsResponse) Reset() {
+	*x = ListBuildingsResponse{}
+	mi := &file_map_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBuildingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBuildingsResponse) ProtoMessage() {}
+
+func (x *ListBuildingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBuildingsResponse.ProtoReflect.Descriptor instead.
+func (*ListBuildingsResponse) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ListBuildingsResponse) GetBuildings() []*Building {
+	if x != nil {
+		return x.Buildings
+	}
+	return nil
+}
+
 var File_map_proto protoreflect.FileDescriptor
 
 const file_map_proto_rawDesc = "" +
@@ -117,9 +313,25 @@ const file_map_proto_rawDesc = "" +
 	"\aRequest\x12\x12\n" +
 	"\x04ping\x18\x01 \x01(\tR\x04ping\"\x1e\n" +
 	"\bResponse\x12\x12\n" +
-	"\x04pong\x18\x01 \x01(\tR\x04pong2*\n" +
+	"\x04pong\x18\x01 \x01(\tR\x04pong\"\xfd\x01\n" +
+	"\bBuilding\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x13\n" +
+	"\x05pos_x\x18\x04 \x01(\x01R\x04posX\x12\x13\n" +
+	"\x05pos_y\x18\x05 \x01(\x01R\x04posY\x12\x14\n" +
+	"\x05width\x18\x06 \x01(\x01R\x05width\x12\x16\n" +
+	"\x06height\x18\a \x01(\x01R\x06height\x12\x16\n" +
+	"\x06floors\x18\b \x01(\x03R\x06floors\x12!\n" +
+	"\ffloor_height\x18\t \x01(\x01R\vfloorHeight\x12&\n" +
+	"\x0frooms_per_floor\x18\n" +
+	" \x01(\x03R\rroomsPerFloor\"\x16\n" +
+	"\x14ListBuildingsRequest\"D\n" +
+	"\x15ListBuildingsResponse\x12+\n" +
+	"\tbuildings\x18\x01 \x03(\v2\r.map.BuildingR\tbuildings2r\n" +
 	"\x03Map\x12#\n" +
-	"\x04Ping\x12\f.map.Request\x1a\r.map.ResponseB\aZ\x05./mapb\x06proto3"
+	"\x04Ping\x12\f.map.Request\x1a\r.map.Response\x12F\n" +
+	"\rListBuildings\x12\x19.map.ListBuildingsRequest\x1a\x1a.map.ListBuildingsResponseB\aZ\x05./mapb\x06proto3"
 
 var (
 	file_map_proto_rawDescOnce sync.Once
@@ -133,19 +345,25 @@ func file_map_proto_rawDescGZIP() []byte {
 	return file_map_proto_rawDescData
 }
 
-var file_map_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_map_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_map_proto_goTypes = []any{
-	(*Request)(nil),  // 0: map.Request
-	(*Response)(nil), // 1: map.Response
+	(*Request)(nil),               // 0: map.Request
+	(*Response)(nil),              // 1: map.Response
+	(*Building)(nil),              // 2: map.Building
+	(*ListBuildingsRequest)(nil),  // 3: map.ListBuildingsRequest
+	(*ListBuildingsResponse)(nil), // 4: map.ListBuildingsResponse
 }
 var file_map_proto_depIdxs = []int32{
-	0, // 0: map.Map.Ping:input_type -> map.Request
-	1, // 1: map.Map.Ping:output_type -> map.Response
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: map.ListBuildingsResponse.buildings:type_name -> map.Building
+	0, // 1: map.Map.Ping:input_type -> map.Request
+	3, // 2: map.Map.ListBuildings:input_type -> map.ListBuildingsRequest
+	1, // 3: map.Map.Ping:output_type -> map.Response
+	4, // 4: map.Map.ListBuildings:output_type -> map.ListBuildingsResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_map_proto_init() }
@@ -159,7 +377,7 @@ func file_map_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_proto_rawDesc), len(file_map_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

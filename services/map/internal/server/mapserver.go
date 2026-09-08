@@ -27,3 +27,8 @@ func (s *MapServer) Ping(ctx context.Context, in *_map.Request) (*_map.Response,
 	l := logic.NewPingLogic(ctx, s.svcCtx)
 	return l.Ping(in)
 }
+
+func (s *MapServer) ListBuildings(ctx context.Context, in *_map.ListBuildingsRequest) (*_map.ListBuildingsResponse, error) {
+	l := logic.NewListBuildingsLogic(ctx, s.svcCtx)
+	return l.ListBuildings(in)
+}

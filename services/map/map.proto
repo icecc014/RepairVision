@@ -11,6 +11,27 @@ message Response {
   string pong = 1;
 }
 
+message Building {
+  int64 id = 1;
+  string code = 2;
+  string name = 3;
+  double pos_x = 4;
+  double pos_y = 5;
+  double width = 6;
+  double height = 7;
+  int64 floors = 8;
+  double floor_height = 9;
+  int64 rooms_per_floor = 10;
+}
+
+message ListBuildingsRequest {
+}
+
+message ListBuildingsResponse {
+  repeated Building buildings = 1;
+}
+
 service Map {
   rpc Ping(Request) returns(Response);
+  rpc ListBuildings(ListBuildingsRequest) returns(ListBuildingsResponse);
 }

@@ -14,11 +14,15 @@ import (
 )
 
 type (
-	Request  = _map.Request
-	Response = _map.Response
+	Building              = _map.Building
+	ListBuildingsRequest  = _map.ListBuildingsRequest
+	ListBuildingsResponse = _map.ListBuildingsResponse
+	Request               = _map.Request
+	Response              = _map.Response
 
 	Map interface {
 		Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+		ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error)
 	}
 
 	defaultMap struct {
@@ -35,4 +39,9 @@ func NewMap(cli zrpc.Client) Map {
 func (m *defaultMap) Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	client := _map.NewMapClient(m.cli.Conn())
 	return client.Ping(ctx, in, opts...)
+}
+
+func (m *defaultMap) ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.ListBuildings(ctx, in, opts...)
 }

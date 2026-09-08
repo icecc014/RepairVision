@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Map_Ping_FullMethodName = "/map.Map/Ping"
+	Map_Ping_FullMethodName          = "/map.Map/Ping"
+	Map_ListBuildings_FullMethodName = "/map.Map/ListBuildings"
 )
 
 // MapClient is the client API for Map service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MapClient interface {
 	Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error)
 }
 
 type mapClient struct {
@@ -47,11 +49,22 @@ func (c *mapClient) Ping(ctx context.Context, in *Request, opts ...grpc.CallOpti
 	return out, nil
 }
 
+func (c *mapClient) ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListBuildingsResponse)
+	err := c.cc.Invoke(ctx, Map_ListBuildings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MapServer is the server API for Map service.
 // All implementations must embed UnimplementedMapServer
 // for forward compatibility.
 type MapServer interface {
 	Ping(context.Context, *Request) (*Response, error)
+	ListBuildings(context.Context, *ListBuildingsRequest) (*ListBuildingsResponse, error)
 	mustEmbedUnimplementedMapServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedMapServer struct{}
 
 func (UnimplementedMapServer) Ping(context.Context, *Request) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedMapServer) ListBuildings(context.Context, *ListBuildingsRequest) (*ListBuildingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListBuildings not implemented")
 }
 func (UnimplementedMapServer) mustEmbedUnimplementedMapServer() {}
 func (UnimplementedMapServer) testEmbeddedByValue()             {}
@@ -104,6 +120,24 @@ func _Map_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Map_ListBuildings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBuildingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).ListBuildings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_ListBuildings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).ListBuildings(ctx, req.(*ListBuildingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Map_ServiceDesc is the grpc.ServiceDesc for Map service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var Map_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _Map_Ping_Handler,
+		},
+		{
+			MethodName: "ListBuildings",
+			Handler:    _Map_ListBuildings_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
