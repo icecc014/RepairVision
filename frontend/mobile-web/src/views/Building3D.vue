@@ -46,6 +46,10 @@
         </div>
         <div class="order-title">{{ o.title }}</div>
         <div class="order-meta">报修 {{ o.createdAt }} · 工人 {{ o.workerName || '待派' }}</div>
+        <div class="order-actions">
+          <button v-if="o.status === 2" class="mini" @click="runAction(o, 'start')">开工</button>
+          <button v-if="o.status === 3" class="mini done" @click="runAction(o, 'complete')">完工</button>
+        </div>
       </div>
     </div>
     <div class="legend"><i class="dot fault"></i> 待处理故障</div>
@@ -56,9 +60,12 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
+import { apiCompleteOrder, apiStartOrder } from '../api'
+import { showConfirmDialog, showToast } from 'vant'
 
 const props = defineProps<{ building: WorkerMapBuilding | null; orders: OrderItem[] }>()
 const visible = defineModel<boolean>({ default: false })
+const emit = defineEmits<{ (e: 'refresh'): void }>()
 const mountRef = ref<HTMLDivElement | null>(null)
 const webglError = ref(false)
 const loadError = ref('')
@@ -83,6 +90,14 @@ const activeCount = computed(() => {
   return props.orders.filter((o) => o.buildingId === props.building?.id).length
 })
 
+watch(
+  () => props.orders,
+  async () => {
+    if (!visible.value || !props.building) return
+    await nextTick()
+    await initScene()
+  },
+)
 watch(
   () => visible.value,
   async (open) => {
@@ -396,6 +411,29 @@ async function initScene() {
   }
 }
 
+async function runAction(o: OrderItem, action: 'start' | 'complete') {
+  try {
+    await showConfirmDialog({
+      title: action === 'start' ? '确认开工' : '确认完工',
+      message: `${action === 'start' ? '开始维修' : '完成'} ${o.title}（${o.orderNo}）？`,
+    })
+  } catch {
+    return
+  }
+  try {
+    if (action === 'start') {
+      await apiStartOrder(o.id)
+      showToast('已开工')
+    } else {
+      await apiCompleteOrder(o.id)
+      showToast('已完工')
+    }
+    selected.value = null
+    emit('refresh')
+  } catch (err) {
+    showToast((err as Error).message)
+  }
+}
 function selectFloor(floor: number) {
   floorFilter.value = floor
   const helper = (window as any).__building3d
@@ -610,4 +648,21 @@ defineExpose({ disposeScene })
   margin-top: 3px;
   color: #94a3b8;
   font-size: 12px;
+}
+.order-actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+}
+.mini {
+  padding: 4px 12px;
+  color: #fff;
+  font-size: 12px;
+  background: #2563eb;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mini.done {
+  background: #16a34a;
 }

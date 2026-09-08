@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <Building3D v-model="show3D" :building="selectedBuilding" :orders="map.orders" />
+    <Building3D v-model="show3D" :building="selectedBuilding" :orders="map.orders" @refresh="load" />
   </div>
 </template>
 
