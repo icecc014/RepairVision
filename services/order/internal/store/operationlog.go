@@ -47,7 +47,7 @@ func InsertOperationLog(ctx context.Context, conn sqlx.Session, l *OperationLog)
 	return err
 }
 
-func ListOperationLogs(ctx context.Context, conn sqlx.Session, page, size int64, module, action, keyword string) ([]OperationLog, int64, error) {
+func ListOperationLogs(ctx context.Context, conn sqlx.Session, page, size int64, module, action, keyword, startDate, endDate string) ([]OperationLog, int64, error) {
 	where := []string{"1 = 1"}
 	var args []any
 	if module != "" {
@@ -62,6 +62,14 @@ func ListOperationLogs(ctx context.Context, conn sqlx.Session, page, size int64,
 		where = append(where, "(username like ? or path like ?)")
 		like := "%" + keyword + "%"
 		args = append(args, like, like)
+	}
+	if startDate != "" {
+		where = append(where, "date(created_at) >= ?")
+		args = append(args, startDate)
+	}
+	if endDate != "" {
+		where = append(where, "date(created_at) <= ?")
+		args = append(args, endDate)
 	}
 	condition := strings.Join(where, " and ")
 	if page < 1 {

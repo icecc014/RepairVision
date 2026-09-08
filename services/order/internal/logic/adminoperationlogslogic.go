@@ -31,7 +31,7 @@ func (l *AdminOperationLogsLogic) AdminOperationLogs(req *types.OperationLogList
 	if size <= 0 {
 		size = 20
 	}
-	logs, total, err := store.ListOperationLogs(l.ctx, l.svcCtx.DB, page, size, req.Module, req.Action, req.Keyword)
+	logs, total, err := store.ListOperationLogs(l.ctx, l.svcCtx.DB, page, size, req.Module, req.Action, req.Keyword, req.StartDate, req.EndDate)
 	if err != nil {
 		return nil, err
 	}

@@ -235,9 +235,11 @@ type OperationLogItem struct {
 type OperationLogListRequest struct {
 	Page    int64  `form:"page,optional"`
 	Size    int64  `form:"size,optional"`
-	Module  string `form:"module,optional"`
-	Action  string `form:"action,optional"`
-	Keyword string `form:"keyword,optional"`
+	Module    string `form:"module,optional"`
+	Action    string `form:"action,optional"`
+	Keyword   string `form:"keyword,optional"`
+	StartDate string `form:"startDate,optional"`
+	EndDate   string `form:"endDate,optional"`
 }
 
 type OperationLogListResponse struct {

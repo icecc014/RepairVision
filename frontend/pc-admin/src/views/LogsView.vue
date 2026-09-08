@@ -17,8 +17,18 @@
           <el-option label="开工" value="start" />
           <el-option label="完工" value="complete" />
         </el-select>
-        <el-input v-model="query.keyword" placeholder="搜索用户/路径" clearable style="width: 220px" @keyup.enter="reload" />
+        <el-date-picker
+          v-model="dateRange"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="YYYY-MM-DD"
+          style="width: 250px"
+        />
+        <el-input v-model="query.keyword" placeholder="搜索用户/路径" clearable style="width: 200px" @keyup.enter="reload" />
         <el-button type="primary" @click="reload">查询</el-button>
+        <el-button @click="exportCsv">导出当前页 CSV</el-button>
       </div>
 
       <el-table :data="logs" v-loading="loading" border stripe>
@@ -67,6 +77,7 @@ const logs = ref<OperationLogItem[]>([])
 const total = ref(0)
 const loading = ref(false)
 const query = reactive({ page: 1, size: 20, module: '', action: '', keyword: '' })
+const dateRange = ref<[string, string] | null>(null)
 
 async function load() {
   loading.value = true
@@ -77,6 +88,8 @@ async function load() {
       module: query.module,
       action: query.action,
       keyword: query.keyword,
+      startDate: dateRange.value?.[0] || '',
+      endDate: dateRange.value?.[1] || '',
     })
     logs.value = data.list
     total.value = data.total
@@ -92,6 +105,29 @@ function reload() {
   load()
 }
 
+function exportCsv() {
+  if (!logs.value.length) return
+  const header = ['ID', '时间', '用户', '模块', '动作', '方法', '路径', '状态', 'IP', '耗时ms']
+  const rows = logs.value.map((r) => [
+    r.id,
+    r.createdAt,
+    r.username || '',
+    r.module,
+    r.action,
+    r.method,
+    r.path,
+    r.responseCode,
+    r.ip,
+    r.costMs,
+  ])
+  const content = [header, ...rows].map((row) => row.map((v) => `"${String(v ?? '').replaceAll('"', '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `repairvision-操作日志-${Date.now()}.csv`
+  link.click()
+  URL.revokeObjectURL(link.href)
+}
 function onPage(page: number) {
   query.page = page
   load()

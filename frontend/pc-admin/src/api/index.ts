@@ -210,7 +210,7 @@ export interface LogPage {
   list: OperationLogItem[]
 }
 
-export function apiAdminLogs(params: { page: number; size: number; module?: string; action?: string; keyword?: string }): Promise<LogPage> {
+export function apiAdminLogs(params: { page: number; size: number; module?: string; action?: string; keyword?: string; startDate?: string; endDate?: string }): Promise<LogPage> {
   return http.get('/admin/logs', {
     params: {
       page: params.page,
@@ -218,6 +218,8 @@ export function apiAdminLogs(params: { page: number; size: number; module?: stri
       module: params.module || undefined,
       action: params.action || undefined,
       keyword: params.keyword || undefined,
+      startDate: params.startDate || undefined,
+      endDate: params.endDate || undefined,
     },
   })
 }
