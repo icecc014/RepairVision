@@ -30,6 +30,24 @@
       </button>
     </div>
 
+    <div v-if="selected" class="room-panel">
+      <div class="room-panel-head">
+        <div>
+          <span class="room-no">{{ selected.roomNo }}</span>
+          <span class="room-floor">{{ selected.floorNo }} 层 · {{ selected.orders.length }} 个待处理工单</span>
+        </div>
+        <button class="panel-close" @click="selected = null">关闭</button>
+      </div>
+      <div v-if="selected.orders.length === 0" class="panel-empty">该房间暂无工单</div>
+      <div v-for="o in selected.orders" :key="o.id" class="room-order">
+        <div class="order-row">
+          <span class="type">{{ o.faultTypeName }}</span>
+          <span class="status" :class="'s' + o.status">{{ o.statusText }}</span>
+        </div>
+        <div class="order-title">{{ o.title }}</div>
+        <div class="order-meta">报修 {{ o.createdAt }} · 工人 {{ o.workerName || '待派' }}</div>
+      </div>
+    </div>
     <div class="legend"><i class="dot fault"></i> 待处理故障</div>
     <p class="tip">手指拖拽旋转 · 双指缩放 · 点击楼层只看该层</p>
   </van-popup>
@@ -47,12 +65,15 @@ const transparent = ref(true)
 const showLabels = ref(false)
 const rotating = ref(false)
 const floorFilter = ref(0)
+const selected = ref<{ roomNo: string; floorNo: number; orders: OrderItem[] } | null>(null)
 
 let cancel = 0
 let renderer: { dispose: () => void } | null = null
 let controls: any = null
 let floorGroups: any[] = []
 let markers: any[] = []
+let roomMeshes: any[] = []
+let allRoomOrders = new Map<string, OrderItem[]>()
 let glassMats: any[] = []
 let animateFn: ((t: number) => void) | null = null
 
@@ -126,6 +147,8 @@ async function initScene() {
   mountRef.value.innerHTML = ''
   floorGroups = []
   markers = []
+  roomMeshes = []
+  allRoomOrders.clear()
   glassMats = []
   controls = null
   animateFn = null
@@ -224,6 +247,8 @@ async function initScene() {
         group.add(line)
 
         const roomNum = `${floorNo}${String(i + 1).padStart(2, '0')}`
+        roomBox.userData = { roomNo: roomNum, floorNo }
+        roomMeshes.push(roomBox)
         const label = makeLabel(THREE, roomNum, 1.2, cx, yBase + slabH + roomH + 0.2, cz + roomD / 2 + 0.06)
         if (label) {
           label.userData = { roomNum, floorNo }
@@ -233,6 +258,7 @@ async function initScene() {
         const orders = orderByFloorRoom.get(`${floorNo}:${roomNum}`) || []
         const ordersByRawRoom = orderByFloorRoom.get(`${floorNo}:${String(i + 1).padStart(2, '0')}`) || []
         const matched = orders.length > 0 ? orders : ordersByRawRoom
+        allRoomOrders.set(`${floorNo}:${roomNum}`, matched)
         if (matched.length > 0) {
           const marker = new THREE.Mesh(
             new THREE.SphereGeometry(0.55, 18, 18),
@@ -285,6 +311,32 @@ async function initScene() {
     }
     applyFloorFilter()
 
+    const raycaster = new THREE.Raycaster()
+    const pointer = new THREE.Vector2()
+    const canvasEl = render.domElement
+    canvasEl.style.touchAction = 'pan-y'
+    canvasEl.addEventListener('click', (e: MouseEvent) => {
+      const rect = canvasEl.getBoundingClientRect()
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+      raycaster.setFromCamera(pointer, camera)
+      const targets = [...markers, ...roomMeshes]
+      const hits = raycaster.intersectObjects(targets, false)
+      if (hits.length > 0) {
+        const obj = hits[0].object as any
+        const roomNo = obj.userData?.roomNo as string | undefined
+        const floorNo = obj.userData?.floorNo as number | undefined
+        if (roomNo && floorNo) {
+          selected.value = {
+            roomNo,
+            floorNo,
+            orders: allRoomOrders.get(`${floorNo}:${roomNo}`) || [],
+          }
+        }
+      } else {
+        selected.value = null
+      }
+    })
     animateFn = (t: number) => {
       if (controls) {
         controls.autoRotate = rotating.value
@@ -463,3 +515,84 @@ defineExpose({ disposeScene })
   text-align: center;
 }
 </style>
+
+.room-panel {
+  margin: 10px 16px;
+  padding: 12px 14px;
+  background: #0f2557;
+  border: 1px solid #3b5ca8;
+  border-radius: 12px;
+}
+.room-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.room-no {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+}
+.room-floor {
+  margin-left: 8px;
+  color: #93c5fd;
+  font-size: 12px;
+}
+.panel-close {
+  padding: 5px 12px;
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.panel-empty {
+  padding: 12px 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+.room-order {
+  margin-top: 8px;
+  padding: 8px 0;
+  border-top: 1px dashed rgba(255,255,255,0.15);
+}
+.order-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.type {
+  color: #bfdbfe;
+  font-size: 12px;
+  background: rgba(59,130,246,0.25);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.status {
+  font-size: 12px;
+  font-weight: 600;
+}
+.status.s1, .status.s2 {
+  color: #fbbf24;
+}
+.status.s3 {
+  color: #60a5fa;
+}
+.status.s4 {
+  color: #4ade80;
+}
+.status.s5 {
+  color: #94a3b8;
+}
+.order-title {
+  margin-top: 4px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.order-meta {
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 12px;
+}
