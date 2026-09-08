@@ -1,5 +1,5 @@
 <template>
-  <div class="plan-wrap">
+  <div class="unit-plan">
     <div class="floor-tabs">
       <button
         v-for="f in building.floors"
@@ -12,54 +12,82 @@
       </button>
     </div>
 
-    <div class="plan-card" :class="'f' + activeFloor">
-      <div class="plan-title">楼层户型 · {{ activeFloor }}F</div>
-      <div class="row-north">
-        <span class="side-tag">北侧</span>
-        <div class="rooms">
-          <button
-            v-for="room in rowNorth"
-            :key="room.num"
-            class="room"
-            :class="room.active ? 'has-fault' : ''"
-            :style="{ background: room.active ? '#fee2e2' : '#dbeafe' }"
-            @click="$emit('selectRoom', room)"
-          >
-            <span class="room-code">{{ room.num }}</span>
-          </button>
-        </div>
-        <span class="side-tag">102-110</span>
-      </div>
-
-      <div class="corridor">
-        <span class="corridor-text">中央走廊</span>
-        <i class="corridor-line"></i>
-      </div>
-
-      <div class="row-south">
-        <span class="side-tag">南侧</span>
-        <div class="rooms">
-          <button
-            v-for="room in rowSouth"
-            :key="room.num"
-            class="room"
-            :class="room.active ? 'has-fault' : ''"
-            :style="{ background: room.active ? '#fee2e2' : '#dbeafe' }"
-            @click="$emit('selectRoom', room)"
-          >
-            <span class="room-code">{{ room.num }}</span>
-          </button>
-        </div>
-        <span class="side-tag">111-120</span>
-      </div>
-
-      <div class="plan-footer">
-        <div class="stairs left">◢ 楼梯间</div>
-        <div class="stairs mid">公共盥洗 / 水房</div>
-        <div class="stairs right">楼梯间 ◣</div>
-      </div>
+    <div class="legend-line">
+      <span><i class="red"></i> 待处理</span>
+      <span>点击“户”查看工单</span>
     </div>
-    <p class="legend-tip"><i class="red"></i> 红色 = 待处理故障；点击房间查看工单</p>
+
+    <svg class="plan-svg" viewBox="0 0 900 470" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="wall" width="5" height="5" patternUnits="userSpaceOnUse">
+          <rect width="5" height="5" fill="#e2e8f0" />
+          <line x1="0" y1="0" x2="5" y2="5" stroke="#94a3b8" stroke-width="1" />
+        </pattern>
+      </defs>
+
+      <g v-for="u in units" :key="u.id" :transform="`translate(${u.x} 0)`">
+        <!-- 单元楼体外框 -->
+        <rect x="12" y="16" width="280" height="430" fill="#f1f5f9" stroke="#334155" stroke-width="4" rx="6" />
+        <text x="152" y="36" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">{{ u.id }}单元</text>
+
+        <!-- 楼梯间：突出/错位，位于单元中部 -->
+        <rect x="125" y="55" width="54" height="230" fill="#e7edf5" stroke="#475569" stroke-width="2" />
+        <rect x="135" y="52" width="16" height="240" fill="#cbd5e1" />
+        <rect x="153" y="52" width="16" height="240" fill="#cbd5e1" />
+        <text x="152" y="180" text-anchor="middle" font-size="12" fill="#475569">楼</text>
+        <text x="152" y="195" text-anchor="middle" font-size="12" fill="#475569">梯</text>
+        <text x="152" y="210" text-anchor="middle" font-size="12" fill="#475569">间</text>
+
+        <!-- 左侧户：入户门+门厅+客厅+卧室+阳台 -->
+        <g>
+          <path
+            d="M20,70 L20,300 L88,300 L88,328 L104,328 L104,300 L120,300 L120,440 L20,440 Z"
+            fill="#dbeafe" stroke="#1e3a8a" stroke-width="2"
+          />
+          <path d="M112,440 L112,386 L140,386 L140,440 Z" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="2" />
+          <rect x="20" y="70" width="100" height="34" fill="#e0f2fe" stroke="#2563eb" stroke-width="1.5" />
+          <text x="70" y="91" text-anchor="middle" font-size="10" fill="#1d4ed8">门厅</text>
+          <rect x="20" y="104" width="100" height="110" fill="#eff6ff" stroke="#1e3a8a" stroke-width="1.5" />
+          <text x="70" y="160" text-anchor="middle" font-size="11" fill="#1e3a8a">客厅</text>
+          <rect x="20" y="214" width="100" height="100" fill="#e0f2fe" stroke="#1e3a8a" stroke-width="1.5" />
+          <text x="70" y="262" text-anchor="middle" font-size="11" fill="#1e3a8a">卧室</text>
+          <rect x="20" y="314" width="68" height="72" fill="#dbeafe" stroke="#1e3a8a" stroke-width="1.5" />
+          <text x="54" y="352" text-anchor="middle" font-size="10" fill="#1e3a8a">厨卫</text>
+          <rect x="112" y="328" width="28" height="112" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5" />
+          <text x="126" y="386" text-anchor="middle" font-size="9" fill="#0369a1" transform="rotate(90 126 386)">阳台</text>
+          <rect x="18" y="58" width="102" height="16" fill="#fde68a" stroke="#b45309" stroke-width="1.5" />
+          <text x="69" y="70" text-anchor="middle" font-size="8" fill="#92400e">入户门</text>
+          <circle v-if="u.leftHot" cx="140" cy="85" r="7" fill="#ef4444" stroke="#fff" stroke-width="2" /><rect x="16" y="58" width="130" height="385" fill="transparent" style="cursor:pointer" @click="pickUnit(u, 'left')" />
+        </g>
+
+        <!-- 右侧户 -->
+        <g>
+          <path
+            d="M160,70 L160,300 L104,300 L104,328 L88,328 L104,328 L104,300 L104,440 L160,440 Z"
+            fill="#c7f9cc" stroke="#166534" stroke-width="2"
+          />
+          <path d="M104,440 L104,386 L80,386 L80,440 Z" fill="#bbf7d0" stroke="#166534" stroke-width="2" />
+          <rect x="160" y="70" width="100" height="34" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5" />
+          <text x="210" y="91" text-anchor="middle" font-size="10" fill="#15803d">门厅</text>
+          <rect x="160" y="104" width="100" height="110" fill="#f0fdf4" stroke="#166534" stroke-width="1.5" />
+          <text x="210" y="160" text-anchor="middle" font-size="11" fill="#166534">客厅</text>
+          <rect x="160" y="214" width="100" height="100" fill="#dcfce7" stroke="#166534" stroke-width="1.5" />
+          <text x="210" y="262" text-anchor="middle" font-size="11" fill="#166534">卧室</text>
+          <rect x="160" y="314" width="68" height="72" fill="#c7f9cc" stroke="#166534" stroke-width="1.5" />
+          <text x="194" y="352" text-anchor="middle" font-size="10" fill="#166534">厨卫</text>
+          <rect x="80" y="328" width="24" height="112" fill="#bbf7d0" stroke="#047857" stroke-width="1.5" />
+          <text x="92" y="386" text-anchor="middle" font-size="9" fill="#047857" transform="rotate(90 92 386)">阳台</text>
+          <rect x="160" y="58" width="102" height="16" fill="#fde68a" stroke="#b45309" stroke-width="1.5" />
+          <text x="211" y="70" text-anchor="middle" font-size="8" fill="#92400e">入户门</text>
+          <circle v-if="u.rightHot" cx="142" cy="85" r="7" fill="#ef4444" stroke="#fff" stroke-width="2" /><rect x="160" y="58" width="110" height="385" fill="transparent" style="cursor:pointer" @click="pickUnit(u, 'right')" />
+        </g>
+      </g>
+
+      <!-- 公共走廊/连廊文字 -->
+      <text x="450" y="455" text-anchor="middle" font-size="11" fill="#64748b">
+        单元式住宅标准层（每单元：中部楼梯 + 左/右各一户，户型含门厅/客厅/卧室/厨卫/阳台）
+      </text>
+    </svg>
   </div>
 </template>
 
@@ -68,40 +96,53 @@ import { computed, ref } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
 
 const props = defineProps<{ building: WorkerMapBuilding; orders: OrderItem[] }>()
-defineEmits<{ (e: 'selectRoom', room: { num: string; floor: number; orders: OrderItem[] }): void }>()
+const emit = defineEmits<{ (e: 'selectRoom', room: { num: string; floor: number; orders: OrderItem[] }): void }>()
 
 const activeFloor = ref(1)
 
-const activeOrders = computed(() => props.orders.filter((o) => o.buildingId === props.building.id && o.floor === activeFloor.value))
-
-const rowNorth = computed(() => {
-  const total = Math.max(props.building.roomsPerFloor, 1)
-  const half = Math.ceil(total / 2)
-  return Array.from({ length: half }, (_, i) => makeRoom(activeFloor.value, i + 1))
+const unitCount = computed(() => {
+  const n = props.building.id % 3
+  return n === 0 ? 3 : n
 })
 
-const rowSouth = computed(() => {
-  const total = Math.max(props.building.roomsPerFloor, 1)
-  const half = Math.ceil(total / 2)
-  const south = total - half
-  return Array.from({ length: south }, (_, i) => makeRoom(activeFloor.value, half + i + 1))
+const units = computed(() => {
+  return Array.from({ length: unitCount.value }, (_, i) => {
+    const id = i + 1
+    const floorOrders = props.orders.filter((o) => o.buildingId === props.building.id && o.floor === activeFloor.value)
+    return {
+      id,
+      x: i * 300 + 4,
+      leftHot: floorOrders.some((o) => hashRoom(o.room, id, true)),
+      rightHot: floorOrders.some((o) => hashRoom(o.room, id, false)),
+    }
+  })
 })
 
-function makeRoom(floor: number, idx: number) {
-  const num = `${floor}${String(idx).padStart(2, '0')}`
-  const orders = activeOrders.value.filter((o) => o.room === num || o.room === `${floor}${String(idx).padStart(2, '0')}`)
-  return { num, floor, orders, active: orders.length > 0 }
+function hashRoom(room: string, unit: number, left: boolean) {
+  const raw = room || '1'
+  let h = 0
+  for (let i = 0; i < raw.length; i++) h = (h * 31 + raw.charCodeAt(i)) >>> 0
+  const flatIndex = (h % 6) + 1 // 1..6 对应 3 单元 x 2 户
+  const target = (unit - 1) * 2 + (left ? 1 : 2)
+  return flatIndex === target
+}
+
+function pickUnit(u: { id: number }, side: 'left' | 'right') {
+  const floorOrders = props.orders.filter((o) => o.buildingId === props.building.id && o.floor === activeFloor.value)
+  const matched = floorOrders.filter((o) => hashRoom(o.room, u.id, side === 'left'))
+  const num = `${activeFloor.value}${u.id}${side === 'left' ? '01' : '02'}`
+  emit('selectRoom', { num, floor: activeFloor.value, orders: matched })
 }
 </script>
 
 <style scoped>
-.plan-wrap {
-  padding: 0 14px;
+.unit-plan {
+  padding: 4px 10px 12px;
 }
 .floor-tabs {
   display: flex;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   overflow-x: auto;
 }
 .floor-tab {
@@ -117,110 +158,12 @@ function makeRoom(floor: number, idx: number) {
   color: #fff;
   background: #2563eb;
 }
-.plan-card {
-  padding: 12px;
-  background: #f8fafc;
-  border: 1px solid #dbe4f0;
-  border-radius: 12px;
-}
-.plan-title {
-  margin-bottom: 8px;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-}
-.row-north,
-.row-south {
+.legend-line {
   display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.side-tag {
-  writing-mode: vertical-rl;
-  color: #94a3b8;
-  font-size: 10px;
-}
-.rooms {
-  display: flex;
-  flex: 1;
-  gap: 4px;
-}
-.room {
-  flex: 1;
-  min-width: 0;
-  height: 42px;
-  padding: 0;
-  color: #1e3a8a;
-  background: #dbeafe;
-  border: 1px solid #bfdbfe;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.room.has-fault {
-  color: #991b1b;
-  background: #fee2e2;
-  border-color: #fecaca;
-}
-.room-code {
-  font-size: 10px;
-  font-weight: 700;
-}
-.corridor {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 34px;
-  margin: 6px 0;
-  background: repeating-linear-gradient(90deg, #e2e8f0 0 10px, #cbd5e1 10px 20px);
-  border: 1px dashed #94a3b8;
-  border-radius: 6px;
-}
-.corridor-text {
-  position: relative;
-  z-index: 1;
-  padding: 0 6px;
+  gap: 14px;
+  margin-bottom: 4px;
   color: #64748b;
   font-size: 11px;
-  background: #eef2f7;
-}
-.corridor-line {
-  display: none;
-}
-.plan-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  gap: 6px;
-}
-.stairs {
-  padding: 5px 8px;
-  color: #475569;
-  font-size: 10px;
-  background: #e2e8f0;
-  border-radius: 4px;
-}
-.stairs.left {
-  color: #b45309;
-  background: #fef3c7;
-}
-.stairs.right {
-  color: #b45309;
-  background: #fef3c7;
-}
-.stairs.mid {
-  color: #0f766e;
-  background: #ccfbf1;
-}
-.legend-tip {
-  margin: 6px 0 0;
-  color: #94a3b8;
-  font-size: 11px;
-  text-align: center;
 }
 .red {
   display: inline-block;
@@ -228,5 +171,12 @@ function makeRoom(floor: number, idx: number) {
   height: 8px;
   background: #ef4444;
   border-radius: 50%;
+}
+.plan-svg {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 }
 </style>
