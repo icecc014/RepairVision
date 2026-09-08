@@ -68,15 +68,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { OrderItem } from '../api'
 import { apiAdminOrders } from '../api'
 import AdminShell from '../components/AdminShell.vue'
+import { useAuthStore } from '../stores/auth'
 
 const orders = ref<OrderItem[]>([])
 const loading = ref(false)
 const query = reactive({ status: 0, buildingText: '' })
+const auth = useAuthStore()
+let ws: WebSocket | null = null
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
 
 const pendingCount = computed(() => orders.value.filter((o) => o.status === 1 || o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
@@ -106,7 +110,31 @@ function reset() {
   load()
 }
 
-onMounted(load)
+function scheduleRefresh() {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(() => load(), 350)
+}
+
+function connectWS() {
+  if (!auth.token) return
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
+  ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
+  ws.onmessage = () => scheduleRefresh()
+  ws.onclose = () => {
+    ws = null
+    setTimeout(connectWS, 3000)
+  }
+}
+
+onMounted(() => {
+  load()
+  connectWS()
+})
+
+onUnmounted(() => {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  if (ws) ws.close()
+})
 </script>
 
 <style scoped>

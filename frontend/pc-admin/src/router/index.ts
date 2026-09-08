@@ -6,6 +6,7 @@ import FaultTypesView from '../views/FaultTypesView.vue'
 import DispatchRulesView from '../views/DispatchRulesView.vue'
 import UsersView from '../views/UsersView.vue'
 import BuildingsView from '../views/BuildingsView.vue'
+import LogsView from '../views/LogsView.vue'
 
 const router = createRouter({
   history: createWebHistory('/admin/'),
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: '/dispatch-rules', name: 'dispatch-rules', component: DispatchRulesView, meta: { requiresAuth: true } },
     { path: '/users', name: 'users', component: UsersView, meta: { requiresAuth: true } },
     { path: '/buildings', name: 'buildings', component: BuildingsView, meta: { requiresAuth: true } },
+    { path: '/logs', name: 'logs', component: LogsView, meta: { requiresAuth: true } },
   ],
 })
 

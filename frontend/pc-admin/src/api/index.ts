@@ -179,3 +179,36 @@ export function apiUpdateBuilding(id: number, payload: Partial<AdminBuilding>): 
 export function apiDeleteBuilding(id: number): Promise<unknown> {
   return http.delete(`/admin/buildings/${id}`)
 }
+
+export interface OperationLogItem {
+  id: number
+  userId?: number
+  username?: string
+  role?: number
+  module: string
+  action: string
+  method: string
+  path: string
+  requestBody: string
+  responseCode: number
+  ip: string
+  costMs: number
+  createdAt: string
+}
+
+export interface LogPage {
+  total: number
+  list: OperationLogItem[]
+}
+
+export function apiAdminLogs(params: { page: number; size: number; module?: string; action?: string; keyword?: string }): Promise<LogPage> {
+  return http.get('/admin/logs', {
+    params: {
+      page: params.page,
+      size: params.size,
+      module: params.module || undefined,
+      action: params.action || undefined,
+      keyword: params.keyword || undefined,
+    },
+  })
+}

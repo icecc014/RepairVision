@@ -94,6 +94,8 @@ const auth = useAuthStore()
 type FilterValue = 'all' | 'todo' | 'working' | 'done'
 
 const orders = ref<OrderItem[]>([])
+let ws: WebSocket | null = null
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const loading = ref(false)
 const actingId = ref<number | null>(null)
 const filter = ref<FilterValue>('all')
@@ -169,7 +171,31 @@ async function complete(item: OrderItem) {
   }
 }
 
-onMounted(load)
+function scheduleRefresh() {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(() => load(), 300)
+}
+
+function connectWS() {
+  if (!auth.token) return
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
+  ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
+  ws.onmessage = () => scheduleRefresh()
+  ws.onclose = () => {
+    ws = null
+    setTimeout(connectWS, 3000)
+  }
+}
+
+onMounted(() => {
+  load()
+  connectWS()
+})
+
+onUnmounted(() => {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  if (ws) ws.close()
+})
 </script>
 
 <style scoped>

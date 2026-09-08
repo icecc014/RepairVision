@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { FaultType, OrderItem } from '../api'
 import { apiCancelOrder, apiCreateOrder, apiDormOrders, apiFaultTypes } from '../api'
@@ -128,6 +128,8 @@ const auth = useAuthStore()
 type FilterValue = 'all' | 'todo' | 'working' | 'done' | 'canceled'
 
 const orders = ref<OrderItem[]>([])
+let ws: WebSocket | null = null
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const faultTypes = ref<FaultType[]>([])
 const loading = ref(false)
 const submitting = ref(false)
@@ -232,7 +234,31 @@ async function cancelOrder(item: OrderItem) {
   }
 }
 
-onMounted(load)
+function scheduleRefresh() {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(() => load(), 300)
+}
+
+function connectWS() {
+  if (!auth.token) return
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
+  ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
+  ws.onmessage = () => scheduleRefresh()
+  ws.onclose = () => {
+    ws = null
+    setTimeout(connectWS, 3000)
+  }
+}
+
+onMounted(() => {
+  load()
+  connectWS()
+})
+
+onUnmounted(() => {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  if (ws) ws.close()
+})
 </script>
 
 <style scoped>
