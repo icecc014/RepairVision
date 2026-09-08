@@ -1,21 +1,37 @@
 <template>
-  <van-popup v-model:show="visible" position="bottom" round :style="{ height: '74vh' }">
+  <van-popup v-model:show="visible" position="bottom" round :style="{ height: '82vh' }">
     <div class="head">
       <div class="title">{{ building?.name || '楼栋 3D' }}</div>
       <div class="head-meta" v-if="building">
-        {{ building.code }} · {{ building.floors }} 层 · 每层 {{ building.roomsPerFloor }} 间 · 活动故障 {{ orderFloorCount }}
+        {{ building.code }} · {{ building.floors }} 层 · 每层 {{ building.roomsPerFloor }} 间 · 活动 {{ activeCount }}
       </div>
       <button class="close" @click="visible = false">✕</button>
     </div>
-    <div ref="mountRef" class="three-mount"></div>
-    <p v-if="webglError" class="fallback">
-      当前设备不支持 3D，已降级为楼层文本列表：<br />
-      <span v-for="floor in floors" :key="floor">{{ floor }} 层 · {{ building?.roomsPerFloor || 0 }} 间</span>
-    </p>
-    <div class="legend"><i class="dot fault"></i> 待处理故障（脉冲红点）</div>
-    <div class="actions">
-      <button class="btn" @click="toggleRotate">自动旋转：{{ rotating ? '开' : '关' }} · 手指可拖拽</button>
+
+    <div class="toolbar" v-if="building">
+      <button class="chip" :class="{ active: transparent }" @click="toggleTransparent">透视</button>
+      <button class="chip" :class="{ active: showLabels }" @click="toggleLabels">房间号</button>
+      <button class="chip" :class="{ active: rotating }" @click="toggleRotate">自动旋转</button>
     </div>
+
+    <div ref="mountRef" class="three-mount"></div>
+    <p v-if="webglError" class="fallback">当前设备不支持 3D，已降级为楼层文本：{{ building?.floors }} 层。</p>
+
+    <div class="floor-bar" v-if="building && building.floors > 1">
+      <button class="floor-chip" :class="{ active: floorFilter === 0 }" @click="selectFloor(0)">全部</button>
+      <button
+        v-for="f in building.floors"
+        :key="f"
+        class="floor-chip"
+        :class="{ active: floorFilter === f }"
+        @click="selectFloor(f)"
+      >
+        {{ f }}F
+      </button>
+    </div>
+
+    <div class="legend"><i class="dot fault"></i> 待处理故障</div>
+    <p class="tip">手指拖拽旋转 · 双指缩放 · 点击楼层只看该层</p>
   </van-popup>
 </template>
 
@@ -27,16 +43,20 @@ const props = defineProps<{ building: WorkerMapBuilding | null; orders: OrderIte
 const visible = defineModel<boolean>({ default: false })
 const mountRef = ref<HTMLDivElement | null>(null)
 const webglError = ref(false)
-const floors = ref<number[]>([])
+const transparent = ref(true)
+const showLabels = ref(false)
 const rotating = ref(false)
+const floorFilter = ref(0)
 
 let cancel = 0
 let renderer: { dispose: () => void } | null = null
 let controls: any = null
+let floorGroups: any[] = []
 let markers: any[] = []
+let glassMats: any[] = []
 let animateFn: ((t: number) => void) | null = null
 
-const orderFloorCount = computed(() => {
+const activeCount = computed(() => {
   if (!props.building) return 0
   return props.orders.filter((o) => o.buildingId === props.building?.id).length
 })
@@ -45,8 +65,7 @@ watch(
   () => visible.value,
   async (open) => {
     if (!open || !props.building) return
-    webglError.value = false
-    floors.value = Array.from({ length: props.building.floors }, (_, i) => i + 1)
+    floorFilter.value = 0
     await nextTick()
     await initScene()
   },
@@ -54,46 +73,69 @@ watch(
 
 watch(
   () => props.building,
-  async (building) => {
-    if (!building || !visible.value) return
+  async () => {
+    if (!visible.value || !props.building) return
     await nextTick()
     await initScene()
   },
 )
 
-function labelTexture(THREE: any, floor: number) {
+function textTexture(THREE: any, text: string, bg = 'rgba(15,23,42,0.88)') {
   const canvas = document.createElement('canvas')
   canvas.width = 256
   canvas.height = 64
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   ctx.clearRect(0, 0, 256, 64)
-  ctx.fillStyle = 'rgba(15,23,42,0.82)'
-  ctx.fillRect(16, 8, 224, 48)
+  ctx.fillStyle = bg
+  ctx.fillRect(4, 4, 248, 56)
+  ctx.strokeStyle = '#93c5fd'
+  ctx.lineWidth = 2
+  ctx.strokeRect(4, 4, 248, 56)
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 34px sans-serif'
+  ctx.font = 'bold 30px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(`${floor}F`, 128, 32)
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.needsUpdate = true
-  return texture
+  ctx.fillText(text, 128, 34)
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.needsUpdate = true
+  return tex
+}
+
+function makeLabel(THREE: any, text: string, width: number, x: number, y: number, z: number, rotY = 0) {
+  const tex = textTexture(THREE, text)
+  if (!tex) return
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, width * 0.28),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true }),
+  )
+  plane.position.set(x, y, z)
+  plane.rotation.y = rotY
+  return plane
+}
+
+function layout(rooms: number) {
+  const cols = Math.min(rooms, 10)
+  const rows = Math.ceil(rooms / cols)
+  return { cols, rows }
 }
 
 async function initScene() {
   if (!mountRef.value || !props.building) return
   if (cancel) cancelAnimationFrame(cancel)
   mountRef.value.innerHTML = ''
+  floorGroups = []
   markers = []
+  glassMats = []
   controls = null
   animateFn = null
   try {
     const THREE = await import('three')
     const width = mountRef.value.clientWidth || 390
-    const height = 310
+    const height = 320
     const scene = new THREE.Scene()
     scene.background = new THREE.Color(0x0b1e45)
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000)
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000)
     const render = new THREE.WebGLRenderer({ antialias: true })
     renderer = render
     render.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
@@ -102,91 +144,146 @@ async function initScene() {
 
     const b = props.building
     const floorCount = Math.max(b.floors, 1)
-    const scale = 2.8
+    const scale = 2.4
     const boxW = Math.max(b.width, 20) * scale
     const boxD = Math.max(b.height, 20) * scale
-    const floorH = 2.8
-    const slabH = 0.22
+    const floorH = 3.1
+    const slabH = 0.16
     const totalH = floorCount * (floorH + slabH)
 
-    camera.position.set(boxW * 1.25, totalH * 1.45, boxD * 1.7)
-    camera.lookAt(0, totalH * 0.5, 0)
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9))
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9)
-    dir.position.set(40, 90, 30)
+    camera.position.set(boxW * 1.15, totalH * 0.95, boxD * 1.45)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.95))
+    const dir = new THREE.DirectionalLight(0xffffff, 0.85)
+    dir.position.set(45, 100, 30)
     scene.add(dir)
-    const backLight = new THREE.DirectionalLight(0x93c5fd, 0.35)
-backLight.position.set(-30, 10, -45)
-scene.add(backLight)
+    const fill = new THREE.DirectionalLight(0xbfdbfe, 0.5)
+    fill.position.set(-40, 40, -60)
+    scene.add(fill)
 
     const controlsModule = await import('three/examples/jsm/controls/OrbitControls.js')
     controls = new controlsModule.OrbitControls(camera, render.domElement)
     controls.enableDamping = true
     controls.autoRotate = rotating.value
-    controls.autoRotateSpeed = 1.2
-    controls.maxPolarAngle = Math.PI / 2.05
+    controls.maxPolarAngle = Math.PI / 2.02
+    controls.minDistance = boxW * 0.5
+    controls.maxDistance = boxW * 5
     controls.target.set(0, totalH * 0.5, 0)
     controls.update()
 
-    const colors = ['#3b82f6', '#60a5fa', '#93c5fd']
-    const winMat = new THREE.MeshBasicMaterial({ color: '#dbeafe' })
-    for (let i = 0; i < floorCount; i++) {
-      const y = i * (floorH + slabH)
-      const mat = new THREE.MeshLambertMaterial({ color: colors[i % colors.length] })
-      const box = new THREE.Mesh(new THREE.BoxGeometry(boxW, floorH, boxD), mat)
-      box.position.y = y + floorH / 2
-      scene.add(box)
+    const colors = ['#3b82f6', '#5b9bf8', '#73aefb', '#8cc0fd']
+    const roomMatByFloor: THREE.Material[] = []
+
+    const orderByFloorRoom = new Map<string, OrderItem[]>()
+    for (const o of props.orders) {
+      if (o.buildingId !== b.id) continue
+      const key = `${o.floor}:${o.room || ''}`
+      if (!orderByFloorRoom.has(key)) orderByFloorRoom.set(key, [])
+      orderByFloorRoom.get(key)!.push(o)
+    }
+
+    for (let floor = 0; floor < floorCount; floor++) {
+      const floorNo = floor + 1
+      const group = new THREE.Group()
+      const yBase = floor * (floorH + slabH)
 
       const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(boxW + 0.35, slabH, boxD + 0.35),
-        new THREE.MeshLambertMaterial({ color: '#0f2557' }),
+        new THREE.BoxGeometry(boxW, slabH, boxD),
+        new THREE.MeshLambertMaterial({ color: '#1e3a8a' }),
       )
-      slab.position.y = y + floorH + slabH / 2
-      scene.add(slab)
+      slab.position.y = yBase + slabH / 2
+      group.add(slab)
 
-      const cols = Math.min(9, Math.max(b.roomsPerFloor, 2))
-      for (let r = 0; r < 2; r++) {
-        for (let col = 0; col < cols; col++) {
-          const wx = -boxW * 0.32 + (boxW * 0.64 * col) / Math.max(cols - 1, 1)
-          const wy = y + floorH * (0.2 + 0.32 * r)
-          const win = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.06), winMat)
-          win.position.set(wx, wy, boxD / 2 + 0.06)
-          scene.add(win)
+      const { cols, rows } = layout(Math.max(b.roomsPerFloor, 1))
+      const gap = 0.5
+      const usableW = boxW - gap * (cols - 1)
+      const usableD = boxD - gap * (rows - 1)
+      const roomW = usableW / cols
+      const roomD = usableD / rows
+      const roomH = floorH * 0.72
+
+      for (let i = 0; i < Math.max(b.roomsPerFloor, 1); i++) {
+        const col = i % cols
+        const row = Math.floor(i / cols)
+        const cx = -boxW / 2 + roomW / 2 + col * (roomW + gap)
+        const cz = -boxD / 2 + roomD / 2 + row * (roomD + gap)
+        const mat = new THREE.MeshLambertMaterial({
+          color: colors[(floor + i) % colors.length],
+          transparent: true,
+          opacity: 0.9,
+        })
+        const roomBox = new THREE.Mesh(new THREE.BoxGeometry(roomW, roomH, roomD), mat)
+        roomBox.position.set(cx, yBase + slabH + roomH / 2, cz)
+        group.add(roomBox)
+
+        const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW, roomH, roomD))
+        const line = new THREE.LineSegments(
+          edges,
+          new THREE.LineBasicMaterial({ color: '#0f2557', transparent: true, opacity: 0.35 }),
+        )
+        line.position.copy(roomBox.position)
+        group.add(line)
+
+        const roomNum = `${floorNo}${String(i + 1).padStart(2, '0')}`
+        const label = makeLabel(THREE, roomNum, 1.2, cx, yBase + slabH + roomH + 0.2, cz + roomD / 2 + 0.06)
+        if (label) {
+          label.userData = { roomNum, floorNo }
+          group.add(label)
+        }
+
+        const orders = orderByFloorRoom.get(`${floorNo}:${roomNum}`) || []
+        const ordersByRawRoom = orderByFloorRoom.get(`${floorNo}:${String(i + 1).padStart(2, '0')}`) || []
+        const matched = orders.length > 0 ? orders : ordersByRawRoom
+        if (matched.length > 0) {
+          const marker = new THREE.Mesh(
+            new THREE.SphereGeometry(0.55, 18, 18),
+            new THREE.MeshBasicMaterial({ color: 0xef4444 }),
+          )
+          marker.position.set(cx, yBase + slabH + roomH + 0.75, cz)
+          marker.userData = { roomNum, floorNo, count: matched.length }
+          markers.push(marker)
+          group.add(marker)
+
+          const active = makeLabel(THREE, `${roomNum} ${matched[0].faultTypeName || '维修'}`, 1.8, cx, yBase + slabH + roomH + 1.45, cz, 0)
+          if (active) group.add(active)
         }
       }
 
-      const labelTex = labelTexture(THREE, i + 1)
-      if (labelTex) {
-        const labelPlane = new THREE.Mesh(
-          new THREE.PlaneGeometry(1.8, 0.45),
-          new THREE.MeshBasicMaterial({ map: labelTex, transparent: true }),
-        )
-        labelPlane.position.set(-boxW / 2 - 1.2, y + floorH / 2, 0)
-        labelPlane.rotation.y = Math.PI / 2
-        scene.add(labelPlane)
-      }
+      const floorEdge = new THREE.EdgesGeometry(new THREE.BoxGeometry(boxW, 0.04, boxD))
+      const lineMat = new THREE.LineBasicMaterial({ color: '#93c5fd', transparent: true, opacity: 0.45 })
+      const outline = new THREE.LineSegments(floorEdge, lineMat)
+      outline.position.y = yBase + slabH + 0.02
+      group.add(outline)
+
+      const glassMat = new THREE.MeshBasicMaterial({
+        color: '#bfdbfe',
+        transparent: true,
+        opacity: transparent.value ? 0.05 : 0.28,
+        side: THREE.DoubleSide,
+      })
+      glassMats.push(glassMat)
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(boxW + 0.25, floorH, boxD + 0.25), glassMat)
+      glass.position.y = yBase + slabH + floorH / 2
+      glass.renderOrder = 10
+      group.add(glass)
+
+      floorGroups.push(group)
+      scene.add(group)
     }
 
-    const orderByFloor = new Map<number, number>()
-    for (const o of props.orders) {
-      if (o.buildingId !== b.id) continue
-      orderByFloor.set(o.floor, (orderByFloor.get(o.floor) || 0) + 1)
-    }
-    for (const [floor, count] of orderByFloor) {
-      if (floor < 1 || floor > floorCount) continue
-      for (let m = 0; m < Math.min(count, 3); m++) {
-        const marker = new THREE.Mesh(
-          new THREE.SphereGeometry(0.55, 18, 18),
-          new THREE.MeshBasicMaterial({ color: 0xef4444 }),
-        )
-        const y = (floor - 1) * (floorH + slabH) + floorH * 0.55
-        const n = Math.min(count, 3)
-        const offsetX = n === 1 ? 0 : (m - (n - 1) / 2) * boxW * 0.11
-        marker.position.set(offsetX, y + 0.25, 0)
-        markers.push(marker)
-        scene.add(marker)
+    function applyFloorFilter() {
+      for (let i = 0; i < floorGroups.length; i++) {
+        const visibleFloor = floorFilter.value === 0 || floorFilter.value === i + 1
+        floorGroups[i].visible = visibleFloor
       }
+      markers.forEach((m) => {
+        if (floorFilter.value === 0 || m.userData?.floorNo === floorFilter.value) {
+          m.visible = true
+        } else {
+          m.visible = false
+        }
+      })
     }
+    applyFloorFilter()
 
     animateFn = (t: number) => {
       if (controls) {
@@ -194,14 +291,35 @@ scene.add(backLight)
         controls.update()
       }
       for (let i = 0; i < markers.length; i++) {
-        const s = 1 + 0.22 * Math.sin(t / 180 + i * 1.2)
+        const s = 1 + 0.18 * Math.sin(t / 190 + i * 0.8)
         markers[i].scale.set(s, s, s)
       }
       render.render(scene, camera)
       cancel = requestAnimationFrame(animateFn)
     }
     animateFn(0)
-  } catch (err) {
+
+    // store methods
+    ;(window as any).__building3d = {
+      applyFloorFilter,
+      updateTransparent() {
+        glassMats.forEach((m: any) => {
+          m.opacity = transparent.value ? 0.05 : 0.28
+        })
+      },
+      updateLabels() {
+        floorGroups.forEach((g: any) => {
+          g.children.forEach((child: any) => {
+            if (child.userData && child.userData.roomNum && child.geometry && child.geometry.type === 'PlaneGeometry') {
+              child.visible = showLabels.value
+            }
+          })
+        })
+      },
+    }
+    (window as any).__building3d = helper3d
+    helper3d.updateLabels()
+    helper3d.updateTransparent()  } catch (err) {
     console.error('3D init failed:', err)
     webglError.value = true
     if (renderer) {
@@ -209,6 +327,24 @@ scene.add(backLight)
       renderer = null
     }
   }
+}
+
+function selectFloor(floor: number) {
+  floorFilter.value = floor
+  const helper = (window as any).__building3d
+  if (helper) helper.applyFloorFilter()
+}
+
+function toggleTransparent() {
+  transparent.value = !transparent.value
+  const helper = (window as any).__building3d
+  if (helper) helper.updateTransparent()
+}
+
+function toggleLabels() {
+  showLabels.value = !showLabels.value
+  const helper = (window as any).__building3d
+  if (helper) helper.updateLabels()
 }
 
 function toggleRotate() {
@@ -224,6 +360,7 @@ function disposeScene() {
     renderer = null
   }
   controls = null
+  delete (window as any).__building3d
 }
 
 defineExpose({ disposeScene })
@@ -233,8 +370,8 @@ defineExpose({ disposeScene })
 .head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 18px 8px;
+  gap: 10px;
+  padding: 14px 16px 6px;
 }
 .title {
   font-size: 17px;
@@ -254,21 +391,62 @@ defineExpose({ disposeScene })
   border-radius: 50%;
   cursor: pointer;
 }
+.toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+}
+.chip {
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  color: #475569;
+  font-size: 13px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip.active {
+  color: #fff;
+  background: #2563eb;
+  border-color: #2563eb;
+}
 .three-mount {
   width: 100%;
-  height: 310px;
+  height: 320px;
+}
+.floor-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 0;
+  overflow-x: auto;
+}
+.floor-chip {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  color: #64748b;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.floor-chip.active {
+  color: #fff;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
 }
 .fallback {
   padding: 20px;
   color: #475569;
   font-size: 13px;
-  line-height: 1.8;
 }
 .legend {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px 4px;
+  padding: 10px 18px 0;
   color: #94a3b8;
   font-size: 12px;
 }
@@ -278,18 +456,10 @@ defineExpose({ disposeScene })
   background: #ef4444;
   border-radius: 50%;
 }
-.actions {
-  padding: 6px 18px 12px;
+.tip {
+  margin: 4px 0 12px;
+  color: #94a3b8;
+  font-size: 12px;
   text-align: center;
-}
-.btn {
-  padding: 8px 22px;
-  color: #2563eb;
-  font-size: 14px;
-  font-weight: 600;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  cursor: pointer;
 }
 </style>
