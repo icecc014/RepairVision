@@ -10,7 +10,7 @@
 ## 3个微服务（端口固定）
 | 服务 | 端口 | 协议 | 数据库 |
 |:---|:---:|:---:|:---|
-| order-api | 8888 | HTTP | order_db |
+| order-api | 8888 (HTTP) / 8890 (WS) | HTTP + WebSocket | order_db |
 | worker-rpc | 9001 | gRPC | worker_db |
 | map-rpc | 9002 | gRPC | map_db |
 

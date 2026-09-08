@@ -137,6 +137,8 @@
   - [x] F04 派单规则配置（管理接口+PC页面+默认权重种子）
   - [x] F16 粗粒度工单去重（2小时内同楼/层/房/类型未关闭工单阻止重复报修）
   - [x] F17 多目标加权派单（skill/distance/load 权重读 dispatch_rule_config，写三个维度分）
+  - [x] F05 操作日志基础版（order-api 同步落库 operation_logs + PC查询页）
+  - [x] F18 WebSocket 实时推送（order-api 独立8890端口，nginx /ws 转发，H5/PC订阅刷新）
   - [x] P2-UI-1 设计系统落地（任务已确认）
   - [x] P2-UI-2 美化现有 P1 三端页面（2026-09-08）
   - [ ] P2-UI-3 P2 功能页随做随美
