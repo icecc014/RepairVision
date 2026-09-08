@@ -216,3 +216,14 @@ export function apiAdminLogs(params: { page: number; size: number; module?: stri
     },
   })
 }
+
+export interface AdminStats {
+  status: { status: number; statusText: string; count: number }[]
+  buildings: { buildingId: number; buildingName: string; count: number }[]
+  faults: { faultType: string; faultTypeName: string; count: number }[]
+  recent: { date: string; count: number }[]
+}
+
+export function apiAdminStats(): Promise<AdminStats> {
+  return http.get('/admin/stats')
+}

@@ -311,6 +311,36 @@ type BatchCompleteResponse {
 	Count int64 `json:"count"`
 }
 
+type StatsStatusItem {
+	Status     int64  `json:"status"`
+	StatusText string `json:"statusText"`
+	Count      int64  `json:"count"`
+}
+
+type StatsBuildingItem {
+	BuildingId   int64  `json:"buildingId"`
+	BuildingName string `json:"buildingName"`
+	Count        int64  `json:"count"`
+}
+
+type StatsFaultItem {
+	FaultType     string `json:"faultType"`
+	FaultTypeName string `json:"faultTypeName"`
+	Count         int64  `json:"count"`
+}
+
+type StatsDayItem {
+	Date  string `json:"date"`
+	Count int64  `json:"count"`
+}
+
+type AdminStatsResponse {
+	Status    []StatsStatusItem   `json:"status"`
+	Buildings []StatsBuildingItem `json:"buildings"`
+	Faults    []StatsFaultItem    `json:"faults"`
+	Recent    []StatsDayItem      `json:"recent"`
+}
+
 service order-api {
 	@handler PingHandler
 	get /ping/:name (PingRequest) returns (PingResponse)
@@ -401,5 +431,8 @@ service order-api {
 
 	@handler WorkerBatchCompleteHandler
 	post /api/worker/batch-complete (BatchCompleteRequest) returns (BatchCompleteResponse)
+
+	@handler AdminStatsHandler
+	get /api/admin/stats returns (AdminStatsResponse)
 }
 

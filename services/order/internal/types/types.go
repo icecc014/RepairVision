@@ -83,6 +83,13 @@ type AdminOrderListRequest struct {
 	BuildingId int64 `form:"buildingId,optional"`
 }
 
+type AdminStatsResponse struct {
+	Status    []StatsStatusItem   `json:"status"`
+	Buildings []StatsBuildingItem `json:"buildings"`
+	Faults    []StatsFaultItem    `json:"faults"`
+	Recent    []StatsDayItem      `json:"recent"`
+}
+
 type AdminUserCreateRequest struct {
 	Username    string  `json:"username"`
 	Password    string  `json:"password"`
@@ -287,6 +294,29 @@ type PingRequest struct {
 type PingResponse struct {
 	Worker string `json:"worker"`
 	Map    string `json:"map"`
+}
+
+type StatsBuildingItem struct {
+	BuildingId   int64  `json:"buildingId"`
+	BuildingName string `json:"buildingName"`
+	Count        int64  `json:"count"`
+}
+
+type StatsDayItem struct {
+	Date  string `json:"date"`
+	Count int64  `json:"count"`
+}
+
+type StatsFaultItem struct {
+	FaultType     string `json:"faultType"`
+	FaultTypeName string `json:"faultTypeName"`
+	Count         int64  `json:"count"`
+}
+
+type StatsStatusItem struct {
+	Status     int64  `json:"status"`
+	StatusText string `json:"statusText"`
+	Count      int64  `json:"count"`
 }
 
 type UserInfo struct {
