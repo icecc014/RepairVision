@@ -47,22 +47,26 @@ func Handler(hub *Hub, secret string) http.HandlerFunc {
 			return
 		}
 
-		websocket.Handler(func(conn *websocket.Conn) {
-			c := &client{
-				conn: conn,
-				send: make(chan []byte, 16),
-				keys: keys,
-			}
-			hub.register(c)
-			defer hub.unregister(c)
-			go hub.pump(c)
-			for {
-				var msg string
-				if err := websocket.Message.Receive(conn, &msg); err != nil {
-					return
+		server := websocket.Server{
+			Handshake: func(_ *websocket.Config, _ *http.Request) error { return nil },
+			Handler: func(conn *websocket.Conn) {
+				c := &client{
+					conn: conn,
+					send: make(chan []byte, 16),
+					keys: keys,
 				}
-			}
-		}).ServeHTTP(w, r)
+				hub.register(c)
+				defer hub.unregister(c)
+				go hub.pump(c)
+				for {
+					var msg string
+					if err := websocket.Message.Receive(conn, &msg); err != nil {
+						return
+					}
+				}
+			},
+		}
+		server.ServeHTTP(w, r)
 	}
 }
 

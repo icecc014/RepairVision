@@ -58,14 +58,20 @@ func main() {
 
 	server := rest.MustNewServer(c.RestConf)
 	server.Use(oplog.Middleware(ctx.DB))
-	server.AddRoute(rest.Route{
-		Method:  http.MethodGet,
-		Path:    "/ws/orders",
-		Handler: ws.Handler(ctx.WS, c.Auth.AccessSecret),
-	})
 	defer server.Stop()
 
 	handler.RegisterHandlers(server, ctx)
+
+	// WebSocket 需要 Hijacker，go-zero rest 包装不支持，故由独立 HTTP 端口承载
+	wsMux := http.NewServeMux()
+	wsMux.HandleFunc("/ws/orders", ws.Handler(ctx.WS, c.Auth.AccessSecret))
+	wsServer := &http.Server{Addr: ":8890", Handler: wsMux}
+	go func() {
+		fmt.Printf("Starting ws server at :8890...\n")
+		if err := wsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logx.Must(err)
+		}
+	}()
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
 	server.Start()
