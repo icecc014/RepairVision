@@ -5,3 +5,5 @@ Etcd:
     - etcd:2379
   Key: worker-rpc
 Timeout: 30000
+DB:
+  DataSource: "root:${MYSQL_ROOT_PASSWORD}@tcp(mysql:3306)/worker_db?charset=utf8mb4&parseTime=true&loc=Local"

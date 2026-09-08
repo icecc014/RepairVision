@@ -27,3 +27,18 @@ func (s *WorkerServer) Ping(ctx context.Context, in *worker.Request) (*worker.Re
 	l := logic.NewPingLogic(ctx, s.svcCtx)
 	return l.Ping(in)
 }
+
+func (s *WorkerServer) Login(ctx context.Context, in *worker.LoginRequest) (*worker.LoginResponse, error) {
+	l := logic.NewLoginLogic(ctx, s.svcCtx)
+	return l.Login(in)
+}
+
+func (s *WorkerServer) ListWorkersByBuilding(ctx context.Context, in *worker.BuildingWorkersRequest) (*worker.BuildingWorkersResponse, error) {
+	l := logic.NewListWorkersByBuildingLogic(ctx, s.svcCtx)
+	return l.ListWorkersByBuilding(in)
+}
+
+func (s *WorkerServer) GetUsers(ctx context.Context, in *worker.UserIdsRequest) (*worker.UsersResponse, error) {
+	l := logic.NewGetUsersLogic(ctx, s.svcCtx)
+	return l.GetUsers(in)
+}

@@ -14,11 +14,22 @@ import (
 )
 
 type (
-	Request  = worker.Request
-	Response = worker.Response
+	BuildingWorkersRequest  = worker.BuildingWorkersRequest
+	BuildingWorkersResponse = worker.BuildingWorkersResponse
+	LoginRequest            = worker.LoginRequest
+	LoginResponse           = worker.LoginResponse
+	Request                 = worker.Request
+	Response                = worker.Response
+	User                    = worker.User
+	UserIdsRequest          = worker.UserIdsRequest
+	UsersResponse           = worker.UsersResponse
+	WorkerInfo              = worker.WorkerInfo
 
 	Worker interface {
 		Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+		Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+		ListWorkersByBuilding(ctx context.Context, in *BuildingWorkersRequest, opts ...grpc.CallOption) (*BuildingWorkersResponse, error)
+		GetUsers(ctx context.Context, in *UserIdsRequest, opts ...grpc.CallOption) (*UsersResponse, error)
 	}
 
 	defaultWorker struct {
@@ -35,4 +46,19 @@ func NewWorker(cli zrpc.Client) Worker {
 func (m *defaultWorker) Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	client := worker.NewWorkerClient(m.cli.Conn())
 	return client.Ping(ctx, in, opts...)
+}
+
+func (m *defaultWorker) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.Login(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ListWorkersByBuilding(ctx context.Context, in *BuildingWorkersRequest, opts ...grpc.CallOption) (*BuildingWorkersResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ListWorkersByBuilding(ctx, in, opts...)
+}
+
+func (m *defaultWorker) GetUsers(ctx context.Context, in *UserIdsRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.GetUsers(ctx, in, opts...)
 }
