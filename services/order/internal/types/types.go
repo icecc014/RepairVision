@@ -3,6 +3,35 @@
 
 package types
 
+type AdminFaultTypeCreateRequest struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+	Sort int64  `json:"sort,optional"`
+}
+
+type AdminFaultTypeIdRequest struct {
+	Id int64 `path:"id"`
+}
+
+type AdminFaultTypeItem struct {
+	Id     int64  `json:"id"`
+	Code   string `json:"code"`
+	Name   string `json:"name"`
+	Sort   int64  `json:"sort"`
+	Status int64  `json:"status"`
+}
+
+type AdminFaultTypeListResponse struct {
+	List []AdminFaultTypeItem `json:"list"`
+}
+
+type AdminFaultTypeUpdateRequest struct {
+	Id     int64  `path:"id"`
+	Name   string `json:"name"`
+	Sort   int64  `json:"sort,optional"`
+	Status int64  `json:"status,optional"`
+}
+
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
@@ -19,6 +48,33 @@ type CreateOrderRequest struct {
 type CreateOrderResponse struct {
 	OrderId int64  `json:"orderId"`
 	OrderNo string `json:"orderNo"`
+}
+
+type DispatchRuleCreateRequest struct {
+	RuleKey   string `json:"ruleKey"`
+	RuleValue string `json:"ruleValue"`
+	Enabled   int64  `json:"enabled,optional"`
+	Remark    string `json:"remark,optional"`
+}
+
+type DispatchRuleItem struct {
+	Id        int64  `json:"id"`
+	RuleKey   string `json:"ruleKey"`
+	RuleValue string `json:"ruleValue"`
+	Enabled   int64  `json:"enabled"`
+	Remark    string `json:"remark"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+type DispatchRuleListResponse struct {
+	List []DispatchRuleItem `json:"list"`
+}
+
+type DispatchRuleUpdateRequest struct {
+	Id        int64  `path:"id"`
+	RuleValue string `json:"ruleValue"`
+	Enabled   int64  `json:"enabled,optional"`
+	Remark    string `json:"remark,optional"`
 }
 
 type EmptyResponse struct {

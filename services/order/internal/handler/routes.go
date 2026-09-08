@@ -25,7 +25,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	})
 
-	// 任意登录角色可用的基础数据
 	server.AddRoutes([]rest.Route{
 		{
 			Method:  http.MethodGet,
@@ -34,7 +33,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	}, jwtOpt)
 
-	// 宿管（role=3）：本栋工单管理
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(3), []rest.Route{
 		{
 			Method:  http.MethodGet,
@@ -58,7 +56,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	}...), jwtOpt)
 
-	// 工人（role=2）：我的工单与开工/完工
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(2), []rest.Route{
 		{
 			Method:  http.MethodGet,
@@ -77,12 +74,46 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	}...), jwtOpt)
 
-	// 管理员（role=1）：只读工单总览
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(1), []rest.Route{
 		{
 			Method:  http.MethodGet,
 			Path:    "/api/admin/orders",
 			Handler: AdminOrdersHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/api/admin/fault-types",
+			Handler: AdminFaultTypesHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/api/admin/fault-types",
+			Handler: AdminFaultTypeCreateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/api/admin/fault-types/:id",
+			Handler: AdminFaultTypeUpdateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/api/admin/fault-types/:id",
+			Handler: AdminFaultTypeDeleteHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/api/admin/dispatch-rules",
+			Handler: AdminDispatchRulesHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/api/admin/dispatch-rules",
+			Handler: AdminDispatchRuleCreateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/api/admin/dispatch-rules/:id",
+			Handler: AdminDispatchRuleUpdateHandler(serverCtx),
 		},
 	}...), jwtOpt)
 }

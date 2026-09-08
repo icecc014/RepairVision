@@ -95,6 +95,62 @@ type OrderDetailResponse {
 
 type EmptyResponse {}
 
+type AdminFaultTypeItem {
+	Id     int64  `json:"id"`
+	Code   string `json:"code"`
+	Name   string `json:"name"`
+	Sort   int64  `json:"sort"`
+	Status int64  `json:"status"`
+}
+
+type AdminFaultTypeListResponse {
+	List []AdminFaultTypeItem `json:"list"`
+}
+
+type AdminFaultTypeCreateRequest {
+	Code string `json:"code"`
+	Name string `json:"name"`
+	Sort int64  `json:"sort,optional"`
+}
+
+type AdminFaultTypeUpdateRequest {
+	Id     int64  `path:"id"`
+	Name   string `json:"name"`
+	Sort   int64  `json:"sort,optional"`
+	Status int64  `json:"status,optional"`
+}
+
+type AdminFaultTypeIdRequest {
+	Id int64 `path:"id"`
+}
+
+type DispatchRuleItem {
+	Id        int64  `json:"id"`
+	RuleKey   string `json:"ruleKey"`
+	RuleValue string `json:"ruleValue"`
+	Enabled   int64  `json:"enabled"`
+	Remark    string `json:"remark"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+type DispatchRuleListResponse {
+	List []DispatchRuleItem `json:"list"`
+}
+
+type DispatchRuleCreateRequest {
+	RuleKey   string `json:"ruleKey"`
+	RuleValue string `json:"ruleValue"`
+	Enabled   int64  `json:"enabled,optional"`
+	Remark    string `json:"remark,optional"`
+}
+
+type DispatchRuleUpdateRequest {
+	Id        int64  `path:"id"`
+	RuleValue string `json:"ruleValue"`
+	Enabled   int64  `json:"enabled,optional"`
+	Remark    string `json:"remark,optional"`
+}
+
 service order-api {
 	@handler PingHandler
 	get /ping/:name (PingRequest) returns (PingResponse)
@@ -128,5 +184,26 @@ service order-api {
 
 	@handler AdminOrdersHandler
 	get /api/admin/orders (AdminOrderListRequest) returns (OrderListResponse)
+
+	@handler AdminFaultTypesHandler
+	get /api/admin/fault-types returns (AdminFaultTypeListResponse)
+
+	@handler AdminFaultTypeCreateHandler
+	post /api/admin/fault-types (AdminFaultTypeCreateRequest) returns (EmptyResponse)
+
+	@handler AdminFaultTypeUpdateHandler
+	put /api/admin/fault-types/:id (AdminFaultTypeUpdateRequest) returns (EmptyResponse)
+
+	@handler AdminFaultTypeDeleteHandler
+	delete /api/admin/fault-types/:id (AdminFaultTypeIdRequest) returns (EmptyResponse)
+
+	@handler AdminDispatchRulesHandler
+	get /api/admin/dispatch-rules returns (DispatchRuleListResponse)
+
+	@handler AdminDispatchRuleCreateHandler
+	post /api/admin/dispatch-rules (DispatchRuleCreateRequest) returns (EmptyResponse)
+
+	@handler AdminDispatchRuleUpdateHandler
+	put /api/admin/dispatch-rules/:id (DispatchRuleUpdateRequest) returns (EmptyResponse)
 }
 
