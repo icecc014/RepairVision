@@ -466,12 +466,15 @@ async function runAction(o: OrderItem, action: 'start' | 'complete') {
     showToast((err as Error).message)
   }
 }
-function setMode(next: 'plan' | '3d') {
+async function setMode(next: 'plan' | '3d') {
   if (mode.value === next) return
   mode.value = next
   selected.value = null
   if (next === '3d') {
-    if (visible.value && props.building) initScene()
+    await nextTick()
+    if (visible.value && props.building && mountRef.value) {
+      await initScene()
+    }
   } else {
     disposeScene()
   }
