@@ -206,6 +206,17 @@ async function initScene() {
     fill.position.set(-40, 40, -60)
     scene.add(fill)
 
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(boxW * 3.2, boxD * 3.2),
+      new THREE.MeshLambertMaterial({ color: '#12264e', side: THREE.DoubleSide }),
+    )
+    ground.rotation.x = -Math.PI / 2
+    ground.position.y = -0.35
+    scene.add(ground)
+    const grid = new THREE.GridHelper(Math.max(boxW, boxD) * 2.8, 14, 0x2f6be0, 0x1d3f8f)
+    grid.position.y = -0.3
+    scene.add(grid)
+
     const controlsModule = await import('three/examples/jsm/controls/OrbitControls.js')
     controls = new controlsModule.OrbitControls(camera, render.domElement)
     controls.enableDamping = true
@@ -324,6 +335,12 @@ async function initScene() {
       floorGroups.push(group)
       scene.add(group)
     }
+    const namePlate = makeLabel(THREE, `${b.code} ${b.name}`, 4.2, 0, totalH + 1.0, 0)
+    if (namePlate) {
+      namePlate.position.set(0, totalH + 1.0, 0)
+      scene.add(namePlate)
+    }
+
 
     function applyFloorFilter() {
       for (let i = 0; i < floorGroups.length; i++) {
