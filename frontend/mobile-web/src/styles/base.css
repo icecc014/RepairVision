@@ -1,0 +1,359 @@
+:root {
+  --rv-primary: #2563eb;
+  --rv-primary-deep: #1d4ed8;
+  --rv-success: #16a34a;
+  --rv-warning: #d97706;
+  --rv-danger: #dc2626;
+  --rv-cancel: #94a3b8;
+  --rv-bg: #eef2f7;
+  --rv-card: #ffffff;
+  --rv-text: #1e293b;
+  --rv-text-sub: #64748b;
+  --rv-text-light: #94a3b8;
+  --rv-radius: 16px;
+  --rv-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+
+  /* Vant 主题覆盖 */
+  --van-primary-color: #2563eb;
+  --van-success-color: #16a34a;
+  --van-warning-color: #d97706;
+  --van-danger-color: #dc2626;
+  --van-text-color: #1e293b;
+  --van-background: #eef2f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100vh;
+  margin: 0;
+}
+
+body {
+  background: var(--rv-bg);
+  color: var(--rv-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* 顶栏渐变 */
+.rv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 54px;
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  border-radius: 0 0 28px 28px;
+}
+
+.rv-header-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.rv-header-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.82;
+}
+
+.rv-logout {
+  padding: 7px 12px;
+  color: #fff;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+}
+
+/* 主体内容与卡片 */
+.rv-content {
+  position: relative;
+  margin-top: -34px;
+  padding: 0 14px 96px;
+}
+
+.rv-card {
+  background: var(--rv-card);
+  border-radius: var(--rv-radius);
+  box-shadow: var(--rv-shadow);
+}
+
+/* 统计卡 */
+.rv-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.rv-stat {
+  padding: 14px 10px;
+  text-align: center;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--rv-shadow);
+}
+
+.rv-stat-num {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.rv-stat-label {
+  margin-top: 3px;
+  color: var(--rv-text-sub);
+  font-size: 12px;
+}
+
+/* 筛选胶囊 */
+.rv-filters {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.rv-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.rv-filter-chip {
+  flex: 0 0 auto;
+  padding: 7px 14px;
+  color: #475569;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.rv-filter-chip.active {
+  color: #fff;
+  font-weight: 600;
+  background: var(--rv-primary);
+  border-color: var(--rv-primary);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+/* 工单卡片 */
+.rv-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rv-order-card {
+  padding: 14px;
+  background: #fff;
+  border-radius: var(--rv-radius);
+  box-shadow: var(--rv-shadow);
+}
+
+.rv-order-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rv-type {
+  padding: 3px 9px;
+  color: var(--rv-primary-deep);
+  font-size: 12px;
+  font-weight: 600;
+  background: #eff6ff;
+  border-radius: 999px;
+}
+
+.rv-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rv-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.s1,
+.s2 {
+  color: var(--rv-warning);
+}
+.s3 {
+  color: var(--rv-primary);
+}
+.s4 {
+  color: var(--rv-success);
+}
+.s5 {
+  color: var(--rv-cancel);
+}
+
+.rv-order-title {
+  margin: 10px 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--rv-text);
+}
+
+.rv-order-desc {
+  margin: 0;
+  color: var(--rv-text-sub);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rv-order-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.rv-order-time {
+  color: var(--rv-text-light);
+  font-size: 12px;
+}
+
+.rv-order-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.rv-btn {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.rv-btn-primary {
+  color: #fff;
+  background: var(--rv-primary);
+}
+
+.rv-btn-success {
+  color: #fff;
+  background: var(--rv-success);
+}
+
+.rv-btn-danger {
+  color: var(--rv-danger);
+  background: #fef2f2;
+}
+
+.rv-btn-ghost {
+  color: var(--rv-primary);
+  background: #eff6ff;
+}
+
+/* 悬浮报修按钮 */
+.rv-fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 20;
+  padding: 14px 20px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+  cursor: pointer;
+}
+
+/* 弹层内部 */
+.rv-sheet-body {
+  padding: 16px;
+}
+
+.rv-form-label {
+  margin: 14px 2px 8px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rv-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rv-form-field {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 10px;
+  font-size: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  outline: none;
+  background: #f8fafc;
+}
+
+.rv-form-field:focus {
+  border-color: var(--rv-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.rv-submit {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+  cursor: pointer;
+}
+
+/* 空状态 */
+.rv-empty {
+  padding: 60px 20px;
+  text-align: center;
+  background: #fff;
+  border-radius: var(--rv-radius);
+}
+
+.rv-empty-icon {
+  font-size: 42px;
+}
+
+.rv-empty-text {
+  margin-top: 10px;
+  color: var(--rv-text-light);
+  font-size: 14px;
+}

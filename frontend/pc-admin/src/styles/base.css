@@ -1,0 +1,52 @@
+:root {
+  --pc-primary: #2563eb;
+  --pc-primary-deep: #1e40af;
+  --pc-success: #16a34a;
+  --pc-warning: #d97706;
+  --pc-danger: #dc2626;
+  --pc-bg: #f1f5f9;
+  --pc-sidebar: #0f2557;
+  --pc-text: #1e293b;
+  --pc-sub: #64748b;
+  --pc-line: #e2e8f0;
+
+  /* Element Plus 主题覆盖 */
+  --el-color-primary: #2563eb;
+  --el-color-primary-light-3: #4f83ef;
+  --el-color-primary-light-5: #82a5f4;
+  --el-color-primary-light-7: #b6c9f8;
+  --el-color-primary-light-8: #d1ddfa;
+  --el-color-primary-light-9: #ecf1fd;
+  --el-color-primary-dark-2: #1d4ed8;
+  --el-border-radius-base: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100vh;
+  margin: 0;
+}
+
+body {
+  color: var(--pc-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--pc-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.el-card {
+  --el-card-border-color: #eef2f7;
+  border-radius: 14px;
+}
+
+.el-table {
+  --el-table-border-color: #eef2f7;
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-header-text-color: #475569;
+}

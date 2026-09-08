@@ -1,57 +1,126 @@
 <template>
-  <div>
-    <van-nav-bar title="工人 · 我的工单" right-text="退出" @click-right="emit('logout')" />
-    <div class="toolbar">
-      <van-button size="small" icon="replay" @click="load">刷新</van-button>
-    </div>
+  <div class="page">
+    <header class="rv-header">
+      <div>
+        <div class="rv-header-title">维修工工作台</div>
+        <div class="rv-header-sub">{{ auth.user?.name }} · 我的工单</div>
+      </div>
+      <button class="rv-logout" @click="emit('logout')">退出</button>
+    </header>
 
-    <van-empty v-if="!loading && orders.length === 0" description="暂无分配给我的工单" />
-    <van-card
-      v-for="item in orders"
-      :key="item.id"
-      class="order-card"
-      :title="item.title"
-      :desc="`${item.buildingName || ''} ${item.floor}层 ${item.room}室 · ${item.createdAt}`"
-    >
-      <template #tags>
-        <van-tag :type="statusType(item.status)" plain>{{ item.statusText }}</van-tag>
-        <van-tag plain>{{ item.faultTypeName }}</van-tag>
-      </template>
-      <template #footer>
-        <van-button
-          v-if="item.status === 2"
-          size="mini"
-          type="primary"
-          :loading="actingId === item.id"
-          @click="start(item)"
+    <main class="rv-content">
+      <section class="rv-stats">
+        <div class="rv-stat">
+          <div class="rv-stat-num" style="color: #d97706">{{ todoCount }}</div>
+          <div class="rv-stat-label">待开工</div>
+        </div>
+        <div class="rv-stat">
+          <div class="rv-stat-num" style="color: #2563eb">{{ workingCount }}</div>
+          <div class="rv-stat-label">维修中</div>
+        </div>
+        <div class="rv-stat">
+          <div class="rv-stat-num" style="color: #16a34a">{{ doneCount }}</div>
+          <div class="rv-stat-label">已完成</div>
+        </div>
+      </section>
+
+      <div class="rv-filters">
+        <button
+          v-for="chip in chips"
+          :key="chip.value"
+          class="rv-filter-chip"
+          :class="{ active: filter === chip.value }"
+          @click="filter = chip.value"
         >
-          开工
-        </van-button>
-        <van-button
-          v-if="item.status === 3"
-          size="mini"
-          type="success"
-          :loading="actingId === item.id"
-          @click="complete(item)"
-        >
-          完工
-        </van-button>
-      </template>
-    </van-card>
+          {{ chip.label }}
+        </button>
+        <button class="rv-filter-chip" style="margin-left: auto" @click="load">↻ 刷新</button>
+      </div>
+
+      <div v-if="visibleOrders.length === 0" class="rv-empty">
+        <div class="rv-empty-icon">🔧</div>
+        <div class="rv-empty-text">当前筛选下暂无工单</div>
+      </div>
+
+      <div v-else class="rv-order-list">
+        <article v-for="item in visibleOrders" :key="item.id" class="rv-order-card">
+          <div class="rv-order-top">
+            <span class="rv-type">{{ item.faultTypeName }}</span>
+            <span class="rv-status" :class="'s' + item.status">{{ item.statusText }}</span>
+          </div>
+          <h3 class="rv-order-title">{{ item.title }}</h3>
+          <p v-if="item.description && item.description !== '无补充说明'" class="rv-order-desc">
+            {{ item.description }}
+          </p>
+          <p class="rv-order-desc">{{ item.buildingName }} · {{ item.floor }} 层 {{ item.room }} 室</p>
+          <div class="rv-order-meta">
+            <span class="rv-order-time">派发 {{ item.createdAt }}</span>
+            <div class="rv-order-actions">
+              <button
+                v-if="item.status === 2"
+                class="rv-btn rv-btn-primary"
+                :disabled="actingId === item.id"
+                @click="start(item)"
+              >
+                {{ actingId === item.id ? '开工中…' : '开工' }}
+              </button>
+              <button
+                v-if="item.status === 3"
+                class="rv-btn rv-btn-success"
+                :disabled="actingId === item.id"
+                @click="complete(item)"
+              >
+                {{ actingId === item.id ? '提交中…' : '完工' }}
+              </button>
+              <span v-if="item.status === 5" class="rv-order-time">已取消</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
 import { apiCompleteOrder, apiStartOrder, apiWorkerOrders } from '../api'
+import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
+const auth = useAuthStore()
+
+type FilterValue = 'all' | 'todo' | 'working' | 'done'
 
 const orders = ref<OrderItem[]>([])
 const loading = ref(false)
 const actingId = ref<number | null>(null)
+const filter = ref<FilterValue>('all')
+
+const todoCount = computed(() => orders.value.filter((o) => o.status === 2).length)
+const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
+const doneCount = computed(() => orders.value.filter((o) => o.status === 4).length)
+
+const chips = computed(() => [
+  { label: `全部 ${orders.value.length}`, value: 'all' as FilterValue },
+  { label: `待开工 ${todoCount.value}`, value: 'todo' as FilterValue },
+  { label: `维修中 ${workingCount.value}`, value: 'working' as FilterValue },
+  { label: `已完成 ${doneCount.value}`, value: 'done' as FilterValue },
+])
+
+const visibleOrders = computed(() => {
+  switch (filter.value) {
+    case 'todo':
+      return orders.value.filter((o) => o.status === 2)
+    case 'working':
+      return orders.value.filter((o) => o.status === 3)
+    case 'done':
+      return orders.value.filter((o) => o.status === 4)
+    default:
+      return orders.value
+  }
+})
 
 async function load() {
   loading.value = true
@@ -66,14 +135,14 @@ async function load() {
 
 async function start(item: OrderItem) {
   try {
-    await showConfirmDialog({ title: '开工', message: `确认开始维修 ${item.orderNo}？` })
+    await showConfirmDialog({ title: '确认开工', message: `确认开始维修工单 ${item.orderNo}？` })
   } catch {
     return
   }
   actingId.value = item.id
   try {
     await apiStartOrder(item.id)
-    showToast('已开工')
+    showToast('已开工，请尽快处理')
     load()
   } catch (err) {
     showToast((err as Error).message)
@@ -84,14 +153,14 @@ async function start(item: OrderItem) {
 
 async function complete(item: OrderItem) {
   try {
-    await showConfirmDialog({ title: '完工', message: `确认完成 ${item.orderNo}？` })
+    await showConfirmDialog({ title: '确认完工', message: `确认完成工单 ${item.orderNo}？` })
   } catch {
     return
   }
   actingId.value = item.id
   try {
     await apiCompleteOrder(item.id)
-    showToast('已完工')
+    showToast('维修完成')
     load()
   } catch (err) {
     showToast((err as Error).message)
@@ -100,23 +169,8 @@ async function complete(item: OrderItem) {
   }
 }
 
-function statusType(status: number) {
-  if (status === 4) return 'success'
-  if (status === 5) return 'default'
-  if (status === 3) return 'primary'
-  return 'warning'
-}
-
 onMounted(load)
 </script>
 
 <style scoped>
-.toolbar {
-  display: flex;
-  gap: 8px;
-  padding: 8px 12px;
-}
-.order-card {
-  margin: 8px 12px;
-}
 </style>
