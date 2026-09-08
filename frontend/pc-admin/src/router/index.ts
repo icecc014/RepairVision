@@ -9,6 +9,7 @@ import BuildingsView from '../views/BuildingsView.vue'
 import LogsView from '../views/LogsView.vue'
 import StatsView from '../views/StatsView.vue'
 import PermissionsView from '../views/PermissionsView.vue'
+import BuildingVisualView from '../views/BuildingVisualView.vue'
 
 const router = createRouter({
   history: createWebHistory('/admin/'),
@@ -23,6 +24,7 @@ const router = createRouter({
     { path: '/logs', name: 'logs', component: LogsView, meta: { requiresAuth: true } },
     { path: '/stats', name: 'stats', component: StatsView, meta: { requiresAuth: true } },
     { path: '/permissions', name: 'permissions', component: PermissionsView, meta: { requiresAuth: true } },
+    { path: '/building-visual', name: 'building-visual', component: BuildingVisualView, meta: { requiresAuth: true } },
   ],
 })
 

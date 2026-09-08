@@ -18,6 +18,7 @@
       <router-link class="nav-item" to="/buildings" active-class="active">建筑信息管理</router-link>
       <router-link class="nav-item" to="/logs" active-class="active">操作日志</router-link>
       <router-link class="nav-item" to="/permissions" active-class="active">权限说明</router-link>
+      <router-link class="nav-item" to="/building-visual" active-class="active">建筑可视化</router-link>
 
       <div class="side-footer">校园维修 · 毕业设计</div>
     </aside>
