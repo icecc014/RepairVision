@@ -130,7 +130,8 @@
   - `GET /ping/p0` 经 nginx → order-api → worker-rpc/map-rpc 返回双链路 pong
   - `/admin/` 与 `/m/` 页面均返回 200
   - MySQL 初始化 3 库：order_db 6 表、worker_db 4 表、map_db 2 表
-- [ ] P2 管理端与调度“血肉”（2026-09-08 开工，分批推进中）
+- [x] P2 管理端与调度“血肉”（2026-09-08 完成）
+  - [x] PC 工单总览展示派单评分明细（score/skill/distance/load）
   - [x] F01 人员账号管理（worker RPC CRUD + order管理接口 + PC页面）
   - [x] F02 建筑信息管理（map RPC CRUD + order管理接口 + PC页面）
   - [x] F03 维修类型字典维护（管理接口+PC页面）
@@ -141,7 +142,7 @@
   - [x] F18 WebSocket 实时推送（order-api 独立8890端口，nginx /ws 转发，H5/PC订阅刷新）
   - [x] P2-UI-1 设计系统落地（任务已确认）
   - [x] P2-UI-2 美化现有 P1 三端页面（2026-09-08）
-  - [ ] P2-UI-3 P2 功能页随做随美
+  - [x] P2-UI-3 P2 功能页随做随美（管理页均按 AdminShell 设计实现）
   - [ ] F01-F05 / F16-F18 业务功能
 - [x] P1 MVP 最小业务闭环（2026-09-08 完成）
   - [x] 服务启动幂等种子：账号/楼栋/维修类型
