@@ -17,6 +17,17 @@
         </v-layer>
       </v-stage>
       <div class="map-hint">点击楼栋查看工单，可进入 3D</div>
+      <div class="building-chips">
+        <button
+          v-for="b in map.buildings"
+          :key="b.id"
+          class="building-chip"
+          :class="{ active: selectedBuilding?.id === b.id }"
+          @click="select(b)"
+        >
+          {{ b.code }} · {{ countOf(b.id) }}单
+        </button>
+      </div>
     </div>
     <div v-else-if="!loading" class="rv-empty">
       <div class="rv-empty-icon">🗺️</div>
@@ -56,13 +67,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem, WorkerMapBuilding, WorkerMapData } from '../api'
 import { apiBatchComplete, apiWorkerMapData } from '../api'
 import Building3D from './Building3D.vue'
+import { useAuthStore } from '../stores/auth'
 
 const map = reactive<WorkerMapData>({ buildings: [], orders: [] })
+const auth = useAuthStore()
+let mapWs: WebSocket | null = null
+let mapTimer: ReturnType<typeof setTimeout> | null = null
 const loading = ref(false)
 const selectedBuilding = ref<WorkerMapBuilding | null>(null)
 const show3D = ref(false)
@@ -226,7 +241,31 @@ async function batchComplete(faultType: string) {
   }
 }
 
-onMounted(load)
+function scheduleMapRefresh() {
+  if (mapTimer) clearTimeout(mapTimer)
+  mapTimer = setTimeout(() => load(), 350)
+}
+
+function connectMapWS() {
+  if (!auth.token) return
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
+  mapWs = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
+  mapWs.onmessage = () => scheduleMapRefresh()
+  mapWs.onclose = () => {
+    mapWs = null
+    setTimeout(connectMapWS, 3000)
+  }
+}
+
+onMounted(() => {
+  load()
+  connectMapWS()
+})
+
+onUnmounted(() => {
+  if (mapTimer) clearTimeout(mapTimer)
+  if (mapWs) mapWs.close()
+})
 </script>
 
 <style scoped>
@@ -331,3 +370,24 @@ onMounted(load)
   margin-top: 12px;
 }
 </style>
+.building-chips {
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px;
+  overflow-x: auto;
+}
+.building-chip {
+  flex: 0 0 auto;
+  padding: 7px 13px;
+  color: #475569;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.building-chip.active {
+  color: #fff;
+  background: #2563eb;
+  border-color: #2563eb;
+}
