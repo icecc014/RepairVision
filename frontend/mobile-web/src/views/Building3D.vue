@@ -15,7 +15,7 @@
     </div>
 
     <div ref="mountRef" class="three-mount"></div>
-    <p v-if="webglError" class="fallback">当前设备不支持 3D，已降级为楼层文本：{{ building?.floors }} 层。</p>
+    <p v-if="webglError" class="fallback">3D 初始化未完成：{{ loadError || '浏览器未启用 WebGL' }}<br />已降级为楼层文本：{{ building?.floors }} 层。</p>
 
     <div class="floor-bar" v-if="building && building.floors > 1">
       <button class="floor-chip" :class="{ active: floorFilter === 0 }" @click="selectFloor(0)">全部</button>
@@ -61,6 +61,7 @@ const props = defineProps<{ building: WorkerMapBuilding | null; orders: OrderIte
 const visible = defineModel<boolean>({ default: false })
 const mountRef = ref<HTMLDivElement | null>(null)
 const webglError = ref(false)
+const loadError = ref('')
 const transparent = ref(true)
 const showLabels = ref(false)
 const rotating = ref(false)
@@ -153,6 +154,13 @@ async function initScene() {
   controls = null
   animateFn = null
   try {
+    const testCanvas = document.createElement('canvas')
+    const testGL = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl')
+    if (!testGL) {
+      webglError.value = true
+      loadError.value = '浏览器未启用 WebGL'
+      return
+    }
     const THREE = await import('three')
     const width = mountRef.value.clientWidth || 390
     const height = 320
@@ -222,34 +230,40 @@ async function initScene() {
       const usableD = boxD - gap * (rows - 1)
       const roomW = usableW / cols
       const roomD = usableD / rows
-      const roomH = floorH * 0.72
+      const roomH = 0.8
+      const tileColors = [
+'#3b82f6', '#60a5fa', '#7cb3f8', '#94c3fa', '#38bdf8'
+]
 
       for (let i = 0; i < Math.max(b.roomsPerFloor, 1); i++) {
         const col = i % cols
         const row = Math.floor(i / cols)
         const cx = -boxW / 2 + roomW / 2 + col * (roomW + gap)
         const cz = -boxD / 2 + roomD / 2 + row * (roomD + gap)
-        const mat = new THREE.MeshLambertMaterial({
-          color: colors[(floor + i) % colors.length],
+        const roomNum = `${floorNo}${String(i + 1).padStart(2, "0")}`
+
+        const tileMat = new THREE.MeshLambertMaterial({
+          color: tileColors[(floor + i) % tileColors.length],
+          side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.9,
+          opacity: 0.92,
         })
-        const roomBox = new THREE.Mesh(new THREE.BoxGeometry(roomW, roomH, roomD), mat)
-        roomBox.position.set(cx, yBase + slabH + roomH / 2, cz)
-        group.add(roomBox)
+        const tile = new THREE.Mesh(new THREE.PlaneGeometry(roomW * 0.9, roomD * 0.9), tileMat)
+        tile.rotation.x = -Math.PI / 2
+        tile.position.set(cx, yBase + slabH + 0.06, cz)
+        tile.userData = { roomNo: roomNum, floorNo }
+        group.add(tile)
+        roomMeshes.push(tile)
 
-        const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW, roomH, roomD))
-        const line = new THREE.LineSegments(
-          edges,
-          new THREE.LineBasicMaterial({ color: '#0f2557', transparent: true, opacity: 0.35 }),
+        const outlineGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW * 0.9, 0.04, roomD * 0.9))
+        const outline = new THREE.LineSegments(
+          outlineGeo,
+          new THREE.LineBasicMaterial({ color: "#0f2557", transparent: true, opacity: 0.75 }),
         )
-        line.position.copy(roomBox.position)
-        group.add(line)
+        outline.position.set(cx, yBase + slabH + 0.08, cz)
+        group.add(outline)
 
-        const roomNum = `${floorNo}${String(i + 1).padStart(2, '0')}`
-        roomBox.userData = { roomNo: roomNum, floorNo }
-        roomMeshes.push(roomBox)
-        const label = makeLabel(THREE, roomNum, 1.2, cx, yBase + slabH + roomH + 0.2, cz + roomD / 2 + 0.06)
+        const label = makeLabel(THREE, roomNum, 1.1, cx, yBase + slabH + 0.85, cz)
         if (label) {
           label.userData = { roomNum, floorNo }
           group.add(label)
@@ -373,6 +387,7 @@ async function initScene() {
     helper3d.updateLabels()
     helper3d.updateTransparent()  } catch (err) {
     console.error('3D init failed:', err)
+    loadError.value = (err as Error)?.message || String(err)
     webglError.value = true
     if (renderer) {
       renderer.dispose()
