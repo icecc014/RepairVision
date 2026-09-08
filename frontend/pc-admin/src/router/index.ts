@@ -2,12 +2,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+import FaultTypesView from '../views/FaultTypesView.vue'
+import DispatchRulesView from '../views/DispatchRulesView.vue'
 
 const router = createRouter({
   history: createWebHistory('/admin/'),
   routes: [
+    { path: '/', redirect: '/orders' },
     { path: '/login', name: 'login', component: LoginView },
-    { path: '/', name: 'home', component: HomeView, meta: { requiresAuth: true } },
+    { path: '/orders', name: 'orders', component: HomeView, meta: { requiresAuth: true } },
+    { path: '/fault-types', name: 'fault-types', component: FaultTypesView, meta: { requiresAuth: true } },
+    { path: '/dispatch-rules', name: 'dispatch-rules', component: DispatchRulesView, meta: { requiresAuth: true } },
   ],
 })
 
@@ -18,7 +23,7 @@ router.beforeEach((to) => {
     return { path: '/login' }
   }
   if (to.path === '/login' && auth.token) {
-    return { path: '/' }
+    return { path: '/orders' }
   }
   return true
 })

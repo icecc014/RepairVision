@@ -79,7 +79,7 @@ async function onSubmit() {
     }
     auth.setAuth(data)
     ElMessage.success('登录成功')
-    router.replace('/')
+    router.replace('/orders')
   } catch (err) {
     ElMessage.error((err as Error).message || '登录失败')
   } finally {

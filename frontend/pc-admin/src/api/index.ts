@@ -42,3 +42,59 @@ export function apiAdminOrders(status = 0, buildingId = 0): Promise<OrderItem[]>
     params: { status: status || undefined, buildingId: buildingId || undefined },
   })
 }
+
+export interface AdminFaultType {
+  id: number
+  code: string
+  name: string
+  sort: number
+  status: number
+}
+
+export interface DispatchRule {
+  id: number
+  ruleKey: string
+  ruleValue: string
+  enabled: number
+  remark: string
+  updatedAt: string
+}
+
+export function apiAdminFaultTypes(): Promise<AdminFaultType[]> {
+  return http.get('/admin/fault-types')
+}
+
+export function apiCreateFaultType(payload: { code: string; name: string; sort: number }): Promise<unknown> {
+  return http.post('/admin/fault-types', payload)
+}
+
+export function apiUpdateFaultType(
+  id: number,
+  payload: { name: string; sort: number; status: number },
+): Promise<unknown> {
+  return http.put(`/admin/fault-types/${id}`, payload)
+}
+
+export function apiDeleteFaultType(id: number): Promise<unknown> {
+  return http.delete(`/admin/fault-types/${id}`)
+}
+
+export function apiDispatchRules(): Promise<DispatchRule[]> {
+  return http.get('/admin/dispatch-rules')
+}
+
+export function apiCreateDispatchRule(payload: {
+  ruleKey: string
+  ruleValue: string
+  enabled: number
+  remark: string
+}): Promise<unknown> {
+  return http.post('/admin/dispatch-rules', payload)
+}
+
+export function apiUpdateDispatchRule(
+  id: number,
+  payload: { ruleValue: string; enabled: number; remark: string },
+): Promise<unknown> {
+  return http.put(`/admin/dispatch-rules/${id}`, payload)
+}
