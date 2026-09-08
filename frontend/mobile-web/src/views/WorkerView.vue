@@ -210,6 +210,12 @@ onUnmounted(() => {
 <style scoped>
 </style>
 <style scoped>
+.page .rv-header {
+  padding-bottom: 16px;
+}
+.page .rv-content {
+  margin-top: 0;
+}
 .mode-tabs {
   display: flex;
   gap: 8px;

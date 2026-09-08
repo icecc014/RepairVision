@@ -68,7 +68,7 @@ const selectedBuilding = ref<WorkerMapBuilding | null>(null)
 const show3D = ref(false)
 const actingType = ref('')
 
-const stageWidth = Math.min(window.innerWidth - 28, 420)
+const stageWidth = Math.max(Math.min((window.innerWidth || 390) - 28, 420), 300)
 const stageHeight = 330
 
 const stageConfig = { width: stageWidth, height: stageHeight, x: 14, y: 10 }
