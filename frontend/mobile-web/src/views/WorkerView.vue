@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
 import { apiCompleteOrder, apiStartOrder, apiWorkerOrders } from '../api'

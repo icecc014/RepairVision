@@ -22,6 +22,13 @@ http.interceptors.response.use(
     return body && typeof body === 'object' && 'data' in body ? body.data : body
   },
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('rv_token')
+      localStorage.removeItem('rv_user')
+      if (!location.pathname.startsWith('/login')) {
+        location.href = '/m/login'
+      }
+    }
     const msg = error.response?.data?.msg || error.message || '网络异常'
     return Promise.reject(new Error(msg))
   },

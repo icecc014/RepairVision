@@ -16,12 +16,14 @@ export const useAuthStore = defineStore('adminAuth', {
     setAuth(auth: LoginResult) {
       this.token = auth.token
       this.user = auth.user
+      localStorage.setItem('rv_admin_token', auth.token)
       localStorage.setItem('rv_admin_auth', JSON.stringify(auth))
     },
     logout() {
       this.token = ''
       this.user = null
       localStorage.removeItem('rv_admin_auth')
+      localStorage.removeItem('rv_admin_token')
     },
   },
 })
