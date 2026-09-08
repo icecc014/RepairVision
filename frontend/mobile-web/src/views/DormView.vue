@@ -95,6 +95,7 @@
 
         <div class="rv-form-label">房间号</div>
         <input v-model="createForm.room" class="rv-form-field" placeholder="只需填房间号，如 401 / 301" />
+        <p v-if="previewFloor > 0" class="floor-hint">将自动报修为 {{ previewFloor }} 层</p>
 
         <div class="rv-form-label">故障描述（可选）</div>
         <textarea
@@ -134,6 +135,12 @@ const showCreate = ref(false)
 const filter = ref<FilterValue>('all')
 const createForm = reactive({ faultType: '', room: '', description: '' })
 
+const previewFloor = computed(() => {
+  const room = createForm.room.trim()
+  if (!room) return 0
+  const n = Number(room.charAt(0))
+  return n >= 1 && n <= 9 ? n : 0
+})
 const pendingCount = computed(() => orders.value.filter((o) => o.status === 1 || o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
 const completedCount = computed(() => orders.value.filter((o) => o.status === 4).length)
@@ -287,3 +294,9 @@ onUnmounted(() => {
   cursor: pointer;
 }
 </style>
+
+.floor-hint {
+  margin: 6px 2px 0;
+  color: #2563eb;
+  font-size: 12px;
+}
