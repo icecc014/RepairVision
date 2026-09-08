@@ -52,7 +52,7 @@ func FindUsersByIDs(ctx context.Context, conn sqlx.SqlConn, ids []int64) ([]User
 func ListWorkersByBuilding(ctx context.Context, conn sqlx.SqlConn, buildingID int64) ([]User, error) {
 	var users []User
 	if err := conn.QueryRowsCtx(ctx, &users,
-		"select u."+userColumns+" from users u join worker_buildings wb on wb.worker_id = u.id where u.role = 2 and u.status = 1 and wb.building_id = ? order by u.id",
+		"select "+userColumns+" from users where role = 2 and status = 1 and id in (select worker_id from worker_buildings where building_id = ?) order by id",
 		buildingID); err != nil {
 		return nil, err
 	}
