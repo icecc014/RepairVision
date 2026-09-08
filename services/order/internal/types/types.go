@@ -3,6 +3,52 @@
 
 package types
 
+type AdminBuildingCreateRequest struct {
+	Code          string  `json:"code"`
+	Name          string  `json:"name"`
+	PosX          float64 `json:"posX"`
+	PosY          float64 `json:"posY"`
+	Width         float64 `json:"width,optional"`
+	Height        float64 `json:"height,optional"`
+	Floors        int64   `json:"floors"`
+	FloorHeight   float64 `json:"floorHeight,optional"`
+	RoomsPerFloor int64   `json:"roomsPerFloor"`
+}
+
+type AdminBuildingIdRequest struct {
+	Id int64 `path:"id"`
+}
+
+type AdminBuildingItem struct {
+	Id            int64   `json:"id"`
+	Code          string  `json:"code"`
+	Name          string  `json:"name"`
+	PosX          float64 `json:"posX"`
+	PosY          float64 `json:"posY"`
+	Width         float64 `json:"width"`
+	Height        float64 `json:"height"`
+	Floors        int64   `json:"floors"`
+	FloorHeight   float64 `json:"floorHeight"`
+	RoomsPerFloor int64   `json:"roomsPerFloor"`
+}
+
+type AdminBuildingListResponse struct {
+	List []AdminBuildingItem `json:"list"`
+}
+
+type AdminBuildingUpdateRequest struct {
+	Id            int64   `path:"id"`
+	Code          string  `json:"code"`
+	Name          string  `json:"name"`
+	PosX          float64 `json:"posX"`
+	PosY          float64 `json:"posY"`
+	Width         float64 `json:"width,optional"`
+	Height        float64 `json:"height,optional"`
+	Floors        int64   `json:"floors"`
+	FloorHeight   float64 `json:"floorHeight,optional"`
+	RoomsPerFloor int64   `json:"roomsPerFloor"`
+}
+
 type AdminFaultTypeCreateRequest struct {
 	Code string `json:"code"`
 	Name string `json:"name"`
@@ -35,6 +81,60 @@ type AdminFaultTypeUpdateRequest struct {
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
+}
+
+type AdminUserCreateRequest struct {
+	Username    string  `json:"username"`
+	Password    string  `json:"password"`
+	Name        string  `json:"name"`
+	Phone       string  `json:"phone,optional"`
+	Role        int64   `json:"role"`
+	BuildingId  int64   `json:"buildingId,optional"`
+	BuildingIds []int64 `json:"buildingIds,optional"`
+}
+
+type AdminUserIdRequest struct {
+	Id int64 `path:"id"`
+}
+
+type AdminUserItem struct {
+	Id          int64    `json:"id"`
+	Username    string   `json:"username"`
+	Name        string   `json:"name"`
+	Phone       string   `json:"phone"`
+	Role        int64    `json:"role"`
+	RoleText    string   `json:"roleText"`
+	BuildingId  int64    `json:"buildingId,optional"`
+	Status      int64    `json:"status"`
+	StatusText  string   `json:"statusText"`
+	BuildingIds []int64  `json:"buildingIds,optional"`
+	Buildings   []string `json:"buildings,optional"`
+	CreatedAt   string   `json:"createdAt"`
+}
+
+type AdminUserListRequest struct {
+	Role    int64  `form:"role,optional"`
+	Status  int64  `form:"status,optional"`
+	Keyword string `form:"keyword,optional"`
+}
+
+type AdminUserListResponse struct {
+	List []AdminUserItem `json:"list"`
+}
+
+type AdminUserResetPasswordRequest struct {
+	Id       int64  `path:"id"`
+	Password string `json:"password"`
+}
+
+type AdminUserUpdateRequest struct {
+	Id          int64   `path:"id"`
+	Name        string  `json:"name"`
+	Phone       string  `json:"phone,optional"`
+	Role        int64   `json:"role"`
+	Status      int64   `json:"status,optional"`
+	BuildingId  int64   `json:"buildingId,optional"`
+	BuildingIds []int64 `json:"buildingIds,optional"`
 }
 
 type CreateOrderRequest struct {

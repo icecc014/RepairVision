@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strings"
 
 	"map/mapclient"
 	"order/internal/errs"
@@ -114,4 +115,54 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 		items = append(items, item)
 	}
 	return items, nil
+}
+
+func rpcBizError(err error) *errs.Error {
+	msg := err.Error()
+	if idx := strings.LastIndex(msg, "desc = "); idx >= 0 {
+		msg = msg[idx+len("desc = "):]
+	}
+	msg = strings.TrimSpace(msg)
+	if strings.Contains(msg, "已存在") {
+		return errs.Conflict(msg)
+	}
+	if msg != "" {
+		return errs.BadRequest(msg)
+	}
+	return errs.Upstream()
+}
+
+func roleText(role int64) string {
+	switch role {
+	case 1:
+		return "超级管理员"
+	case 2:
+		return "维修工人"
+	case 3:
+		return "宿管"
+	default:
+		return "未知"
+	}
+}
+
+func userStatusText(status int64) string {
+	if status == 1 {
+		return "启用"
+	}
+	return "停用"
+}
+
+func adminBuildingToItem(b mapclient.Building) types.AdminBuildingItem {
+	return types.AdminBuildingItem{
+		Id:            b.Id,
+		Code:          b.Code,
+		Name:          b.Name,
+		PosX:          b.PosX,
+		PosY:          b.PosY,
+		Width:         b.Width,
+		Height:        b.Height,
+		Floors:        b.Floors,
+		FloorHeight:   b.FloorHeight,
+		RoomsPerFloor: b.RoomsPerFloor,
+	}
 }

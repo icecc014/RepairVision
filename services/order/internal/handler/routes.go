@@ -115,5 +115,50 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Path:    "/api/admin/dispatch-rules/:id",
 			Handler: AdminDispatchRuleUpdateHandler(serverCtx),
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/api/admin/users",
+			Handler: AdminUsersHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/api/admin/users",
+			Handler: AdminUserCreateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/api/admin/users/:id",
+			Handler: AdminUserUpdateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/api/admin/users/:id/reset-password",
+			Handler: AdminUserResetPasswordHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/api/admin/users/:id",
+			Handler: AdminUserDeleteHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/api/admin/buildings",
+			Handler: AdminBuildingsHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/api/admin/buildings",
+			Handler: AdminBuildingCreateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPut,
+			Path:    "/api/admin/buildings/:id",
+			Handler: AdminBuildingUpdateHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/api/admin/buildings/:id",
+			Handler: AdminBuildingDeleteHandler(serverCtx),
+		},
 	}...), jwtOpt)
 }
