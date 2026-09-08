@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,9 +13,12 @@ import (
 	"order/internal/handler"
 	"order/internal/oplog"
 	"order/internal/seed"
+	"order/internal/store"
 	"order/internal/svc"
 	"order/internal/ws"
 
+	"github.com/segmentio/kafka-go"
+	"github.com/zeromicro/go-queue/kq"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -57,7 +61,40 @@ func main() {
 	})
 
 	server := rest.MustNewServer(c.RestConf)
-	server.Use(oplog.Middleware(ctx.DB))
+	var logPusher oplog.Pusher
+	if c.Kafka.Enabled {
+		logx.Infof("kafka async op-log enabled, brokers=%v topic=%s", c.Kafka.Brokers, c.Kafka.Topic)
+		logPusher = kq.NewPusher(c.Kafka.Brokers, c.Kafka.Topic, kq.WithAllowAutoTopicCreation())
+		logReader := kafka.NewReader(kafka.ReaderConfig{
+			Brokers:  c.Kafka.Brokers,
+			GroupID:  c.Kafka.Group,
+			Topic:    c.Kafka.Topic,
+			MinBytes: 1e3,
+			MaxBytes: 10e6,
+		})
+		defer logReader.Close()
+		go func() {
+			for {
+				msg, err := logReader.FetchMessage(context.Background())
+				if err != nil {
+					logx.Error(err)
+					continue
+				}
+				var logEntry store.OperationLog
+				if err := json.Unmarshal(msg.Value, &logEntry); err != nil {
+					logx.Error(err)
+					continue
+				}
+				if err := store.InsertOperationLog(context.Background(), ctx.DB, &logEntry); err != nil {
+					logx.Error(err)
+				}
+				if err := logReader.CommitMessages(context.Background(), msg); err != nil {
+					logx.Error(err)
+				}
+			}
+		}()
+	}
+	server.Use(oplog.Middleware(ctx.DB, logPusher, c.Kafka.Enabled))
 	defer server.Stop()
 
 	handler.RegisterHandlers(server, ctx)

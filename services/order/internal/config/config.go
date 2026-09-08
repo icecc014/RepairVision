@@ -14,6 +14,12 @@ type Config struct {
 	DB struct {
 		DataSource string
 	}
+	Kafka struct {
+		Enabled bool
+		Brokers []string
+		Topic   string
+		Group   string
+	}
 	WorkerRpc zrpc.RpcClientConf
 	MapRpc    zrpc.RpcClientConf
 }

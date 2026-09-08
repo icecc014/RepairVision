@@ -7,6 +7,12 @@ Auth:
   AccessExpire: 86400
 DB:
   DataSource: "root:${MYSQL_ROOT_PASSWORD}@tcp(mysql:3306)/order_db?charset=utf8mb4&parseTime=true&loc=Local"
+Kafka:
+  Enabled: true
+  Brokers:
+    - kafka:9092
+  Topic: operation-logs
+  Group: order-oplog-group
 WorkerRpc:
   Etcd:
     Hosts:

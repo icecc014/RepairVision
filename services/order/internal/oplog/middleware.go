@@ -2,6 +2,7 @@ package oplog
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net"
 	"net/http"
@@ -29,7 +30,11 @@ func (w *statusRecorder) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
-func Middleware(conn sqlx.SqlConn) rest.Middleware {
+type Pusher interface {
+	Push(ctx context.Context, v string) error
+}
+
+func Middleware(conn sqlx.SqlConn, pusher Pusher, useKafka bool) rest.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/ping") || strings.HasPrefix(r.URL.Path, "/ws/") {
@@ -66,7 +71,16 @@ func Middleware(conn sqlx.SqlConn) rest.Middleware {
 				log.Role.Valid = true
 				log.Role.Int64 = identity.Role
 			}
-			if err := store.InsertOperationLog(context.Background(), conn, log); err != nil {
+			insertCtx := context.Background()
+			if useKafka && pusher != nil {
+				body, _ := json.Marshal(log)
+				if pushErr := pusher.Push(insertCtx, string(body)); pushErr == nil {
+					return
+				} else {
+					logx.WithContext(r.Context()).Errorf("push operation log to kafka failed: %v", pushErr)
+				}
+			}
+			if err := store.InsertOperationLog(insertCtx, conn, log); err != nil {
 				logx.WithContext(r.Context()).Errorf("write operation log failed: %v", err)
 			}
 		}
