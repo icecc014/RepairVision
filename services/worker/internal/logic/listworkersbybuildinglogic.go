@@ -30,7 +30,15 @@ func (l *ListWorkersByBuildingLogic) ListWorkersByBuilding(in *worker.BuildingWo
 	}
 	resp := &worker.BuildingWorkersResponse{}
 	for _, u := range users {
-		resp.Workers = append(resp.Workers, workerInfoToPb(u))
+		base := int64(0)
+		if u.BuildingID.Valid {
+			base = u.BuildingID.Int64
+		}
+		skills, err := store.ListWorkerSkills(l.ctx, l.svcCtx.DB, u.ID)
+		if err != nil {
+			return nil, err
+		}
+		resp.Workers = append(resp.Workers, workerInfoToPb(u, base, skills))
 	}
 	return resp, nil
 }

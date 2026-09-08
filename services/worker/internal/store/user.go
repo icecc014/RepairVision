@@ -105,6 +105,15 @@ func ListUsers(ctx context.Context, conn sqlx.Session, role, status int64, keywo
 	return users, nil
 }
 
+func SetUserBaseBuildingIfEmpty(ctx context.Context, conn sqlx.Session, id, buildingID int64) error {
+	if buildingID <= 0 {
+		return nil
+	}
+	_, err := conn.ExecCtx(ctx,
+		"update users set building_id = ? where id = ? and (building_id is null or building_id = 0)",
+		buildingID, id)
+	return err
+}
 func InsertUser(ctx context.Context, conn sqlx.Session, u *User) (int64, error) {
 	result, err := conn.ExecCtx(ctx,
 		"insert into users(username, password, role, name, phone, building_id, status) values(?,?,?,?,?,?,?)",

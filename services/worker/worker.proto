@@ -35,11 +35,18 @@ message BuildingWorkersRequest {
   int64 building_id = 1;
 }
 
+message SkillInfo {
+  string name = 1;
+  int64 proficiency = 2;
+}
+
 message WorkerInfo {
   int64 id = 1;
   string username = 2;
   string name = 3;
   string phone = 4;
+  int64 base_building_id = 5;
+  repeated SkillInfo skills = 6;
 }
 
 message BuildingWorkersResponse {

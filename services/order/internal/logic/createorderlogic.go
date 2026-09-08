@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -17,6 +18,14 @@ import (
 	"order/internal/types"
 	"worker/workerclient"
 )
+
+type candidateScore struct {
+	workerID      int64
+	skillScore    float64
+	distanceScore float64
+	loadScore     float64
+	totalScore    float64
+}
 
 type CreateOrderLogic struct {
 	logx.Logger
@@ -53,44 +62,47 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	if buildingID <= 0 {
 		return nil, errs.Forbidden("当前账号未绑定楼栋")
 	}
+
+	// F16 粗粒度去重：同一楼栋/楼层/房间/类型，2小时内未关闭工单则阻止重复报修
+	dup, err := store.FindRecentDuplicateOrder(l.ctx, l.svcCtx.DB, buildingID, req.Floor, req.Room, req.FaultType, time.Now().Add(-2*time.Hour))
+	if err == nil && dup != nil {
+		return nil, errs.Conflict(fmt.Sprintf("该房间近期已有同类维修工单（%s），请勿重复报修", dup.OrderNo))
+	}
+	if err != nil && !errors.Is(err, sqlx.ErrNotFound) {
+		return nil, errs.Internal(err)
+	}
+
 	buildingResp, err := l.svcCtx.MapRpc.ListBuildings(l.ctx, &mapclient.ListBuildingsRequest{})
 	if err != nil {
 		return nil, errs.Upstream()
 	}
-	found := false
+	var currentBuilding *mapclient.Building
 	for _, b := range buildingResp.Buildings {
 		if b.Id == buildingID {
-			found = true
+			currentBuilding = b
 			break
 		}
 	}
-	if !found {
+	if currentBuilding == nil {
 		return nil, errs.BadRequest("楼栋尚未初始化")
 	}
 
+	// F17 加权派单候选
 	workerResp, err := l.svcCtx.WorkerRpc.ListWorkersByBuilding(l.ctx,
 		&workerclient.BuildingWorkersRequest{BuildingId: buildingID})
 	if err != nil {
 		return nil, errs.Upstream()
 	}
-	if len(workerResp.Workers) == 0 {
-		return nil, errs.BadRequest("该楼栋暂无可用维修工人")
-	}
-	workerIDs := make([]int64, 0, len(workerResp.Workers))
-	for _, w := range workerResp.Workers {
-		workerIDs = append(workerIDs, w.Id)
-	}
-	loads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs)
+
+	rules, err := store.ListDispatchRules(l.ctx, l.svcCtx.DB)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	targetWorker := workerResp.Workers[0].Id
-	minLoad := int64(-1)
-	for _, w := range workerResp.Workers {
-		cnt := loads[w.Id]
-		if minLoad < 0 || cnt < minLoad {
-			minLoad = cnt
-			targetWorker = w.Id
+	skillW, distW, loadW := dispatchWeights(rules)
+	autoDispatch := true
+	for _, r := range rules {
+		if r.RuleKey == "auto_dispatch_enabled" && (r.Enabled == 0 || r.RuleValue < 0.5) {
+			autoDispatch = false
 		}
 	}
 
@@ -99,6 +111,15 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	description := strings.TrimSpace(req.Description)
 	if description == "" {
 		description = "无补充说明"
+	}
+
+	var best *candidateScore
+	if autoDispatch && len(workerResp.Workers) > 0 {
+		loads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
+		if err != nil {
+			return nil, errs.Internal(err)
+		}
+		best = l.pickBest(workerResp.Workers, buildingResp.Buildings, currentBuilding, faultType.Name, loads, skillW, distW, loadW)
 	}
 
 	var orderID int64
@@ -121,13 +142,132 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			return err
 		}
 		orderID = id
-		if err := store.AssignOrder(txCtx, session, orderID, targetWorker); err != nil {
-			return err
+		if best != nil {
+			if err := store.AssignOrder(txCtx, session, orderID, best.workerID); err != nil {
+				return err
+			}
+			return store.InsertDispatchRecord(txCtx, session, orderID, best.workerID,
+				best.totalScore, best.skillScore, best.distanceScore, best.loadScore)
 		}
-		return store.InsertDispatchRecord(txCtx, session, orderID, targetWorker)
+		return nil
 	})
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
 	return &types.CreateOrderResponse{OrderId: orderID, OrderNo: orderNo}, nil
+}
+
+func workerIDs(workers []*workerclient.WorkerInfo) []int64 {
+	ids := make([]int64, 0, len(workers))
+	for _, w := range workers {
+		ids = append(ids, w.Id)
+	}
+	return ids
+}
+
+func dispatchWeights(rules []store.DispatchRule) (skill, distance, load float64) {
+	skill, distance, load = 0.4, 0.3, 0.3
+	for _, r := range rules {
+		switch r.RuleKey {
+		case "skill_weight":
+			skill = r.RuleValue
+		case "distance_weight":
+			distance = r.RuleValue
+		case "load_weight":
+			load = r.RuleValue
+		}
+	}
+	return
+}
+
+func (l *CreateOrderLogic) pickBest(
+	workers []*workerclient.WorkerInfo,
+	buildings []*mapclient.Building,
+	current *mapclient.Building,
+	faultName string,
+	loads map[int64]int64,
+	wSkill, wDistance, wLoad float64,
+) *candidateScore {
+	buildingPos := make(map[int64]*mapclient.Building)
+	for _, b := range buildings {
+		buildingPos[b.Id] = b
+	}
+
+	maxLoad := int64(0)
+	maxDist := 0.0
+	for _, w := range workers {
+		cnt := loads[w.Id]
+		if cnt > maxLoad {
+			maxLoad = cnt
+		}
+		base := w.BaseBuildingId
+		if base <= 0 {
+			base = current.Id
+		}
+		if baseB, ok := buildingPos[base]; ok {
+			d := distance(baseB, current)
+			if d > maxDist {
+				maxDist = d
+			}
+		}
+	}
+
+	var best *candidateScore
+	for _, w := range workers {
+		score := candidateScore{workerID: w.Id}
+		score.skillScore = skillScore(w.Skills, faultName)
+		cnt := loads[w.Id]
+		if maxLoad <= 0 {
+			score.loadScore = 1
+		} else {
+			score.loadScore = 1 - float64(cnt)/float64(maxLoad)
+		}
+		base := w.BaseBuildingId
+		if base <= 0 {
+			base = current.Id
+		}
+		if baseB, ok := buildingPos[base]; ok {
+			d := distance(baseB, current)
+			if maxDist > 0 {
+				score.distanceScore = 1 - d/maxDist
+			} else {
+				score.distanceScore = 1
+			}
+		} else {
+			score.distanceScore = 0
+		}
+		total := wSkill*score.skillScore + wDistance*score.distanceScore + wLoad*score.loadScore
+		sum := wSkill + wDistance + wLoad
+		if sum > 0 {
+			total /= sum
+		}
+		score.totalScore = math.Round(total*10000) / 10000
+		if best == nil || score.totalScore > best.totalScore ||
+			(score.totalScore == best.totalScore && score.workerID < best.workerID) {
+			cp := score
+			best = &cp
+		}
+	}
+	return best
+}
+
+func skillScore(skills []*workerclient.SkillInfo, faultName string) float64 {
+	for _, s := range skills {
+		if s.Name == faultName {
+			if s.Proficiency >= 3 {
+				return 1
+			}
+			if s.Proficiency <= 1 {
+				return 1.0 / 3.0
+			}
+			return 2.0 / 3.0
+		}
+	}
+	return 0
+}
+
+func distance(a, b *mapclient.Building) float64 {
+	dx := a.PosX - b.PosX
+	dy := a.PosY - b.PosY
+	return math.Sqrt(dx*dx + dy*dy)
 }

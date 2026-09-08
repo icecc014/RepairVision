@@ -21,12 +21,26 @@ type accountSpec struct {
 	Buildings  []int64
 }
 
+type workerSkillSpec struct {
+	Username    string
+	Skill       string
+	Proficiency int64
+}
+
 var accounts = []accountSpec{
 	{Username: "admin", Name: "超级管理员", Role: 1},
 	{Username: "dorm1", Name: "1号宿舍管理员", Role: 3, BuildingID: 1},
 	{Username: "dorm2", Name: "2号宿舍管理员", Role: 3, BuildingID: 2},
-	{Username: "worker1", Name: "李工", Role: 2, Buildings: []int64{1, 2}},
-	{Username: "worker2", Name: "王工", Role: 2, Buildings: []int64{2, 3}},
+	{Username: "dorm3", Name: "3号宿舍管理员", Role: 3, BuildingID: 3},
+	{Username: "worker1", Name: "李工", Role: 2, BuildingID: 1, Buildings: []int64{1, 2}},
+	{Username: "worker2", Name: "王工", Role: 2, BuildingID: 2, Buildings: []int64{2, 3}},
+}
+
+var workerSkills = []workerSkillSpec{
+	{Username: "worker1", Skill: "电维修", Proficiency: 3},
+	{Username: "worker1", Skill: "水维修", Proficiency: 2},
+	{Username: "worker2", Skill: "水维修", Proficiency: 3},
+	{Username: "worker2", Skill: "电维修", Proficiency: 2},
 }
 
 func Ensure(ctx context.Context, conn sqlx.SqlConn) error {
@@ -51,6 +65,7 @@ func ensureOnce(ctx context.Context, conn sqlx.SqlConn) error {
 	if err != nil {
 		return err
 	}
+	userIDs := make(map[string]int64, len(accounts))
 	for _, spec := range accounts {
 		existing, err := store.FindUserByUsername(ctx, conn, spec.Username)
 		if err != nil && !errors.Is(err, sqlx.ErrNotFound) {
@@ -74,11 +89,33 @@ func ensureOnce(ctx context.Context, conn sqlx.SqlConn) error {
 			}
 		} else {
 			userID = existing.ID
+			if err := store.SetUserBaseBuildingIfEmpty(ctx, conn, userID, spec.BuildingID); err != nil {
+				return err
+			}
 		}
+		userIDs[spec.Username] = userID
 		for _, b := range spec.Buildings {
 			if err := store.InsertWorkerBuilding(ctx, conn, userID, b); err != nil {
 				return err
 			}
+		}
+	}
+	skillIDs := make(map[string]int64)
+	for _, ws := range workerSkills {
+		skillID, exists := skillIDs[ws.Skill]
+		if !exists {
+			skillID, err = store.EnsureSkill(ctx, conn, ws.Skill)
+			if err != nil {
+				return err
+			}
+			skillIDs[ws.Skill] = skillID
+		}
+		workerID, ok := userIDs[ws.Username]
+		if !ok {
+			continue
+		}
+		if err := store.EnsureWorkerSkill(ctx, conn, workerID, skillID, ws.Proficiency); err != nil {
+			return err
 		}
 	}
 	return nil

@@ -122,11 +122,22 @@ func AssignOrder(ctx context.Context, conn sqlx.Session, orderID, workerID int64
 	return err
 }
 
-func InsertDispatchRecord(ctx context.Context, conn sqlx.Session, orderID, workerID int64) error {
+func InsertDispatchRecord(ctx context.Context, conn sqlx.Session, orderID, workerID int64, score, skillScore, distanceScore, loadScore float64) error {
 	_, err := conn.ExecCtx(ctx,
 		`insert into dispatch_records(order_id, worker_id, score, skill_score, distance_score, load_score, status)
-		 values(?,?,1,0,0,0,1)`, orderID, workerID)
+		 values(?,?,?,?,?,?,1)`, orderID, workerID, score, skillScore, distanceScore, loadScore)
 	return err
+}
+
+func FindRecentDuplicateOrder(ctx context.Context, conn sqlx.Session, buildingID, floor int64, room, faultType string, since time.Time) (*Order, error) {
+	var o Order
+	if err := conn.QueryRowCtx(ctx, &o,
+		orderBase+`where building_id = ? and floor = ? and room = ? and fault_type = ?
+			and status in (1,2,3) and created_at >= ? order by id limit 1`,
+		buildingID, floor, room, faultType, since); err != nil {
+		return nil, err
+	}
+	return &o, nil
 }
 
 func CountInProgressByWorkers(ctx context.Context, conn sqlx.Session, workerIDs []int64) (map[int64]int64, error) {

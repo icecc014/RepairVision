@@ -25,6 +25,7 @@ type (
 	Request                 = worker.Request
 	ResetPasswordRequest    = worker.ResetPasswordRequest
 	Response                = worker.Response
+	SkillInfo               = worker.SkillInfo
 	UpdateUserRequest       = worker.UpdateUserRequest
 	User                    = worker.User
 	UserIdsRequest          = worker.UserIdsRequest

@@ -30,15 +30,23 @@ func userToPbWithBuildings(u store.User, buildingIDs []int64) *worker.User {
 	}
 }
 
-func workerInfoToPb(u store.User) *worker.WorkerInfo {
+func workerInfoToPb(u store.User, baseBuildingID int64, skills []store.Skill) *worker.WorkerInfo {
 	phone := ""
 	if u.Phone.Valid {
 		phone = u.Phone.String
 	}
-	return &worker.WorkerInfo{
-		Id:       u.ID,
-		Username: u.Username,
-		Name:     u.Name,
-		Phone:    phone,
+	info := &worker.WorkerInfo{
+		Id:             u.ID,
+		Username:       u.Username,
+		Name:           u.Name,
+		Phone:          phone,
+		BaseBuildingId: baseBuildingID,
 	}
+	for _, s := range skills {
+		info.Skills = append(info.Skills, &worker.SkillInfo{
+			Name:        s.Name,
+			Proficiency: s.Proficiency,
+		})
+	}
+	return info
 }
