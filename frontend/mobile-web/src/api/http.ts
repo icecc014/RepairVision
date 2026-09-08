@@ -22,7 +22,7 @@ http.interceptors.response.use(
     return body && typeof body === 'object' && 'data' in body ? body.data : body
   },
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('rv_token')
       localStorage.removeItem('rv_user')
       if (!location.pathname.startsWith('/login')) {
