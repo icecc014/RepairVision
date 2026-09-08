@@ -129,6 +129,43 @@ func InsertDispatchRecord(ctx context.Context, conn sqlx.Session, orderID, worke
 	return err
 }
 
+type DispatchSummary struct {
+	OrderID       int64   `db:"order_id"`
+	WorkerID      int64   `db:"worker_id"`
+	Score         float64 `db:"score"`
+	SkillScore    float64 `db:"skill_score"`
+	DistanceScore float64 `db:"distance_score"`
+	LoadScore     float64 `db:"load_score"`
+}
+
+func ListDispatchSummaries(ctx context.Context, conn sqlx.Session, orderIDs []int64) (map[int64]DispatchSummary, error) {
+	result := make(map[int64]DispatchSummary)
+	if len(orderIDs) == 0 {
+		return result, nil
+	}
+	placeholders := make([]string, len(orderIDs))
+	args := make([]any, len(orderIDs))
+	for i, id := range orderIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	query := `select d.order_id, d.worker_id,
+		cast(d.score as decimal(10,4)) score,
+		cast(coalesce(d.skill_score,0) as decimal(10,4)) skill_score,
+		cast(coalesce(d.distance_score,0) as decimal(10,4)) distance_score,
+		cast(coalesce(d.load_score,0) as decimal(10,4)) load_score
+		from dispatch_records d
+		join (select order_id, max(id) mid from dispatch_records where order_id in (` + join(placeholders) + `) group by order_id) m
+		on d.id = m.mid`
+	var rows []DispatchSummary
+	if err := conn.QueryRowsCtx(ctx, &rows, query, args...); err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		result[row.OrderID] = row
+	}
+	return result, nil
+}
 func FindRecentDuplicateOrder(ctx context.Context, conn sqlx.Session, buildingID, floor int64, room, faultType string, since time.Time) (*Order, error) {
 	var o Order
 	if err := conn.QueryRowCtx(ctx, &o,

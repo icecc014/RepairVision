@@ -55,6 +55,17 @@
         <el-table-column prop="workerName" label="维修工人" width="110">
           <template #default="{ row }">{{ row.workerName || '—' }}</template>
         </el-table-column>
+        <el-table-column label="派单评分" width="160">
+          <template #default="{ row }">
+            <el-tooltip
+              v-if="row.dispatchScore !== undefined && row.dispatchScore > 0"
+              :content="`技能 ${row.skillScore} · 距离 ${row.distanceScore} · 负载 ${row.loadScore}`"
+            >
+              <span class="score-text">{{ row.dispatchScore }}</span>
+            </el-tooltip>
+            <span v-else class="score-empty">—</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="reporterName" label="报修宿管" width="120" />
         <el-table-column prop="createdAt" label="创建时间" width="175" />
       </el-table>
@@ -223,5 +234,14 @@ onUnmounted(() => {
 
 .table-empty {
   padding: 30px 0;
+}
+
+.score-text {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.score-empty {
+  color: #cbd5e1;
 }
 </style>

@@ -76,9 +76,13 @@ type OrderItem {
 	FaultTypeName string `json:"faultTypeName"`
 	Status        int64  `json:"status"`
 	StatusText    string `json:"statusText"`
-	WorkerId      int64  `json:"workerId,optional"`
-	WorkerName    string `json:"workerName,optional"`
-	ReporterId    int64  `json:"reporterId"`
+	WorkerId      int64   `json:"workerId,optional"`
+	WorkerName    string  `json:"workerName,optional"`
+	DispatchScore float64 `json:"dispatchScore,optional"`
+	SkillScore    float64 `json:"skillScore,optional"`
+	DistanceScore float64 `json:"distanceScore,optional"`
+	LoadScore     float64 `json:"loadScore,optional"`
+	ReporterId    int64   `json:"reporterId"`
 	ReporterName  string `json:"reporterName,optional"`
 	Source        string `json:"source"`
 	CreatedAt     string `json:"createdAt"`

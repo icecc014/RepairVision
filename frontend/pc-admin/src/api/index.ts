@@ -26,6 +26,10 @@ export interface OrderItem {
   statusText: string
   workerId?: number
   workerName?: string
+  dispatchScore?: number
+  skillScore?: number
+  distanceScore?: number
+  loadScore?: number
   reporterId: number
   reporterName?: string
   source: string

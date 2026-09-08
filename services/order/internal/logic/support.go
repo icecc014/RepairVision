@@ -51,6 +51,15 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 	userNames := make(map[int64]string)
 	faultNames := make(map[string]string)
 
+	orderIDList := make([]int64, 0, len(orders))
+	for i := range orders {
+		orderIDList = append(orderIDList, orders[i].ID)
+	}
+	dispatchMap, err := store.ListDispatchSummaries(ctx, svcCtx.DB, orderIDList)
+	if err != nil {
+		return nil, err
+	}
+
 	bidList := make([]int64, 0, len(buildingIDs))
 	for id := range buildingIDs {
 		bidList = append(bidList, id)
@@ -111,6 +120,12 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 		if o.WorkerID.Valid {
 			item.WorkerId = o.WorkerID.Int64
 			item.WorkerName = userNames[o.WorkerID.Int64]
+		}
+		if ds, ok := dispatchMap[o.ID]; ok {
+			item.DispatchScore = ds.Score
+			item.SkillScore = ds.SkillScore
+			item.DistanceScore = ds.DistanceScore
+			item.LoadScore = ds.LoadScore
 		}
 		items = append(items, item)
 	}
