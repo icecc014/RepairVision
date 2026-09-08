@@ -36,6 +36,9 @@ func ensureOnce(ctx context.Context, conn sqlx.SqlConn) error {
 		if err := store.InsertBuilding(ctx, conn, &buildings[i]); err != nil {
 			return err
 		}
+		if err := store.UpdateBuildingRoomsPerFloor(ctx, conn, buildings[i].ID, 16); err != nil {
+			return err
+		}
 	}
 	return nil
 }

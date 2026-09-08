@@ -72,6 +72,11 @@ func UpdateBuilding(ctx context.Context, conn sqlx.Session, b *Building) error {
 	return err
 }
 
+func UpdateBuildingRoomsPerFloor(ctx context.Context, conn sqlx.Session, id int64, roomsPerFloor int64) error {
+	_, err := conn.ExecCtx(ctx,
+		"update buildings set rooms_per_floor = ? where id = ?", roomsPerFloor, id)
+	return err
+}
 func DeleteBuilding(ctx context.Context, conn sqlx.Session, id int64) error {
 	_, err := conn.ExecCtx(ctx,
 		"delete from buildings where id = ?", id)

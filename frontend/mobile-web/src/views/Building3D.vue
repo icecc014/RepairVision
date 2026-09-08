@@ -167,7 +167,7 @@ function makeLabel(THREE: any, text: string, width: number, x: number, y: number
 }
 
 function layout(rooms: number) {
-  const cols = Math.min(rooms, 10)
+  const cols = Math.min(rooms, 8)
   const rows = Math.ceil(rooms / cols)
   return { cols, rows }
 }
