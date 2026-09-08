@@ -47,8 +47,12 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	if !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
-	if req.Room == "" || req.FaultType == "" || req.Floor <= 0 {
+	room := strings.TrimSpace(req.Room)
+	if room == "" || req.FaultType == "" || req.Floor <= 0 {
 		return nil, errs.BadRequest("房间、楼层和维修类型不能为空")
+	}
+	if !strings.HasPrefix(room, fmt.Sprintf("%d", req.Floor)) {
+		return nil, errs.BadRequest(fmt.Sprintf("楼层 %d 的房间号应以 %d 开头，如 %d01", req.Floor, req.Floor, req.Floor))
 	}
 
 	faultType, err := store.FindFaultTypeByCode(l.ctx, l.svcCtx.DB, req.FaultType)
@@ -130,7 +134,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			Title:       faultType.Name + "（" + req.Room + "室）",
 			Description: description,
 			BuildingID:  buildingID,
-			Room:        req.Room,
+			Room:        room,
 			Floor:       req.Floor,
 			FaultType:   req.FaultType,
 			Status:      store.StatusPending,
@@ -156,7 +160,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		return nil, errs.Internal(err)
 	}
 	if _, markerErr := l.svcCtx.MapRpc.UpsertFaultMarker(l.ctx, &mapclient.FaultMarkerUpsertRequest{
-		OrderId: orderID, BuildingId: buildingID, Floor: req.Floor, RoomNumber: req.Room,
+		OrderId: orderID, BuildingId: buildingID, Floor: req.Floor, RoomNumber: room,
 	}); markerErr != nil {
 		logx.WithContext(l.ctx).Errorf("upsert fault marker failed: %v", markerErr)
 	}

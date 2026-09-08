@@ -97,7 +97,7 @@
         <input v-model.number="createForm.floor" class="rv-form-field" type="number" min="1" placeholder="例如 3" />
 
         <div class="rv-form-label">房间号</div>
-        <input v-model="createForm.room" class="rv-form-field" placeholder="例如 301" />
+        <input v-model="createForm.room" class="rv-form-field" :placeholder="`房间号需以楼层开头，如 ${createForm.floor}01`" />
 
         <div class="rv-form-label">故障描述（可选）</div>
         <textarea
@@ -197,12 +197,17 @@ async function submitCreate() {
     showToast('请完整填写维修信息')
     return
   }
+  const room = createForm.room.trim()
+  if (!room.startsWith(String(createForm.floor))) {
+    showToast(`楼层 ${createForm.floor} 的房间号应以 ${createForm.floor} 开头，如 ${createForm.floor}01`)
+    return
+  }
   submitting.value = true
   try {
     await apiCreateOrder({
       faultType: createForm.faultType,
       floor: Number(createForm.floor),
-      room: createForm.room.trim(),
+      room: room,
       description: createForm.description.trim(),
     })
     showToast('报修成功，已自动派单')
