@@ -41,10 +41,11 @@ export function apiLogin(username: string, password: string): Promise<LoginResul
   return http.post('/login', { username, password })
 }
 
-export function apiAdminOrders(status = 0, buildingId = 0): Promise<OrderItem[]> {
-  return http.get('/admin/orders', {
+export async function apiAdminOrders(status = 0, buildingId = 0): Promise<OrderItem[]> {
+  const res = (await http.get('/admin/orders', {
     params: { status: status || undefined, buildingId: buildingId || undefined },
-  })
+  })) as { list: OrderItem[] }
+  return res.list || []
 }
 
 export interface AdminFaultType {
@@ -64,8 +65,9 @@ export interface DispatchRule {
   updatedAt: string
 }
 
-export function apiAdminFaultTypes(): Promise<AdminFaultType[]> {
-  return http.get('/admin/fault-types')
+export async function apiAdminFaultTypes(): Promise<AdminFaultType[]> {
+  const res = (await http.get('/admin/fault-types')) as { list: AdminFaultType[] }
+  return res.list || []
 }
 
 export function apiCreateFaultType(payload: { code: string; name: string; sort: number }): Promise<unknown> {
@@ -83,8 +85,9 @@ export function apiDeleteFaultType(id: number): Promise<unknown> {
   return http.delete(`/admin/fault-types/${id}`)
 }
 
-export function apiDispatchRules(): Promise<DispatchRule[]> {
-  return http.get('/admin/dispatch-rules')
+export async function apiDispatchRules(): Promise<DispatchRule[]> {
+  const res = (await http.get('/admin/dispatch-rules')) as { list: DispatchRule[] }
+  return res.list || []
 }
 
 export function apiCreateDispatchRule(payload: {
@@ -130,8 +133,9 @@ export interface AdminBuilding {
   roomsPerFloor: number
 }
 
-export function apiAdminUsers(params: { role?: number; status?: number; keyword?: string }): Promise<AdminUser[]> {
-  return http.get('/admin/users', { params: { role: params.role || undefined, status: params.status || undefined, keyword: params.keyword || undefined } })
+export async function apiAdminUsers(params: { role?: number; status?: number; keyword?: string }): Promise<AdminUser[]> {
+  const res = (await http.get('/admin/users', { params: { role: params.role || undefined, status: params.status || undefined, keyword: params.keyword || undefined } })) as { list: AdminUser[] }
+  return res.list || []
 }
 
 export function apiCreateUser(payload: {
@@ -168,8 +172,9 @@ export function apiDeleteUser(id: number): Promise<unknown> {
   return http.delete(`/admin/users/${id}`)
 }
 
-export function apiAdminBuildings(): Promise<AdminBuilding[]> {
-  return http.get('/admin/buildings')
+export async function apiAdminBuildings(): Promise<AdminBuilding[]> {
+  const res = (await http.get('/admin/buildings')) as { list: AdminBuilding[] }
+  return res.list || []
 }
 
 export function apiCreateBuilding(payload: Partial<AdminBuilding>): Promise<unknown> {

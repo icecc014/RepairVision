@@ -45,12 +45,16 @@ export function apiLogin(username: string, password: string): Promise<LoginResul
   return http.post('/login', { username, password })
 }
 
-export function apiFaultTypes(): Promise<FaultType[]> {
-  return http.get('/fault-types')
+export async function apiFaultTypes(): Promise<FaultType[]> {
+  const res = (await http.get('/fault-types')) as { list: FaultType[] }
+  return res.list || []
 }
 
-export function apiDormOrders(status = 0): Promise<OrderItem[]> {
-  return http.get('/dorm/orders', { params: { status: status || undefined } })
+export async function apiDormOrders(status = 0): Promise<OrderItem[]> {
+  const res = (await http.get('/dorm/orders', { params: { status: status || undefined } })) as {
+    list: OrderItem[]
+  }
+  return res.list || []
 }
 
 export function apiCreateOrder(payload: {
@@ -66,8 +70,11 @@ export function apiCancelOrder(id: number): Promise<unknown> {
   return http.post(`/dorm/orders/${id}/cancel`)
 }
 
-export function apiWorkerOrders(status = 0): Promise<OrderItem[]> {
-  return http.get('/worker/orders', { params: { status: status || undefined } })
+export async function apiWorkerOrders(status = 0): Promise<OrderItem[]> {
+  const res = (await http.get('/worker/orders', { params: { status: status || undefined } })) as {
+    list: OrderItem[]
+  }
+  return res.list || []
 }
 
 export function apiStartOrder(id: number): Promise<unknown> {
