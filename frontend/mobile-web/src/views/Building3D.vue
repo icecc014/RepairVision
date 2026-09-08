@@ -9,26 +9,40 @@
     </div>
 
     <div class="toolbar" v-if="building">
-      <button class="chip" :class="{ active: transparent }" @click="toggleTransparent">透视</button>
-      <button class="chip" :class="{ active: showLabels }" @click="toggleLabels">房间号</button>
-      <button class="chip" :class="{ active: rotating }" @click="toggleRotate">自动旋转</button>
+      <button class="chip" :class="{ active: mode === 'plan' }" @click="setMode('plan')">楼层户型</button>
+      <button class="chip" :class="{ active: mode === '3d' }" @click="setMode('3d')">3D 立体</button>
+      <template v-if="mode === '3d'">
+        <button class="chip" :class="{ active: transparent }" @click="toggleTransparent">透视</button>
+        <button class="chip" :class="{ active: showLabels }" @click="toggleLabels">房间号</button>
+        <button class="chip" :class="{ active: rotating }" @click="toggleRotate">自动旋转</button>
+      </template>
     </div>
 
-    <div ref="mountRef" class="three-mount"></div>
-    <p v-if="webglError" class="fallback">3D 初始化未完成：{{ loadError || '浏览器未启用 WebGL' }}<br />已降级为楼层文本：{{ building?.floors }} 层。</p>
+    <BuildingFloorPlan
+      v-if="mode === 'plan' && building"
+      :building="building"
+      :orders="orders"
+      @select-room="onPlanSelect"
+    />
 
-    <div class="floor-bar" v-if="building && building.floors > 1">
-      <button class="floor-chip" :class="{ active: floorFilter === 0 }" @click="selectFloor(0)">全部</button>
-      <button
-        v-for="f in building.floors"
-        :key="f"
-        class="floor-chip"
-        :class="{ active: floorFilter === f }"
-        @click="selectFloor(f)"
-      >
-        {{ f }}F
-      </button>
-    </div>
+    <template v-if="mode === '3d'">
+      <div ref="mountRef" class="three-mount"></div>
+      <p v-if="webglError" class="fallback">3D 初始化未完成：{{ loadError || '浏览器未启用 WebGL' }}<br />可切回“楼层户型”查看。</p>
+      <div class="floor-bar" v-if="building && building.floors > 1">
+        <button class="floor-chip" :class="{ active: floorFilter === 0 }" @click="selectFloor(0)">全部</button>
+        <button
+          v-for="f in building.floors"
+          :key="f"
+          class="floor-chip"
+          :class="{ active: floorFilter === f }"
+          @click="selectFloor(f)"
+        >
+          {{ f }}F
+        </button>
+      </div>
+      <div class="legend"><i class="dot fault"></i> 待处理故障</div>
+      <p class="tip">手指拖拽旋转 · 双指缩放 · 点击楼层只看该层</p>
+    </template>
 
     <div v-if="selected" class="room-panel">
       <div class="room-panel-head">
@@ -52,8 +66,7 @@
         </div>
       </div>
     </div>
-    <div class="legend"><i class="dot fault"></i> 待处理故障</div>
-    <p class="tip">手指拖拽旋转 · 双指缩放 · 点击楼层只看该层</p>
+
   </van-popup>
 </template>
 
@@ -61,6 +74,7 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
 import { apiCompleteOrder, apiStartOrder } from '../api'
+import BuildingFloorPlan from './BuildingFloorPlan.vue'
 import { showConfirmDialog, showToast } from 'vant'
 
 const props = defineProps<{ building: WorkerMapBuilding | null; orders: OrderItem[] }>()
@@ -72,6 +86,7 @@ const loadError = ref('')
 const transparent = ref(true)
 const showLabels = ref(false)
 const rotating = ref(false)
+const mode = ref<'plan' | '3d'>('plan')
 const floorFilter = ref(0)
 const selected = ref<{ roomNo: string; floorNo: number; orders: OrderItem[] } | null>(null)
 
@@ -93,7 +108,7 @@ const activeCount = computed(() => {
 watch(
   () => props.orders,
   async () => {
-    if (!visible.value || !props.building) return
+    if (!visible.value || !props.building || mode.value !== '3d') return
     await nextTick()
     await initScene()
   },
@@ -111,7 +126,7 @@ watch(
 watch(
   () => props.building,
   async () => {
-    if (!visible.value || !props.building) return
+    if (!visible.value || !props.building || mode.value !== '3d') return
     await nextTick()
     await initScene()
   },
@@ -450,6 +465,20 @@ async function runAction(o: OrderItem, action: 'start' | 'complete') {
   } catch (err) {
     showToast((err as Error).message)
   }
+}
+function setMode(next: 'plan' | '3d') {
+  if (mode.value === next) return
+  mode.value = next
+  selected.value = null
+  if (next === '3d') {
+    if (visible.value && props.building) initScene()
+  } else {
+    disposeScene()
+  }
+}
+
+function onPlanSelect(room: { num: string; floor: number; orders: OrderItem[] }) {
+  selected.value = { roomNo: room.num, floorNo: room.floor, orders: room.orders || [] }
 }
 function selectFloor(floor: number) {
   floorFilter.value = floor
