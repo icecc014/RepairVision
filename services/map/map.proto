@@ -31,7 +31,23 @@ message ListBuildingsResponse {
   repeated Building buildings = 1;
 }
 
+message SaveBuildingRequest {
+  Building building = 1;
+}
+
+message BuildingIdRequest {
+  int64 id = 1;
+}
+
+message BuildingResponse {
+  Building building = 1;
+}
+
 service Map {
   rpc Ping(Request) returns(Response);
   rpc ListBuildings(ListBuildingsRequest) returns(ListBuildingsResponse);
+  rpc GetBuilding(BuildingIdRequest) returns(BuildingResponse);
+  rpc CreateBuilding(SaveBuildingRequest) returns(BuildingResponse);
+  rpc UpdateBuilding(SaveBuildingRequest) returns(BuildingResponse);
+  rpc DeleteBuilding(BuildingIdRequest) returns(Response);
 }

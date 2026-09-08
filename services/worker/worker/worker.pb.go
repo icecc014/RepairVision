@@ -170,6 +170,7 @@ type User struct {
 	Phone         string                 `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
 	BuildingId    int64                  `protobuf:"varint,6,opt,name=building_id,json=buildingId,proto3" json:"building_id,omitempty"`
 	Status        int64                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`
+	BuildingIds   []int64                `protobuf:"varint,8,rep,packed,name=building_ids,json=buildingIds,proto3" json:"building_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -251,6 +252,13 @@ func (x *User) GetStatus() int64 {
 		return x.Status
 	}
 	return 0
+}
+
+func (x *User) GetBuildingIds() []int64 {
+	if x != nil {
+		return x.BuildingIds
+	}
+	return nil
 }
 
 type LoginResponse struct {
@@ -541,6 +549,390 @@ func (x *UsersResponse) GetUsers() []*User {
 	return nil
 }
 
+type ListUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          int64                  `protobuf:"varint,1,opt,name=role,proto3" json:"role,omitempty"`
+	Status        int64                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersRequest) Reset() {
+	*x = ListUsersRequest{}
+	mi := &file_worker_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersRequest) ProtoMessage() {}
+
+func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
+func (*ListUsersRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListUsersRequest) GetRole() int64 {
+	if x != nil {
+		return x.Role
+	}
+	return 0
+}
+
+func (x *ListUsersRequest) GetStatus() int64 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ListUsersRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+type ListUsersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Users         []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersResponse) Reset() {
+	*x = ListUsersResponse{}
+	mi := &file_worker_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersResponse) ProtoMessage() {}
+
+func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
+func (*ListUsersResponse) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListUsersResponse) GetUsers() []*User {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+type CreateUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	Role          int64                  `protobuf:"varint,5,opt,name=role,proto3" json:"role,omitempty"`
+	BuildingId    int64                  `protobuf:"varint,6,opt,name=building_id,json=buildingId,proto3" json:"building_id,omitempty"`
+	BuildingIds   []int64                `protobuf:"varint,7,rep,packed,name=building_ids,json=buildingIds,proto3" json:"building_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUserRequest) Reset() {
+	*x = CreateUserRequest{}
+	mi := &file_worker_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUserRequest) ProtoMessage() {}
+
+func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUserRequest.ProtoReflect.Descriptor instead.
+func (*CreateUserRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CreateUserRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetRole() int64 {
+	if x != nil {
+		return x.Role
+	}
+	return 0
+}
+
+func (x *CreateUserRequest) GetBuildingId() int64 {
+	if x != nil {
+		return x.BuildingId
+	}
+	return 0
+}
+
+func (x *CreateUserRequest) GetBuildingIds() []int64 {
+	if x != nil {
+		return x.BuildingIds
+	}
+	return nil
+}
+
+type UpdateUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	Role          int64                  `protobuf:"varint,4,opt,name=role,proto3" json:"role,omitempty"`
+	BuildingId    int64                  `protobuf:"varint,5,opt,name=building_id,json=buildingId,proto3" json:"building_id,omitempty"`
+	BuildingIds   []int64                `protobuf:"varint,6,rep,packed,name=building_ids,json=buildingIds,proto3" json:"building_ids,omitempty"`
+	Status        int64                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserRequest) Reset() {
+	*x = UpdateUserRequest{}
+	mi := &file_worker_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserRequest) ProtoMessage() {}
+
+func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserRequest.ProtoReflect.Descriptor instead.
+func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *UpdateUserRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateUserRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateUserRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *UpdateUserRequest) GetRole() int64 {
+	if x != nil {
+		return x.Role
+	}
+	return 0
+}
+
+func (x *UpdateUserRequest) GetBuildingId() int64 {
+	if x != nil {
+		return x.BuildingId
+	}
+	return 0
+}
+
+func (x *UpdateUserRequest) GetBuildingIds() []int64 {
+	if x != nil {
+		return x.BuildingIds
+	}
+	return nil
+}
+
+func (x *UpdateUserRequest) GetStatus() int64 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+type IdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IdRequest) Reset() {
+	*x = IdRequest{}
+	mi := &file_worker_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IdRequest) ProtoMessage() {}
+
+func (x *IdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IdRequest.ProtoReflect.Descriptor instead.
+func (*IdRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *IdRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ResetPasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordRequest) Reset() {
+	*x = ResetPasswordRequest{}
+	mi := &file_worker_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordRequest) ProtoMessage() {}
+
+func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
+func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ResetPasswordRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *ResetPasswordRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
 var File_worker_proto protoreflect.FileDescriptor
 
 const file_worker_proto_rawDesc = "" +
@@ -552,7 +944,7 @@ const file_worker_proto_rawDesc = "" +
 	"\x04pong\x18\x01 \x01(\tR\x04pong\"F\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xa9\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xcc\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
@@ -561,7 +953,8 @@ const file_worker_proto_rawDesc = "" +
 	"\x05phone\x18\x05 \x01(\tR\x05phone\x12\x1f\n" +
 	"\vbuilding_id\x18\x06 \x01(\x03R\n" +
 	"buildingId\x12\x16\n" +
-	"\x06status\x18\a \x01(\x03R\x06status\"1\n" +
+	"\x06status\x18\a \x01(\x03R\x06status\x12!\n" +
+	"\fbuilding_ids\x18\b \x03(\x03R\vbuildingIds\"1\n" +
 	"\rLoginResponse\x12 \n" +
 	"\x04user\x18\x01 \x01(\v2\f.worker.UserR\x04user\"9\n" +
 	"\x16BuildingWorkersRequest\x12\x1f\n" +
@@ -578,12 +971,48 @@ const file_worker_proto_rawDesc = "" +
 	"\x0eUserIdsRequest\x12\x10\n" +
 	"\x03ids\x18\x01 \x03(\x03R\x03ids\"3\n" +
 	"\rUsersResponse\x12\"\n" +
-	"\x05users\x18\x01 \x03(\v2\f.worker.UserR\x05users2\xfe\x01\n" +
+	"\x05users\x18\x01 \x03(\v2\f.worker.UserR\x05users\"X\n" +
+	"\x10ListUsersRequest\x12\x12\n" +
+	"\x04role\x18\x01 \x01(\x03R\x04role\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\x03R\x06status\x12\x18\n" +
+	"\akeyword\x18\x03 \x01(\tR\akeyword\"7\n" +
+	"\x11ListUsersResponse\x12\"\n" +
+	"\x05users\x18\x01 \x03(\v2\f.worker.UserR\x05users\"\xcd\x01\n" +
+	"\x11CreateUserRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x12\n" +
+	"\x04role\x18\x05 \x01(\x03R\x04role\x12\x1f\n" +
+	"\vbuilding_id\x18\x06 \x01(\x03R\n" +
+	"buildingId\x12!\n" +
+	"\fbuilding_ids\x18\a \x03(\x03R\vbuildingIds\"\xbd\x01\n" +
+	"\x11UpdateUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x12\n" +
+	"\x04role\x18\x04 \x01(\x03R\x04role\x12\x1f\n" +
+	"\vbuilding_id\x18\x05 \x01(\x03R\n" +
+	"buildingId\x12!\n" +
+	"\fbuilding_ids\x18\x06 \x03(\x03R\vbuildingIds\x12\x16\n" +
+	"\x06status\x18\a \x01(\x03R\x06status\"\x1b\n" +
+	"\tIdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"B\n" +
+	"\x14ResetPasswordRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword2\xb5\x04\n" +
 	"\x06Worker\x12)\n" +
 	"\x04Ping\x12\x0f.worker.Request\x1a\x10.worker.Response\x124\n" +
 	"\x05Login\x12\x14.worker.LoginRequest\x1a\x15.worker.LoginResponse\x12X\n" +
 	"\x15ListWorkersByBuilding\x12\x1e.worker.BuildingWorkersRequest\x1a\x1f.worker.BuildingWorkersResponse\x129\n" +
-	"\bGetUsers\x12\x16.worker.UserIdsRequest\x1a\x15.worker.UsersResponseB\n" +
+	"\bGetUsers\x12\x16.worker.UserIdsRequest\x1a\x15.worker.UsersResponse\x12@\n" +
+	"\tListUsers\x12\x18.worker.ListUsersRequest\x1a\x19.worker.ListUsersResponse\x12>\n" +
+	"\n" +
+	"CreateUser\x12\x19.worker.CreateUserRequest\x1a\x15.worker.UsersResponse\x12>\n" +
+	"\n" +
+	"UpdateUser\x12\x19.worker.UpdateUserRequest\x1a\x15.worker.UsersResponse\x12?\n" +
+	"\rResetPassword\x12\x1c.worker.ResetPasswordRequest\x1a\x10.worker.Response\x122\n" +
+	"\vDisableUser\x12\x11.worker.IdRequest\x1a\x10.worker.ResponseB\n" +
 	"Z\b./workerb\x06proto3"
 
 var (
@@ -598,7 +1027,7 @@ func file_worker_proto_rawDescGZIP() []byte {
 	return file_worker_proto_rawDescData
 }
 
-var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_worker_proto_goTypes = []any{
 	(*Request)(nil),                 // 0: worker.Request
 	(*Response)(nil),                // 1: worker.Response
@@ -610,24 +1039,41 @@ var file_worker_proto_goTypes = []any{
 	(*BuildingWorkersResponse)(nil), // 7: worker.BuildingWorkersResponse
 	(*UserIdsRequest)(nil),          // 8: worker.UserIdsRequest
 	(*UsersResponse)(nil),           // 9: worker.UsersResponse
+	(*ListUsersRequest)(nil),        // 10: worker.ListUsersRequest
+	(*ListUsersResponse)(nil),       // 11: worker.ListUsersResponse
+	(*CreateUserRequest)(nil),       // 12: worker.CreateUserRequest
+	(*UpdateUserRequest)(nil),       // 13: worker.UpdateUserRequest
+	(*IdRequest)(nil),               // 14: worker.IdRequest
+	(*ResetPasswordRequest)(nil),    // 15: worker.ResetPasswordRequest
 }
 var file_worker_proto_depIdxs = []int32{
-	3, // 0: worker.LoginResponse.user:type_name -> worker.User
-	6, // 1: worker.BuildingWorkersResponse.workers:type_name -> worker.WorkerInfo
-	3, // 2: worker.UsersResponse.users:type_name -> worker.User
-	0, // 3: worker.Worker.Ping:input_type -> worker.Request
-	2, // 4: worker.Worker.Login:input_type -> worker.LoginRequest
-	5, // 5: worker.Worker.ListWorkersByBuilding:input_type -> worker.BuildingWorkersRequest
-	8, // 6: worker.Worker.GetUsers:input_type -> worker.UserIdsRequest
-	1, // 7: worker.Worker.Ping:output_type -> worker.Response
-	4, // 8: worker.Worker.Login:output_type -> worker.LoginResponse
-	7, // 9: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
-	9, // 10: worker.Worker.GetUsers:output_type -> worker.UsersResponse
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	3,  // 0: worker.LoginResponse.user:type_name -> worker.User
+	6,  // 1: worker.BuildingWorkersResponse.workers:type_name -> worker.WorkerInfo
+	3,  // 2: worker.UsersResponse.users:type_name -> worker.User
+	3,  // 3: worker.ListUsersResponse.users:type_name -> worker.User
+	0,  // 4: worker.Worker.Ping:input_type -> worker.Request
+	2,  // 5: worker.Worker.Login:input_type -> worker.LoginRequest
+	5,  // 6: worker.Worker.ListWorkersByBuilding:input_type -> worker.BuildingWorkersRequest
+	8,  // 7: worker.Worker.GetUsers:input_type -> worker.UserIdsRequest
+	10, // 8: worker.Worker.ListUsers:input_type -> worker.ListUsersRequest
+	12, // 9: worker.Worker.CreateUser:input_type -> worker.CreateUserRequest
+	13, // 10: worker.Worker.UpdateUser:input_type -> worker.UpdateUserRequest
+	15, // 11: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
+	14, // 12: worker.Worker.DisableUser:input_type -> worker.IdRequest
+	1,  // 13: worker.Worker.Ping:output_type -> worker.Response
+	4,  // 14: worker.Worker.Login:output_type -> worker.LoginResponse
+	7,  // 15: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
+	9,  // 16: worker.Worker.GetUsers:output_type -> worker.UsersResponse
+	11, // 17: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
+	9,  // 18: worker.Worker.CreateUser:output_type -> worker.UsersResponse
+	9,  // 19: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
+	1,  // 20: worker.Worker.ResetPassword:output_type -> worker.Response
+	1,  // 21: worker.Worker.DisableUser:output_type -> worker.Response
+	13, // [13:22] is the sub-list for method output_type
+	4,  // [4:13] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_worker_proto_init() }
@@ -641,7 +1087,7 @@ func file_worker_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_worker_proto_rawDesc), len(file_worker_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

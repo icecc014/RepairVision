@@ -42,3 +42,28 @@ func (s *WorkerServer) GetUsers(ctx context.Context, in *worker.UserIdsRequest) 
 	l := logic.NewGetUsersLogic(ctx, s.svcCtx)
 	return l.GetUsers(in)
 }
+
+func (s *WorkerServer) ListUsers(ctx context.Context, in *worker.ListUsersRequest) (*worker.ListUsersResponse, error) {
+	l := logic.NewListUsersLogic(ctx, s.svcCtx)
+	return l.ListUsers(in)
+}
+
+func (s *WorkerServer) CreateUser(ctx context.Context, in *worker.CreateUserRequest) (*worker.UsersResponse, error) {
+	l := logic.NewCreateUserLogic(ctx, s.svcCtx)
+	return l.CreateUser(in)
+}
+
+func (s *WorkerServer) UpdateUser(ctx context.Context, in *worker.UpdateUserRequest) (*worker.UsersResponse, error) {
+	l := logic.NewUpdateUserLogic(ctx, s.svcCtx)
+	return l.UpdateUser(in)
+}
+
+func (s *WorkerServer) ResetPassword(ctx context.Context, in *worker.ResetPasswordRequest) (*worker.Response, error) {
+	l := logic.NewResetPasswordLogic(ctx, s.svcCtx)
+	return l.ResetPassword(in)
+}
+
+func (s *WorkerServer) DisableUser(ctx context.Context, in *worker.IdRequest) (*worker.Response, error) {
+	l := logic.NewDisableUserLogic(ctx, s.svcCtx)
+	return l.DisableUser(in)
+}

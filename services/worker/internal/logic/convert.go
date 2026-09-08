@@ -6,6 +6,10 @@ import (
 )
 
 func userToPb(u store.User) *worker.User {
+	return userToPbWithBuildings(u, nil)
+}
+
+func userToPbWithBuildings(u store.User, buildingIDs []int64) *worker.User {
 	phone := ""
 	if u.Phone.Valid {
 		phone = u.Phone.String
@@ -15,13 +19,14 @@ func userToPb(u store.User) *worker.User {
 		buildingID = u.BuildingID.Int64
 	}
 	return &worker.User{
-		Id:         u.ID,
-		Username:   u.Username,
-		Role:       u.Role,
-		Name:       u.Name,
-		Phone:      phone,
-		BuildingId: buildingID,
-		Status:     u.Status,
+		Id:          u.ID,
+		Username:    u.Username,
+		Role:        u.Role,
+		Name:        u.Name,
+		Phone:       phone,
+		BuildingId:  buildingID,
+		Status:      u.Status,
+		BuildingIds: buildingIDs,
 	}
 }
 

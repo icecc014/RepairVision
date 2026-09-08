@@ -24,6 +24,7 @@ message User {
   string phone = 5;
   int64 building_id = 6;
   int64 status = 7;
+  repeated int64 building_ids = 8;
 }
 
 message LoginResponse {
@@ -53,9 +54,53 @@ message UsersResponse {
   repeated User users = 1;
 }
 
+message ListUsersRequest {
+  int64 role = 1;
+  int64 status = 2;
+  string keyword = 3;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string password = 2;
+  string name = 3;
+  string phone = 4;
+  int64 role = 5;
+  int64 building_id = 6;
+  repeated int64 building_ids = 7;
+}
+
+message UpdateUserRequest {
+  int64 id = 1;
+  string name = 2;
+  string phone = 3;
+  int64 role = 4;
+  int64 building_id = 5;
+  repeated int64 building_ids = 6;
+  int64 status = 7;
+}
+
+message IdRequest {
+  int64 id = 1;
+}
+
+message ResetPasswordRequest {
+  int64 id = 1;
+  string password = 2;
+}
+
 service Worker {
   rpc Ping(Request) returns(Response);
   rpc Login(LoginRequest) returns(LoginResponse);
   rpc ListWorkersByBuilding(BuildingWorkersRequest) returns(BuildingWorkersResponse);
   rpc GetUsers(UserIdsRequest) returns(UsersResponse);
+  rpc ListUsers(ListUsersRequest) returns(ListUsersResponse);
+  rpc CreateUser(CreateUserRequest) returns(UsersResponse);
+  rpc UpdateUser(UpdateUserRequest) returns(UsersResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns(Response);
+  rpc DisableUser(IdRequest) returns(Response);
 }

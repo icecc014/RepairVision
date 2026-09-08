@@ -305,6 +305,138 @@ func (x *ListBuildingsResponse) GetBuildings() []*Building {
 	return nil
 }
 
+type SaveBuildingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Building      *Building              `protobuf:"bytes,1,opt,name=building,proto3" json:"building,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveBuildingRequest) Reset() {
+	*x = SaveBuildingRequest{}
+	mi := &file_map_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveBuildingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveBuildingRequest) ProtoMessage() {}
+
+func (x *SaveBuildingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveBuildingRequest.ProtoReflect.Descriptor instead.
+func (*SaveBuildingRequest) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *SaveBuildingRequest) GetBuilding() *Building {
+	if x != nil {
+		return x.Building
+	}
+	return nil
+}
+
+type BuildingIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BuildingIdRequest) Reset() {
+	*x = BuildingIdRequest{}
+	mi := &file_map_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildingIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildingIdRequest) ProtoMessage() {}
+
+func (x *BuildingIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildingIdRequest.ProtoReflect.Descriptor instead.
+func (*BuildingIdRequest) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *BuildingIdRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type BuildingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Building      *Building              `protobuf:"bytes,1,opt,name=building,proto3" json:"building,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BuildingResponse) Reset() {
+	*x = BuildingResponse{}
+	mi := &file_map_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildingResponse) ProtoMessage() {}
+
+func (x *BuildingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_map_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildingResponse.ProtoReflect.Descriptor instead.
+func (*BuildingResponse) Descriptor() ([]byte, []int) {
+	return file_map_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *BuildingResponse) GetBuilding() *Building {
+	if x != nil {
+		return x.Building
+	}
+	return nil
+}
+
 var File_map_proto protoreflect.FileDescriptor
 
 const file_map_proto_rawDesc = "" +
@@ -328,10 +460,20 @@ const file_map_proto_rawDesc = "" +
 	" \x01(\x03R\rroomsPerFloor\"\x16\n" +
 	"\x14ListBuildingsRequest\"D\n" +
 	"\x15ListBuildingsResponse\x12+\n" +
-	"\tbuildings\x18\x01 \x03(\v2\r.map.BuildingR\tbuildings2r\n" +
+	"\tbuildings\x18\x01 \x03(\v2\r.map.BuildingR\tbuildings\"@\n" +
+	"\x13SaveBuildingRequest\x12)\n" +
+	"\bbuilding\x18\x01 \x01(\v2\r.map.BuildingR\bbuilding\"#\n" +
+	"\x11BuildingIdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"=\n" +
+	"\x10BuildingResponse\x12)\n" +
+	"\bbuilding\x18\x01 \x01(\v2\r.map.BuildingR\bbuilding2\xef\x02\n" +
 	"\x03Map\x12#\n" +
 	"\x04Ping\x12\f.map.Request\x1a\r.map.Response\x12F\n" +
-	"\rListBuildings\x12\x19.map.ListBuildingsRequest\x1a\x1a.map.ListBuildingsResponseB\aZ\x05./mapb\x06proto3"
+	"\rListBuildings\x12\x19.map.ListBuildingsRequest\x1a\x1a.map.ListBuildingsResponse\x12<\n" +
+	"\vGetBuilding\x12\x16.map.BuildingIdRequest\x1a\x15.map.BuildingResponse\x12A\n" +
+	"\x0eCreateBuilding\x12\x18.map.SaveBuildingRequest\x1a\x15.map.BuildingResponse\x12A\n" +
+	"\x0eUpdateBuilding\x12\x18.map.SaveBuildingRequest\x1a\x15.map.BuildingResponse\x127\n" +
+	"\x0eDeleteBuilding\x12\x16.map.BuildingIdRequest\x1a\r.map.ResponseB\aZ\x05./mapb\x06proto3"
 
 var (
 	file_map_proto_rawDescOnce sync.Once
@@ -345,25 +487,38 @@ func file_map_proto_rawDescGZIP() []byte {
 	return file_map_proto_rawDescData
 }
 
-var file_map_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_map_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_map_proto_goTypes = []any{
 	(*Request)(nil),               // 0: map.Request
 	(*Response)(nil),              // 1: map.Response
 	(*Building)(nil),              // 2: map.Building
 	(*ListBuildingsRequest)(nil),  // 3: map.ListBuildingsRequest
 	(*ListBuildingsResponse)(nil), // 4: map.ListBuildingsResponse
+	(*SaveBuildingRequest)(nil),   // 5: map.SaveBuildingRequest
+	(*BuildingIdRequest)(nil),     // 6: map.BuildingIdRequest
+	(*BuildingResponse)(nil),      // 7: map.BuildingResponse
 }
 var file_map_proto_depIdxs = []int32{
 	2, // 0: map.ListBuildingsResponse.buildings:type_name -> map.Building
-	0, // 1: map.Map.Ping:input_type -> map.Request
-	3, // 2: map.Map.ListBuildings:input_type -> map.ListBuildingsRequest
-	1, // 3: map.Map.Ping:output_type -> map.Response
-	4, // 4: map.Map.ListBuildings:output_type -> map.ListBuildingsResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: map.SaveBuildingRequest.building:type_name -> map.Building
+	2, // 2: map.BuildingResponse.building:type_name -> map.Building
+	0, // 3: map.Map.Ping:input_type -> map.Request
+	3, // 4: map.Map.ListBuildings:input_type -> map.ListBuildingsRequest
+	6, // 5: map.Map.GetBuilding:input_type -> map.BuildingIdRequest
+	5, // 6: map.Map.CreateBuilding:input_type -> map.SaveBuildingRequest
+	5, // 7: map.Map.UpdateBuilding:input_type -> map.SaveBuildingRequest
+	6, // 8: map.Map.DeleteBuilding:input_type -> map.BuildingIdRequest
+	1, // 9: map.Map.Ping:output_type -> map.Response
+	4, // 10: map.Map.ListBuildings:output_type -> map.ListBuildingsResponse
+	7, // 11: map.Map.GetBuilding:output_type -> map.BuildingResponse
+	7, // 12: map.Map.CreateBuilding:output_type -> map.BuildingResponse
+	7, // 13: map.Map.UpdateBuilding:output_type -> map.BuildingResponse
+	1, // 14: map.Map.DeleteBuilding:output_type -> map.Response
+	9, // [9:15] is the sub-list for method output_type
+	3, // [3:9] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_map_proto_init() }
@@ -377,7 +532,7 @@ func file_map_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_proto_rawDesc), len(file_map_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

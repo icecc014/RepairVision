@@ -15,14 +15,21 @@ import (
 
 type (
 	Building              = _map.Building
+	BuildingIdRequest     = _map.BuildingIdRequest
+	BuildingResponse      = _map.BuildingResponse
 	ListBuildingsRequest  = _map.ListBuildingsRequest
 	ListBuildingsResponse = _map.ListBuildingsResponse
 	Request               = _map.Request
 	Response              = _map.Response
+	SaveBuildingRequest   = _map.SaveBuildingRequest
 
 	Map interface {
 		Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 		ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error)
+		GetBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
+		CreateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
+		UpdateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
+		DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error)
 	}
 
 	defaultMap struct {
@@ -44,4 +51,24 @@ func (m *defaultMap) Ping(ctx context.Context, in *Request, opts ...grpc.CallOpt
 func (m *defaultMap) ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error) {
 	client := _map.NewMapClient(m.cli.Conn())
 	return client.ListBuildings(ctx, in, opts...)
+}
+
+func (m *defaultMap) GetBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*BuildingResponse, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.GetBuilding(ctx, in, opts...)
+}
+
+func (m *defaultMap) CreateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.CreateBuilding(ctx, in, opts...)
+}
+
+func (m *defaultMap) UpdateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.UpdateBuilding(ctx, in, opts...)
+}
+
+func (m *defaultMap) DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error) {
+	client := _map.NewMapClient(m.cli.Conn())
+	return client.DeleteBuilding(ctx, in, opts...)
 }

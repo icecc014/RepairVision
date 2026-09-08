@@ -19,8 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Map_Ping_FullMethodName          = "/map.Map/Ping"
-	Map_ListBuildings_FullMethodName = "/map.Map/ListBuildings"
+	Map_Ping_FullMethodName           = "/map.Map/Ping"
+	Map_ListBuildings_FullMethodName  = "/map.Map/ListBuildings"
+	Map_GetBuilding_FullMethodName    = "/map.Map/GetBuilding"
+	Map_CreateBuilding_FullMethodName = "/map.Map/CreateBuilding"
+	Map_UpdateBuilding_FullMethodName = "/map.Map/UpdateBuilding"
+	Map_DeleteBuilding_FullMethodName = "/map.Map/DeleteBuilding"
 )
 
 // MapClient is the client API for Map service.
@@ -29,6 +33,10 @@ const (
 type MapClient interface {
 	Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	ListBuildings(ctx context.Context, in *ListBuildingsRequest, opts ...grpc.CallOption) (*ListBuildingsResponse, error)
+	GetBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
+	CreateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
+	UpdateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error)
+	DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type mapClient struct {
@@ -59,12 +67,56 @@ func (c *mapClient) ListBuildings(ctx context.Context, in *ListBuildingsRequest,
 	return out, nil
 }
 
+func (c *mapClient) GetBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*BuildingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BuildingResponse)
+	err := c.cc.Invoke(ctx, Map_GetBuilding_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mapClient) CreateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BuildingResponse)
+	err := c.cc.Invoke(ctx, Map_CreateBuilding_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mapClient) UpdateBuilding(ctx context.Context, in *SaveBuildingRequest, opts ...grpc.CallOption) (*BuildingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BuildingResponse)
+	err := c.cc.Invoke(ctx, Map_UpdateBuilding_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mapClient) DeleteBuilding(ctx context.Context, in *BuildingIdRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, Map_DeleteBuilding_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MapServer is the server API for Map service.
 // All implementations must embed UnimplementedMapServer
 // for forward compatibility.
 type MapServer interface {
 	Ping(context.Context, *Request) (*Response, error)
 	ListBuildings(context.Context, *ListBuildingsRequest) (*ListBuildingsResponse, error)
+	GetBuilding(context.Context, *BuildingIdRequest) (*BuildingResponse, error)
+	CreateBuilding(context.Context, *SaveBuildingRequest) (*BuildingResponse, error)
+	UpdateBuilding(context.Context, *SaveBuildingRequest) (*BuildingResponse, error)
+	DeleteBuilding(context.Context, *BuildingIdRequest) (*Response, error)
 	mustEmbedUnimplementedMapServer()
 }
 
@@ -80,6 +132,18 @@ func (UnimplementedMapServer) Ping(context.Context, *Request) (*Response, error)
 }
 func (UnimplementedMapServer) ListBuildings(context.Context, *ListBuildingsRequest) (*ListBuildingsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListBuildings not implemented")
+}
+func (UnimplementedMapServer) GetBuilding(context.Context, *BuildingIdRequest) (*BuildingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetBuilding not implemented")
+}
+func (UnimplementedMapServer) CreateBuilding(context.Context, *SaveBuildingRequest) (*BuildingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateBuilding not implemented")
+}
+func (UnimplementedMapServer) UpdateBuilding(context.Context, *SaveBuildingRequest) (*BuildingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateBuilding not implemented")
+}
+func (UnimplementedMapServer) DeleteBuilding(context.Context, *BuildingIdRequest) (*Response, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteBuilding not implemented")
 }
 func (UnimplementedMapServer) mustEmbedUnimplementedMapServer() {}
 func (UnimplementedMapServer) testEmbeddedByValue()             {}
@@ -138,6 +202,78 @@ func _Map_ListBuildings_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Map_GetBuilding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BuildingIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).GetBuilding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_GetBuilding_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).GetBuilding(ctx, req.(*BuildingIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Map_CreateBuilding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveBuildingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).CreateBuilding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_CreateBuilding_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).CreateBuilding(ctx, req.(*SaveBuildingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Map_UpdateBuilding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveBuildingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).UpdateBuilding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_UpdateBuilding_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).UpdateBuilding(ctx, req.(*SaveBuildingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Map_DeleteBuilding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BuildingIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServer).DeleteBuilding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Map_DeleteBuilding_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServer).DeleteBuilding(ctx, req.(*BuildingIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Map_ServiceDesc is the grpc.ServiceDesc for Map service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +288,22 @@ var Map_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListBuildings",
 			Handler:    _Map_ListBuildings_Handler,
+		},
+		{
+			MethodName: "GetBuilding",
+			Handler:    _Map_GetBuilding_Handler,
+		},
+		{
+			MethodName: "CreateBuilding",
+			Handler:    _Map_CreateBuilding_Handler,
+		},
+		{
+			MethodName: "UpdateBuilding",
+			Handler:    _Map_UpdateBuilding_Handler,
+		},
+		{
+			MethodName: "DeleteBuilding",
+			Handler:    _Map_DeleteBuilding_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

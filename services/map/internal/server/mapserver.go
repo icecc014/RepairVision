@@ -32,3 +32,23 @@ func (s *MapServer) ListBuildings(ctx context.Context, in *_map.ListBuildingsReq
 	l := logic.NewListBuildingsLogic(ctx, s.svcCtx)
 	return l.ListBuildings(in)
 }
+
+func (s *MapServer) GetBuilding(ctx context.Context, in *_map.BuildingIdRequest) (*_map.BuildingResponse, error) {
+	l := logic.NewGetBuildingLogic(ctx, s.svcCtx)
+	return l.GetBuilding(in)
+}
+
+func (s *MapServer) CreateBuilding(ctx context.Context, in *_map.SaveBuildingRequest) (*_map.BuildingResponse, error) {
+	l := logic.NewCreateBuildingLogic(ctx, s.svcCtx)
+	return l.CreateBuilding(in)
+}
+
+func (s *MapServer) UpdateBuilding(ctx context.Context, in *_map.SaveBuildingRequest) (*_map.BuildingResponse, error) {
+	l := logic.NewUpdateBuildingLogic(ctx, s.svcCtx)
+	return l.UpdateBuilding(in)
+}
+
+func (s *MapServer) DeleteBuilding(ctx context.Context, in *_map.BuildingIdRequest) (*_map.Response, error) {
+	l := logic.NewDeleteBuildingLogic(ctx, s.svcCtx)
+	return l.DeleteBuilding(in)
+}

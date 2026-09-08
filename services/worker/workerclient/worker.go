@@ -16,10 +16,16 @@ import (
 type (
 	BuildingWorkersRequest  = worker.BuildingWorkersRequest
 	BuildingWorkersResponse = worker.BuildingWorkersResponse
+	CreateUserRequest       = worker.CreateUserRequest
+	IdRequest               = worker.IdRequest
+	ListUsersRequest        = worker.ListUsersRequest
+	ListUsersResponse       = worker.ListUsersResponse
 	LoginRequest            = worker.LoginRequest
 	LoginResponse           = worker.LoginResponse
 	Request                 = worker.Request
+	ResetPasswordRequest    = worker.ResetPasswordRequest
 	Response                = worker.Response
+	UpdateUserRequest       = worker.UpdateUserRequest
 	User                    = worker.User
 	UserIdsRequest          = worker.UserIdsRequest
 	UsersResponse           = worker.UsersResponse
@@ -30,6 +36,11 @@ type (
 		Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 		ListWorkersByBuilding(ctx context.Context, in *BuildingWorkersRequest, opts ...grpc.CallOption) (*BuildingWorkersResponse, error)
 		GetUsers(ctx context.Context, in *UserIdsRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+		ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
+		CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+		UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+		ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error)
+		DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
 	}
 
 	defaultWorker struct {
@@ -61,4 +72,29 @@ func (m *defaultWorker) ListWorkersByBuilding(ctx context.Context, in *BuildingW
 func (m *defaultWorker) GetUsers(ctx context.Context, in *UserIdsRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
 	client := worker.NewWorkerClient(m.cli.Conn())
 	return client.GetUsers(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ListUsers(ctx, in, opts...)
+}
+
+func (m *defaultWorker) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.CreateUser(ctx, in, opts...)
+}
+
+func (m *defaultWorker) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.UpdateUser(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ResetPassword(ctx, in, opts...)
+}
+
+func (m *defaultWorker) DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.DisableUser(ctx, in, opts...)
 }

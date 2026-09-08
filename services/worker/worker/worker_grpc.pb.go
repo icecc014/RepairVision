@@ -23,6 +23,11 @@ const (
 	Worker_Login_FullMethodName                 = "/worker.Worker/Login"
 	Worker_ListWorkersByBuilding_FullMethodName = "/worker.Worker/ListWorkersByBuilding"
 	Worker_GetUsers_FullMethodName              = "/worker.Worker/GetUsers"
+	Worker_ListUsers_FullMethodName             = "/worker.Worker/ListUsers"
+	Worker_CreateUser_FullMethodName            = "/worker.Worker/CreateUser"
+	Worker_UpdateUser_FullMethodName            = "/worker.Worker/UpdateUser"
+	Worker_ResetPassword_FullMethodName         = "/worker.Worker/ResetPassword"
+	Worker_DisableUser_FullMethodName           = "/worker.Worker/DisableUser"
 )
 
 // WorkerClient is the client API for Worker service.
@@ -33,6 +38,11 @@ type WorkerClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	ListWorkersByBuilding(ctx context.Context, in *BuildingWorkersRequest, opts ...grpc.CallOption) (*BuildingWorkersResponse, error)
 	GetUsers(ctx context.Context, in *UserIdsRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
+	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error)
+	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error)
+	DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type workerClient struct {
@@ -83,6 +93,56 @@ func (c *workerClient) GetUsers(ctx context.Context, in *UserIdsRequest, opts ..
 	return out, nil
 }
 
+func (c *workerClient) ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListUsersResponse)
+	err := c.cc.Invoke(ctx, Worker_ListUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UsersResponse)
+	err := c.cc.Invoke(ctx, Worker_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UsersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UsersResponse)
+	err := c.cc.Invoke(ctx, Worker_UpdateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, Worker_ResetPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, Worker_DisableUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WorkerServer is the server API for Worker service.
 // All implementations must embed UnimplementedWorkerServer
 // for forward compatibility.
@@ -91,6 +151,11 @@ type WorkerServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	ListWorkersByBuilding(context.Context, *BuildingWorkersRequest) (*BuildingWorkersResponse, error)
 	GetUsers(context.Context, *UserIdsRequest) (*UsersResponse, error)
+	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
+	CreateUser(context.Context, *CreateUserRequest) (*UsersResponse, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*UsersResponse, error)
+	ResetPassword(context.Context, *ResetPasswordRequest) (*Response, error)
+	DisableUser(context.Context, *IdRequest) (*Response, error)
 	mustEmbedUnimplementedWorkerServer()
 }
 
@@ -112,6 +177,21 @@ func (UnimplementedWorkerServer) ListWorkersByBuilding(context.Context, *Buildin
 }
 func (UnimplementedWorkerServer) GetUsers(context.Context, *UserIdsRequest) (*UsersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUsers not implemented")
+}
+func (UnimplementedWorkerServer) ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListUsers not implemented")
+}
+func (UnimplementedWorkerServer) CreateUser(context.Context, *CreateUserRequest) (*UsersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedWorkerServer) UpdateUser(context.Context, *UpdateUserRequest) (*UsersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateUser not implemented")
+}
+func (UnimplementedWorkerServer) ResetPassword(context.Context, *ResetPasswordRequest) (*Response, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedWorkerServer) DisableUser(context.Context, *IdRequest) (*Response, error) {
+	return nil, status.Error(codes.Unimplemented, "method DisableUser not implemented")
 }
 func (UnimplementedWorkerServer) mustEmbedUnimplementedWorkerServer() {}
 func (UnimplementedWorkerServer) testEmbeddedByValue()                {}
@@ -206,6 +286,96 @@ func _Worker_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Worker_ListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).ListUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_ListUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).ListUsers(ctx, req.(*ListUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).UpdateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_UpdateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).UpdateUser(ctx, req.(*UpdateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_ResetPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_DisableUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).DisableUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_DisableUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).DisableUser(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Worker_ServiceDesc is the grpc.ServiceDesc for Worker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +398,26 @@ var Worker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsers",
 			Handler:    _Worker_GetUsers_Handler,
+		},
+		{
+			MethodName: "ListUsers",
+			Handler:    _Worker_ListUsers_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _Worker_CreateUser_Handler,
+		},
+		{
+			MethodName: "UpdateUser",
+			Handler:    _Worker_UpdateUser_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _Worker_ResetPassword_Handler,
+		},
+		{
+			MethodName: "DisableUser",
+			Handler:    _Worker_DisableUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
