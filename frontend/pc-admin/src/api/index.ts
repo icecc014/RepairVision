@@ -98,3 +98,84 @@ export function apiUpdateDispatchRule(
 ): Promise<unknown> {
   return http.put(`/admin/dispatch-rules/${id}`, payload)
 }
+
+export interface AdminUser {
+  id: number
+  username: string
+  name: string
+  phone: string
+  role: number
+  roleText: string
+  buildingId?: number
+  status: number
+  statusText: string
+  buildingIds?: number[]
+  buildings?: string[]
+}
+
+export interface AdminBuilding {
+  id: number
+  code: string
+  name: string
+  posX: number
+  posY: number
+  width: number
+  height: number
+  floors: number
+  floorHeight: number
+  roomsPerFloor: number
+}
+
+export function apiAdminUsers(params: { role?: number; status?: number; keyword?: string }): Promise<AdminUser[]> {
+  return http.get('/admin/users', { params: { role: params.role || undefined, status: params.status || undefined, keyword: params.keyword || undefined } })
+}
+
+export function apiCreateUser(payload: {
+  username: string
+  password: string
+  name: string
+  phone: string
+  role: number
+  buildingId?: number
+  buildingIds?: number[]
+}): Promise<unknown> {
+  return http.post('/admin/users', payload)
+}
+
+export function apiUpdateUser(
+  id: number,
+  payload: {
+    name: string
+    phone: string
+    role: number
+    status: number
+    buildingId?: number
+    buildingIds?: number[]
+  },
+): Promise<unknown> {
+  return http.put(`/admin/users/${id}`, payload)
+}
+
+export function apiResetPassword(id: number, password: string): Promise<unknown> {
+  return http.post(`/admin/users/${id}/reset-password`, { password })
+}
+
+export function apiDeleteUser(id: number): Promise<unknown> {
+  return http.delete(`/admin/users/${id}`)
+}
+
+export function apiAdminBuildings(): Promise<AdminBuilding[]> {
+  return http.get('/admin/buildings')
+}
+
+export function apiCreateBuilding(payload: Partial<AdminBuilding>): Promise<unknown> {
+  return http.post('/admin/buildings', payload)
+}
+
+export function apiUpdateBuilding(id: number, payload: Partial<AdminBuilding>): Promise<unknown> {
+  return http.put(`/admin/buildings/${id}`, payload)
+}
+
+export function apiDeleteBuilding(id: number): Promise<unknown> {
+  return http.delete(`/admin/buildings/${id}`)
+}
