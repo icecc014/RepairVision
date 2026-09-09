@@ -325,3 +325,30 @@ export interface SlaOverview {
 export function apiAdminSlaOverview(): Promise<SlaOverview> {
   return http.get('/admin/sla-overview')
 }
+
+export interface FeedbackRatingCount {
+  rating: number
+  cnt: number
+}
+
+export interface FeedbackRecentItem {
+  orderNo: string
+  buildingId: number
+  buildingName: string
+  room: string
+  workerName?: string
+  rating: number
+  comment: string
+  createdAt: string
+}
+
+export interface AdminFeedbackStats {
+  total: number
+  avgRating: number
+  ratings: FeedbackRatingCount[]
+  recent: FeedbackRecentItem[]
+}
+
+export function apiAdminFeedbackStats(): Promise<AdminFeedbackStats> {
+  return http.get('/admin/feedback-stats')
+}

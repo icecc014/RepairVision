@@ -48,6 +48,35 @@ type SlaOverviewResponse {
 	AvgRepairMinutes       float64     `json:"avgRepairMinutes"`
 	OverdueOrders          []OrderItem `json:"overdueOrders"`
 }
+
+type DormFeedbackRequest {
+	Id      int64  `path:"id"`
+	Rating  int64  `json:"rating"`
+	Comment string `json:"comment,optional"`
+}
+
+type FeedbackRatingItem {
+	Rating int64 `json:"rating"`
+	Cnt    int64 `json:"cnt"`
+}
+
+type FeedbackRecentItem {
+	OrderNo      string `json:"orderNo"`
+	BuildingId   int64  `json:"buildingId"`
+	BuildingName string `json:"buildingName"`
+	Room         string `json:"room"`
+	WorkerName   string `json:"workerName,optional"`
+	Rating       int64  `json:"rating"`
+	Comment      string `json:"comment"`
+	CreatedAt    string `json:"createdAt"`
+}
+
+type AdminFeedbackStatsResponse {
+	Total     int64                `json:"total"`
+	AvgRating float64              `json:"avgRating"`
+	Ratings   []FeedbackRatingItem `json:"ratings"`
+	Recent    []FeedbackRecentItem `json:"recent"`
+}
 type PingRequest {
 	Name string `path:"name"`
 }
@@ -146,6 +175,9 @@ type OrderItem {
 	FaultTypeName string  `json:"faultTypeName"`
 	Status        int64   `json:"status"`
 	PendingReason string  `json:"pendingReason,optional"`
+	Rated           bool    `json:"rated,optional"`
+	Rating          int64   `json:"rating,optional"`
+	FeedbackComment string  `json:"feedbackComment,optional"`
 	StatusText    string  `json:"statusText"`
 	WorkerId      int64   `json:"workerId,optional"`
 	WorkerName    string  `json:"workerName,optional"`
@@ -438,6 +470,9 @@ service order-api {
 	@handler CreateOrderHandler
 	post /api/dorm/orders (CreateOrderRequest) returns (CreateOrderResponse)
 
+	@handler DormFeedbackHandler
+	post /api/dorm/orders/:id/feedback (DormFeedbackRequest) returns (EmptyResponse)
+
 	@handler CancelOrderHandler
 	post /api/dorm/orders/:id/cancel (OrderIdRequest) returns (EmptyResponse)
 
@@ -531,6 +566,9 @@ service order-api {
 	post /api/admin/schedules/generate (ScheduleGenerateRequest) returns (ScheduleListResponse)
 	@handler AdminSlaOverviewHandler
 	get /api/admin/sla-overview returns (SlaOverviewResponse)
+
+	@handler AdminFeedbackStatsHandler
+	get /api/admin/feedback-stats returns (AdminFeedbackStatsResponse)
 
 	@handler AdminStatsHandler
 	get /api/admin/stats returns (AdminStatsResponse)

@@ -36,6 +36,8 @@ export interface OrderItem {
   workerName?: string
   workerPhone?: string
   pendingReason?: string
+  rated?: boolean
+  rating?: number
   reporterId: number
   reporterName?: string
   source: string
@@ -144,4 +146,8 @@ export async function apiWorkerOrderPage(status = 0, page = 1, size = 20): Promi
     params: { status: status || undefined, page, size },
   })) as { total: number; list: OrderItem[] }
   return { total: res.total || 0, list: res.list || [] }
+}
+
+export function apiDormFeedback(id: number, rating: number, comment: string): Promise<unknown> {
+  return http.post(`/dorm/orders/${id}/feedback`, { rating, comment })
 }

@@ -25,6 +25,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodGet, Path: "/api/dorm/orders/:id", Handler: DormOrderDetailHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/dorm/orders", Handler: CreateOrderHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/dorm/orders/:id/cancel", Handler: CancelOrderHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/dorm/orders/:id/feedback", Handler: DormFeedbackHandler(serverCtx)},
 	}...), jwtOpt)
 
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(2), []rest.Route{
@@ -43,6 +44,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodPost, Path: "/api/admin/schedules", Handler: AdminScheduleSaveHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/schedules/generate", Handler: AdminScheduleGenerateHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/stats", Handler: AdminStatsHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/feedback-stats", Handler: AdminFeedbackStatsHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/sla-overview", Handler: AdminSlaOverviewHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/reassign", Handler: AdminOrderReassignHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/batch-dispatch", Handler: AdminBatchDispatchHandler(serverCtx)},

@@ -59,6 +59,8 @@
               <button v-if="item.workerName" class="rv-btn rv-btn-ghost" disabled style="opacity: 0.8">
                 {{ item.workerName }}
               </button>
+              <button v-if="item.status === 4 && !item.rated" class="rv-btn rv-btn-success" @click="openFeedback(item)">评价</button>
+              <span v-else-if="item.status === 4 && item.rating" class="rv-order-time">★ {{ item.rating }}</span>
               <button v-if="canCancel(item)" class="rv-btn rv-btn-danger" @click="cancelOrder(item)">
                 取消
               </button>
@@ -146,13 +148,28 @@
         </a>
       </div>
     </van-popup>
+    <van-popup v-model:show="feedbackVisible" position="bottom" round :style="{ maxHeight: '70vh' }">
+      <div v-if="feedbackTarget" style="padding: 18px 18px 24px">
+        <div style="font-size:17px;font-weight:800;margin-bottom:6px">服务评价</div>
+        <div style="color:#94a3b8;font-size:12px;margin-bottom:14px">{{ feedbackTarget.orderNo }} · {{ feedbackTarget.title }}</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <span class="rv-form-label" style="margin:0">维修质量</span>
+          <van-rate v-model="feedbackRating" :count="5" color="#f59e0b" void-icon="star" void-color="#e2e8f0" />
+        </div>
+        <div class="rv-form-label">评价内容（可选）</div>
+        <textarea v-model="feedbackComment" class="rv-form-field" rows="3" maxlength="500" placeholder="说说本次维修服务怎么样" />
+        <button class="rv-submit" :disabled="feedbackSubmitting" @click="submitFeedback">
+          {{ feedbackSubmitting ? '提交中…' : '提交评价' }}
+        </button>
+      </div>
+    </van-popup>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { FaultType, OrderItem } from '../api'
-import { apiCancelOrder, apiCreateOrder, apiDormOrderPage, apiFaultTypes } from '../api'
+import { apiCancelOrder, apiCreateOrder, apiDormFeedback, apiDormOrderPage, apiFaultTypes } from '../api'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -173,6 +190,11 @@ const submitting = ref(false)
 const showCreate = ref(false)
 const showDetail = ref(false)
 const detail = ref<OrderItem | null>(null)
+const feedbackVisible = ref(false)
+const feedbackTarget = ref<OrderItem | null>(null)
+const feedbackRating = ref(5)
+const feedbackComment = ref('')
+const feedbackSubmitting = ref(false)
 const filter = ref<FilterValue>('all')
 const createForm = reactive({ faultType: '', room: '', description: '' })
 
@@ -246,6 +268,27 @@ async function loadMore() {
   }
 }
 
+function openFeedback(item: OrderItem) {
+  feedbackTarget.value = item
+  feedbackRating.value = 5
+  feedbackComment.value = ''
+  feedbackVisible.value = true
+}
+
+async function submitFeedback() {
+  if (!feedbackTarget.value) return
+  feedbackSubmitting.value = true
+  try {
+    await apiDormFeedback(feedbackTarget.value.id, feedbackRating.value, feedbackComment.value.trim())
+    showToast('评价成功，感谢反馈')
+    feedbackVisible.value = false
+    load()
+  } catch (err) {
+    showToast((err as Error).message)
+  } finally {
+    feedbackSubmitting.value = false
+  }
+}
 function openDetail(item: OrderItem) {
   detail.value = item
   showDetail.value = true
