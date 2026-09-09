@@ -78,6 +78,20 @@ type AdminFaultTypeUpdateRequest struct {
 	Status int64  `json:"status,optional"`
 }
 
+type AdminBatchDispatchItem struct {
+	OrderId  int64 `json:"orderId"`
+	WorkerId int64 `json:"workerId"`
+}
+
+type AdminBatchDispatchRequest struct {
+	OrderIds   []int64 `json:"orderIds,optional"`
+	BuildingId int64   `json:"buildingId,optional"`
+}
+
+type AdminBatchDispatchResponse struct {
+	Dispatched []AdminBatchDispatchItem `json:"dispatched"`
+	Remained   int64                    `json:"remained"`
+}
 type AdminOrderReassignRequest struct {
 	Id       int64 `path:"id"`
 	WorkerId int64 `json:"workerId"`
@@ -95,13 +109,14 @@ type AdminStatsResponse struct {
 }
 
 type AdminUserCreateRequest struct {
-	Username    string  `json:"username"`
-	Password    string  `json:"password"`
-	Name        string  `json:"name"`
-	Phone       string  `json:"phone,optional"`
-	Role        int64   `json:"role"`
-	BuildingId  int64   `json:"buildingId,optional"`
-	BuildingIds []int64 `json:"buildingIds,optional"`
+	Username      string  `json:"username"`
+	Password      string  `json:"password"`
+	Name          string  `json:"name"`
+	Phone         string  `json:"phone,optional"`
+	Role          int64   `json:"role"`
+	BuildingId    int64   `json:"buildingId,optional"`
+	BuildingIds   []int64 `json:"buildingIds,optional"`
+	MaxConcurrent int64   `json:"maxConcurrent,optional"`
 }
 
 type AdminUserIdRequest struct {
@@ -109,18 +124,19 @@ type AdminUserIdRequest struct {
 }
 
 type AdminUserItem struct {
-	Id          int64    `json:"id"`
-	Username    string   `json:"username"`
-	Name        string   `json:"name"`
-	Phone       string   `json:"phone"`
-	Role        int64    `json:"role"`
-	RoleText    string   `json:"roleText"`
-	BuildingId  int64    `json:"buildingId,optional"`
-	Status      int64    `json:"status"`
-	StatusText  string   `json:"statusText"`
-	BuildingIds []int64  `json:"buildingIds,optional"`
-	Buildings   []string `json:"buildings,optional"`
-	CreatedAt   string   `json:"createdAt"`
+	Id            int64    `json:"id"`
+	Username      string   `json:"username"`
+	Name          string   `json:"name"`
+	Phone         string   `json:"phone"`
+	Role          int64    `json:"role"`
+	RoleText      string   `json:"roleText"`
+	BuildingId    int64    `json:"buildingId,optional"`
+	Status        int64    `json:"status"`
+	StatusText    string   `json:"statusText"`
+	BuildingIds   []int64  `json:"buildingIds,optional"`
+	MaxConcurrent int64    `json:"maxConcurrent,optional"`
+	Buildings     []string `json:"buildings,optional"`
+	CreatedAt     string   `json:"createdAt"`
 }
 
 type AdminUserListRequest struct {
@@ -139,13 +155,14 @@ type AdminUserResetPasswordRequest struct {
 }
 
 type AdminUserUpdateRequest struct {
-	Id          int64   `path:"id"`
-	Name        string  `json:"name"`
-	Phone       string  `json:"phone,optional"`
-	Role        int64   `json:"role"`
-	Status      int64   `json:"status,optional"`
-	BuildingId  int64   `json:"buildingId,optional"`
-	BuildingIds []int64 `json:"buildingIds,optional"`
+	Id            int64   `path:"id"`
+	Name          string  `json:"name"`
+	Phone         string  `json:"phone,optional"`
+	Role          int64   `json:"role"`
+	Status        int64   `json:"status,optional"`
+	BuildingId    int64   `json:"buildingId,optional"`
+	BuildingIds   []int64 `json:"buildingIds,optional"`
+	MaxConcurrent int64   `json:"maxConcurrent,optional"`
 }
 
 type BatchCompleteRequest struct {

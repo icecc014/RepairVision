@@ -45,16 +45,17 @@ func (l *AdminUsersLogic) AdminUsers(req *types.AdminUserListRequest) (resp *typ
 	items := make([]types.AdminUserItem, 0, len(out.Users))
 	for _, u := range out.Users {
 		item := types.AdminUserItem{
-			Id:          u.Id,
-			Username:    u.Username,
-			Name:        u.Name,
-			Phone:       u.Phone,
-			Role:        u.Role,
-			RoleText:    roleText(u.Role),
-			BuildingId:  u.BuildingId,
-			Status:      u.Status,
-			StatusText:  userStatusText(u.Status),
-			BuildingIds: u.BuildingIds,
+			Id:            u.Id,
+			Username:      u.Username,
+			Name:          u.Name,
+			Phone:         u.Phone,
+			Role:          u.Role,
+			RoleText:      roleText(u.Role),
+			BuildingId:    u.BuildingId,
+			Status:        u.Status,
+			StatusText:    userStatusText(u.Status),
+			BuildingIds:   u.BuildingIds,
+			MaxConcurrent: u.MaxConcurrent,
 		}
 		for _, id := range u.BuildingIds {
 			if name := buildingNames[id]; name != "" {

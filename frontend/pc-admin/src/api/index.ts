@@ -116,7 +116,8 @@ export interface AdminUser {
   buildingId?: number
   status: number
   statusText: string
-  buildingIds?: number[]
+  buildingIds?: number[]
+  maxConcurrent?: number
   buildings?: string[]
 }
 
@@ -145,7 +146,8 @@ export function apiCreateUser(payload: {
   phone: string
   role: number
   buildingId?: number
-  buildingIds?: number[]
+  buildingIds?: number[]
+  maxConcurrent?: number
 }): Promise<unknown> {
   return http.post('/admin/users', payload)
 }
@@ -158,7 +160,8 @@ export function apiUpdateUser(
     role: number
     status: number
     buildingId?: number
-    buildingIds?: number[]
+    buildingIds?: number[]
+    maxConcurrent?: number
   },
 ): Promise<unknown> {
   return http.put(`/admin/users/${id}`, payload)
@@ -233,4 +236,26 @@ export interface AdminStats {
 
 export function apiAdminStats(): Promise<AdminStats> {
   return http.get('/admin/stats')
+}
+
+export interface AdminReassignPayload {
+  workerId: number
+}
+
+export interface BatchDispatchItem {
+  orderId: number
+  workerId: number
+}
+
+export interface BatchDispatchResult {
+  dispatched: BatchDispatchItem[]
+  remained: number
+}
+
+export function apiAdminOrderReassign(id: number, workerId: number): Promise<unknown> {
+  return http.post(`/admin/orders/${id}/reassign`, { workerId })
+}
+
+export function apiAdminBatchDispatch(payload?: { buildingId?: number; orderIds?: number[] }): Promise<BatchDispatchResult> {
+  return http.post('/admin/orders/batch-dispatch', payload || {})
 }
