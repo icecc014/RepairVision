@@ -1,5 +1,29 @@
 syntax = "v1"
 
+type ScheduleItem {
+	WorkerId  int64  `json:"workerId"`
+	WorkDate  string `json:"workDate"`
+	ShiftType string `json:"shiftType"`
+	Note      string `json:"note,optional"`
+}
+
+type ScheduleQueryRequest {
+	WorkerId  int64  `form:"workerId,optional"`
+	StartDate string `form:"startDate,optional"`
+	EndDate   string `form:"endDate,optional"`
+}
+
+type ScheduleListResponse {
+	List []ScheduleItem `json:"list"`
+}
+
+type ScheduleSaveRequest {
+	Items []ScheduleItem `json:"items"`
+}
+
+type ScheduleGenerateRequest {
+	WeekStart string `json:"weekStart"`
+}
 type PingRequest {
 	Name string `path:"name"`
 }
@@ -449,6 +473,8 @@ service order-api {
 	@handler AdminOperationLogsHandler
 	get /api/admin/logs (OperationLogListRequest) returns (OperationLogListResponse)
 
+	@handler WorkerSchedulesHandler
+	get /api/worker/schedules (ScheduleQueryRequest) returns (ScheduleListResponse)
 	@handler WorkerMapDataHandler
 	get /api/worker/map-data returns (WorkerMapDataResponse)
 
@@ -461,6 +487,14 @@ service order-api {
 	@handler AdminOrderReassignHandler
 	post /api/admin/orders/:id/reassign (AdminOrderReassignRequest) returns (EmptyResponse)
 
+	@handler AdminSchedulesHandler
+	get /api/admin/schedules (ScheduleQueryRequest) returns (ScheduleListResponse)
+
+	@handler AdminScheduleSaveHandler
+	post /api/admin/schedules (ScheduleSaveRequest) returns (ScheduleListResponse)
+
+	@handler AdminScheduleGenerateHandler
+	post /api/admin/schedules/generate (ScheduleGenerateRequest) returns (ScheduleListResponse)
 	@handler AdminStatsHandler
 	get /api/admin/stats returns (AdminStatsResponse)
 }

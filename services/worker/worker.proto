@@ -120,4 +120,32 @@ service Worker {
   rpc ResetPassword(ResetPasswordRequest) returns(Response);
   rpc DisableUser(IdRequest) returns(Response);
   rpc ListManagedBuildings(IdRequest) returns(BuildingIdsResponse);
+  rpc ListSchedules(ScheduleListRequest) returns(ScheduleListResponse);
+  rpc SaveSchedules(SaveSchedulesRequest) returns(ScheduleListResponse);
+  rpc GenerateWeekly(GenerateScheduleRequest) returns(ScheduleListResponse);
+}
+
+message ScheduleItem {
+  int64 worker_id = 1;
+  string work_date = 2;
+  string shift_type = 3;
+  string note = 4;
+}
+
+message ScheduleListRequest {
+  int64 worker_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message ScheduleListResponse {
+  repeated ScheduleItem items = 1;
+}
+
+message SaveSchedulesRequest {
+  repeated ScheduleItem items = 1;
+}
+
+message GenerateScheduleRequest {
+  string week_start = 1;
 }

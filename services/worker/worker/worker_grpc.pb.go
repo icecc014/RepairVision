@@ -29,6 +29,9 @@ const (
 	Worker_ResetPassword_FullMethodName         = "/worker.Worker/ResetPassword"
 	Worker_DisableUser_FullMethodName           = "/worker.Worker/DisableUser"
 	Worker_ListManagedBuildings_FullMethodName  = "/worker.Worker/ListManagedBuildings"
+	Worker_ListSchedules_FullMethodName         = "/worker.Worker/ListSchedules"
+	Worker_SaveSchedules_FullMethodName         = "/worker.Worker/SaveSchedules"
+	Worker_GenerateWeekly_FullMethodName        = "/worker.Worker/GenerateWeekly"
 )
 
 // WorkerClient is the client API for Worker service.
@@ -45,6 +48,9 @@ type WorkerClient interface {
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error)
 	DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
 	ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error)
+	ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+	SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+	GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 }
 
 type workerClient struct {
@@ -155,6 +161,36 @@ func (c *workerClient) ListManagedBuildings(ctx context.Context, in *IdRequest, 
 	return out, nil
 }
 
+func (c *workerClient) ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScheduleListResponse)
+	err := c.cc.Invoke(ctx, Worker_ListSchedules_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScheduleListResponse)
+	err := c.cc.Invoke(ctx, Worker_SaveSchedules_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScheduleListResponse)
+	err := c.cc.Invoke(ctx, Worker_GenerateWeekly_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WorkerServer is the server API for Worker service.
 // All implementations must embed UnimplementedWorkerServer
 // for forward compatibility.
@@ -169,6 +205,9 @@ type WorkerServer interface {
 	ResetPassword(context.Context, *ResetPasswordRequest) (*Response, error)
 	DisableUser(context.Context, *IdRequest) (*Response, error)
 	ListManagedBuildings(context.Context, *IdRequest) (*BuildingIdsResponse, error)
+	ListSchedules(context.Context, *ScheduleListRequest) (*ScheduleListResponse, error)
+	SaveSchedules(context.Context, *SaveSchedulesRequest) (*ScheduleListResponse, error)
+	GenerateWeekly(context.Context, *GenerateScheduleRequest) (*ScheduleListResponse, error)
 	mustEmbedUnimplementedWorkerServer()
 }
 
@@ -208,6 +247,15 @@ func (UnimplementedWorkerServer) DisableUser(context.Context, *IdRequest) (*Resp
 }
 func (UnimplementedWorkerServer) ListManagedBuildings(context.Context, *IdRequest) (*BuildingIdsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListManagedBuildings not implemented")
+}
+func (UnimplementedWorkerServer) ListSchedules(context.Context, *ScheduleListRequest) (*ScheduleListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSchedules not implemented")
+}
+func (UnimplementedWorkerServer) SaveSchedules(context.Context, *SaveSchedulesRequest) (*ScheduleListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SaveSchedules not implemented")
+}
+func (UnimplementedWorkerServer) GenerateWeekly(context.Context, *GenerateScheduleRequest) (*ScheduleListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GenerateWeekly not implemented")
 }
 func (UnimplementedWorkerServer) mustEmbedUnimplementedWorkerServer() {}
 func (UnimplementedWorkerServer) testEmbeddedByValue()                {}
@@ -410,6 +458,60 @@ func _Worker_ListManagedBuildings_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Worker_ListSchedules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduleListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).ListSchedules(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_ListSchedules_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).ListSchedules(ctx, req.(*ScheduleListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_SaveSchedules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveSchedulesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).SaveSchedules(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_SaveSchedules_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).SaveSchedules(ctx, req.(*SaveSchedulesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_GenerateWeekly_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).GenerateWeekly(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_GenerateWeekly_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).GenerateWeekly(ctx, req.(*GenerateScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Worker_ServiceDesc is the grpc.ServiceDesc for Worker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +558,18 @@ var Worker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListManagedBuildings",
 			Handler:    _Worker_ListManagedBuildings_Handler,
+		},
+		{
+			MethodName: "ListSchedules",
+			Handler:    _Worker_ListSchedules_Handler,
+		},
+		{
+			MethodName: "SaveSchedules",
+			Handler:    _Worker_SaveSchedules_Handler,
+		},
+		{
+			MethodName: "GenerateWeekly",
+			Handler:    _Worker_GenerateWeekly_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -25,6 +25,11 @@ type (
 	LoginResponse           = worker.LoginResponse
 	Request                 = worker.Request
 	ResetPasswordRequest    = worker.ResetPasswordRequest
+	GenerateScheduleRequest = worker.GenerateScheduleRequest
+	SaveSchedulesRequest    = worker.SaveSchedulesRequest
+	ScheduleItem            = worker.ScheduleItem
+	ScheduleListRequest     = worker.ScheduleListRequest
+	ScheduleListResponse    = worker.ScheduleListResponse
 	Response                = worker.Response
 	SkillInfo               = worker.SkillInfo
 	UpdateUserRequest       = worker.UpdateUserRequest
@@ -44,6 +49,9 @@ type (
 		ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Response, error)
 		DisableUser(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
 		ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error)
+		ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+		SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+		GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 	}
 
 	defaultWorker struct {
@@ -105,4 +113,19 @@ func (m *defaultWorker) DisableUser(ctx context.Context, in *IdRequest, opts ...
 func (m *defaultWorker) ListManagedBuildings(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*BuildingIdsResponse, error) {
 	client := worker.NewWorkerClient(m.cli.Conn())
 	return client.ListManagedBuildings(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ListSchedules(ctx, in, opts...)
+}
+
+func (m *defaultWorker) SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.SaveSchedules(ctx, in, opts...)
+}
+
+func (m *defaultWorker) GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.GenerateWeekly(ctx, in, opts...)
 }

@@ -259,3 +259,25 @@ export function apiAdminOrderReassign(id: number, workerId: number): Promise<unk
 export function apiAdminBatchDispatch(payload?: { buildingId?: number; orderIds?: number[] }): Promise<BatchDispatchResult> {
   return http.post('/admin/orders/batch-dispatch', payload || {})
 }
+
+export interface ScheduleItem {
+  workerId: number
+  workDate: string
+  shiftType: string
+  note?: string
+}
+
+export async function apiAdminSchedules(workerId: number, startDate: string, endDate: string): Promise<ScheduleItem[]> {
+  const res = (await http.get('/admin/schedules', {
+    params: { workerId: workerId || undefined, startDate, endDate },
+  })) as { list: ScheduleItem[] }
+  return res.list || []
+}
+
+export function apiSaveSchedules(items: ScheduleItem[]): Promise<{ list: ScheduleItem[] }> {
+  return http.post('/admin/schedules', { items })
+}
+
+export function apiGenerateWeekly(weekStart: string): Promise<{ list: ScheduleItem[] }> {
+  return http.post('/admin/schedules/generate', { weekStart })
+}

@@ -11,9 +11,11 @@
     <div class="mode-tabs">
       <button class="mode-tab" :class="{ active: tab === 'orders' }" @click="tab = 'orders'">我的工单</button>
       <button class="mode-tab" :class="{ active: tab === 'map' }" @click="tab = 'map'">报修地图</button>
+      <button class="mode-tab" :class="{ active: tab === 'schedule' }" @click="tab = 'schedule'">我的班次</button>
     </div>
 
     <MapView v-if="tab === 'map'" />
+    <WorkerSchedule v-else-if="tab === 'schedule'" />
 
     <main v-else class="rv-content">
       <section class="rv-stats">
@@ -94,6 +96,7 @@ import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
 import { apiCompleteOrder, apiStartOrder, apiWorkerOrders } from '../api'
 import MapView from './MapView.vue'
+import WorkerSchedule from './WorkerSchedule.vue'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -102,7 +105,7 @@ const auth = useAuthStore()
 type FilterValue = 'all' | 'todo' | 'working' | 'done'
 
 const orders = ref<OrderItem[]>([])
-const tab = ref<'orders' | 'map'>('orders')
+const tab = ref<'orders' | 'map' | 'schedule'>('orders')
 let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const loading = ref(false)

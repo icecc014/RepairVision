@@ -310,6 +310,30 @@ type OrderListResponse struct {
 	List []OrderItem `json:"list"`
 }
 
+type ScheduleItem struct {
+	WorkerId  int64  `json:"workerId"`
+	WorkDate  string `json:"workDate"`
+	ShiftType string `json:"shiftType"`
+	Note      string `json:"note,optional"`
+}
+
+type ScheduleQueryRequest struct {
+	WorkerId  int64  `form:"workerId,optional"`
+	StartDate string `form:"startDate,optional"`
+	EndDate   string `form:"endDate,optional"`
+}
+
+type ScheduleListResponse struct {
+	List []ScheduleItem `json:"list"`
+}
+
+type ScheduleSaveRequest struct {
+	Items []ScheduleItem `json:"items"`
+}
+
+type ScheduleGenerateRequest struct {
+	WeekStart string `json:"weekStart"`
+}
 type PingRequest struct {
 	Name string `path:"name"`
 }

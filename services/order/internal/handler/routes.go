@@ -30,6 +30,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(2), []rest.Route{
 		{Method: http.MethodGet, Path: "/api/worker/orders", Handler: WorkerOrdersHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/worker/map-data", Handler: WorkerMapDataHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/worker/schedules", Handler: WorkerSchedulesHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/worker/batch-complete", Handler: WorkerBatchCompleteHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/worker/orders/:id/start", Handler: StartOrderHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/worker/orders/:id/complete", Handler: CompleteOrderHandler(serverCtx)},
@@ -37,6 +38,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(1), []rest.Route{
 		{Method: http.MethodGet, Path: "/api/admin/orders", Handler: AdminOrdersHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/schedules", Handler: AdminSchedulesHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/schedules", Handler: AdminScheduleSaveHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/schedules/generate", Handler: AdminScheduleGenerateHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/stats", Handler: AdminStatsHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/reassign", Handler: AdminOrderReassignHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/batch-dispatch", Handler: AdminBatchDispatchHandler(serverCtx)},
