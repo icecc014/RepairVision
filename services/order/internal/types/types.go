@@ -290,6 +290,7 @@ type OrderItem struct {
 	FaultType     string  `json:"faultType"`
 	FaultTypeName string  `json:"faultTypeName"`
 	Status        int64   `json:"status"`
+	PendingReason string  `json:"pendingReason,optional"`
 	StatusText    string  `json:"statusText"`
 	WorkerId      int64   `json:"workerId,optional"`
 	WorkerName    string  `json:"workerName,optional"`

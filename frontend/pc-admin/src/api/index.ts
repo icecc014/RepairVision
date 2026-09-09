@@ -24,6 +24,7 @@ export interface OrderItem {
   faultTypeName: string
   status: number
   statusText: string
+  pendingReason?: string
   workerId?: number
   workerName?: string
   workerPhone?: string
@@ -127,6 +128,7 @@ export interface AdminUser {
   buildingId?: number
   status: number
   statusText: string
+  pendingReason?: string
   buildingIds?: number[]
   maxConcurrent?: number
   buildings?: string[]

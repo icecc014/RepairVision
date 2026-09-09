@@ -68,7 +68,14 @@
       </div>
     </main>
 
-    <button class="rv-fab" @click="openCreate">＋ 极简报修</button>
+      <button
+        v-if="!loading && orders.length < total"
+        class="rv-load-more"
+        :disabled="loadingMore"
+        @click="loadMore"
+      >
+        {{ loadingMore ? '加载中…' : '加载更多' }}
+      </button>    <button class="rv-fab" @click="openCreate">＋ 极简报修</button>
 
     <van-popup
       v-model:show="showCreate"
@@ -145,7 +152,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { FaultType, OrderItem } from '../api'
-import { apiCancelOrder, apiCreateOrder, apiDormOrders, apiFaultTypes } from '../api'
+import { apiCancelOrder, apiCreateOrder, apiDormOrderPage, apiFaultTypes } from '../api'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -158,6 +165,10 @@ let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const faultTypes = ref<FaultType[]>([])
 const loading = ref(false)
+const total = ref(0)
+const page = ref(1)
+const pageSize = 20
+const loadingMore = ref(false)
 const submitting = ref(false)
 const showCreate = ref(false)
 const showDetail = ref(false)
@@ -201,12 +212,37 @@ const visibleOrders = computed(() => {
 
 async function load() {
   loading.value = true
+  page.value = 1
   try {
-    orders.value = await apiDormOrders(0)
+    const res = await apiDormOrderPage(0, 1, pageSize)
+    orders.value = res.list
+    total.value = res.total
   } catch (err) {
     showToast((err as Error).message)
   } finally {
     loading.value = false
+  }
+}
+
+async function loadMore() {
+  if (loadingMore.value || orders.value.length >= total.value) return
+  loadingMore.value = true
+  try {
+    const next = page.value + 1
+    const res = await apiDormOrderPage(0, next, pageSize)
+    const seen = new Set(orders.value.map((o) => o.id))
+    for (const item of res.list) {
+      if (!seen.has(item.id)) {
+        orders.value.push(item)
+        seen.add(item.id)
+      }
+    }
+    total.value = res.total
+    page.value = next
+  } catch (err) {
+    showToast((err as Error).message)
+  } finally {
+    loadingMore.value = false
   }
 }
 
@@ -333,4 +369,17 @@ onUnmounted(() => {
   margin: 6px 2px 0;
   color: #2563eb;
   font-size: 12px;
+}
+
+.rv-load-more {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  margin: 12px 0 4px;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 700;
+  background: #eff6ff;
+  border: none;
+  border-radius: 12px;
 }

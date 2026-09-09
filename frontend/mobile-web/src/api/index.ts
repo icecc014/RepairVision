@@ -35,6 +35,7 @@ export interface OrderItem {
   workerId?: number
   workerName?: string
   workerPhone?: string
+  pendingReason?: string
   reporterId: number
   reporterName?: string
   source: string
@@ -124,4 +125,23 @@ export async function apiWorkerSchedules(startDate: string, endDate: string): Pr
     params: { startDate, endDate },
   })) as { list: ScheduleItem[] }
   return res.list || []
+}
+
+export interface MobileOrderPage {
+  total: number
+  list: OrderItem[]
+}
+
+export async function apiDormOrderPage(status = 0, page = 1, size = 20): Promise<MobileOrderPage> {
+  const res = (await http.get('/dorm/orders', {
+    params: { status: status || undefined, page, size },
+  })) as { total: number; list: OrderItem[] }
+  return { total: res.total || 0, list: res.list || [] }
+}
+
+export async function apiWorkerOrderPage(status = 0, page = 1, size = 20): Promise<MobileOrderPage> {
+  const res = (await http.get('/worker/orders', {
+    params: { status: status || undefined, page, size },
+  })) as { total: number; list: OrderItem[] }
+  return { total: res.total || 0, list: res.list || [] }
 }

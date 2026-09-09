@@ -53,6 +53,7 @@
         <el-table-column label="状态" width="105">
           <template #default="{ row }">
             <span class="status-badge" :class="'st' + row.status">{{ row.statusText }}</span>
+            <div v-if="row.status === 1 && row.pendingReason" class="pending-reason">{{ row.pendingReason }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="workerName" label="维修工人" width="100">
@@ -397,6 +398,13 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
+.pending-reason {
+  margin-top: 5px;
+  color: #dc2626;
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: 140px;
+}
 .score-empty {
   color: #cbd5e1;
 }

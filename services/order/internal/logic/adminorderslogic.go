@@ -46,5 +46,8 @@ func (l *AdminOrdersLogic) AdminOrders(req *types.AdminOrderListRequest) (resp *
 	if err != nil {
 		return nil, err
 	}
+	if err := enrichPendingReasons(l.ctx, l.svcCtx, orders, items); err != nil {
+		return nil, errs.Internal(err)
+	}
 	return &types.OrderListResponse{Total: total, List: items}, nil
 }

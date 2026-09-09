@@ -86,7 +86,14 @@
           </div>
         </article>
       </div>
-    </main>
+      <button
+        v-if="!loading && orders.length < total"
+        class="rv-load-more"
+        :disabled="loadingMore"
+        @click="loadMore"
+      >
+        {{ loadingMore ? '加载中…' : '加载更多' }}
+      </button>    </main>
   </div>
 </template>
 
@@ -94,7 +101,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
-import { apiCompleteOrder, apiStartOrder, apiWorkerOrders } from '../api'
+import { apiCompleteOrder, apiStartOrder, apiWorkerOrderPage } from '../api'
 import MapView from './MapView.vue'
 import WorkerSchedule from './WorkerSchedule.vue'
 import { useAuthStore } from '../stores/auth'
@@ -110,6 +117,10 @@ let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const loading = ref(false)
 const actingId = ref<number | null>(null)
+const total = ref(0)
+const page = ref(1)
+const pageSize = 20
+const loadingMore = ref(false)
 const filter = ref<FilterValue>('all')
 
 const todoCount = computed(() => orders.value.filter((o) => o.status === 2).length)
@@ -148,12 +159,37 @@ const visibleOrders = computed(() => {
 
 async function load() {
   loading.value = true
+  page.value = 1
   try {
-    orders.value = await apiWorkerOrders(0)
+    const res = await apiWorkerOrderPage(0, 1, pageSize)
+    orders.value = res.list
+    total.value = res.total
   } catch (err) {
     showToast((err as Error).message)
   } finally {
     loading.value = false
+  }
+}
+
+async function loadMore() {
+  if (loadingMore.value || orders.value.length >= total.value) return
+  loadingMore.value = true
+  try {
+    const next = page.value + 1
+    const res = await apiWorkerOrderPage(0, next, pageSize)
+    const seen = new Set(orders.value.map((o) => o.id))
+    for (const item of res.list) {
+      if (!seen.has(item.id)) {
+        orders.value.push(item)
+        seen.add(item.id)
+      }
+    }
+    total.value = res.total
+    page.value = next
+  } catch (err) {
+    showToast((err as Error).message)
+  } finally {
+    loadingMore.value = false
   }
 }
 
@@ -250,3 +286,16 @@ onUnmounted(() => {
   border-color: #2563eb;
 }
 </style>
+
+.rv-load-more {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  margin: 12px 0 4px;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 700;
+  background: #eff6ff;
+  border: none;
+  border-radius: 12px;
+}
