@@ -83,6 +83,7 @@ docker compose up -d --build
 
 ## V3（feature/v3 分支 · 开发中）
 
+- V3.1 派单升级：独立派单引擎（当班/最大并发约束、分钟级负载分）、管理员人工改派、开工即标记已接受派单。
 - V3.0 领域数据：新增第 4 栋测试楼与 dorm4/worker3/worker4；
   工单增加优先级、预计时长与派单/开工/完成时间点；
   服务端房间号合法性校验；worker_db 预留 max_concurrent 与 worker_schedules 排班表。

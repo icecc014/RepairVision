@@ -38,7 +38,16 @@ func (l *ListWorkersByBuildingLogic) ListWorkersByBuilding(in *worker.BuildingWo
 		if err != nil {
 			return nil, err
 		}
-		resp.Workers = append(resp.Workers, workerInfoToPb(u, base, skills))
+		info := workerInfoToPb(u, base, skills)
+		if in.WorkDate != "" {
+			shift, err := store.FindWorkerShift(l.ctx, l.svcCtx.DB, u.ID, in.WorkDate)
+			if err != nil {
+				return nil, err
+			}
+			info.TodayShift = shift
+		}
+
+		resp.Workers = append(resp.Workers, info)
 	}
 	return resp, nil
 }

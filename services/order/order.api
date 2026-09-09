@@ -41,6 +41,10 @@ type OrderListRequest {
 	Status int64 `form:"status,optional"`
 }
 
+type AdminOrderReassignRequest {
+	Id       int64  `path:"id"`
+	WorkerId int64  `json:"workerId"`
+}
 type AdminOrderListRequest {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
@@ -433,6 +437,9 @@ service order-api {
 
 	@handler WorkerBatchCompleteHandler
 	post /api/worker/batch-complete (BatchCompleteRequest) returns (BatchCompleteResponse)
+
+	@handler AdminOrderReassignHandler
+	post /api/admin/orders/:id/reassign (AdminOrderReassignRequest) returns (EmptyResponse)
 
 	@handler AdminStatsHandler
 	get /api/admin/stats returns (AdminStatsResponse)

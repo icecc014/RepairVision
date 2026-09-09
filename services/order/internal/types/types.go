@@ -78,6 +78,10 @@ type AdminFaultTypeUpdateRequest struct {
 	Status int64  `json:"status,optional"`
 }
 
+type AdminOrderReassignRequest struct {
+	Id       int64 `path:"id"`
+	WorkerId int64 `json:"workerId"`
+}
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
@@ -233,8 +237,8 @@ type OperationLogItem struct {
 }
 
 type OperationLogListRequest struct {
-	Page    int64  `form:"page,optional"`
-	Size    int64  `form:"size,optional"`
+	Page      int64  `form:"page,optional"`
+	Size      int64  `form:"size,optional"`
 	Module    string `form:"module,optional"`
 	Action    string `form:"action,optional"`
 	Keyword   string `form:"keyword,optional"`

@@ -38,6 +38,9 @@ func (l *StartOrderLogic) StartOrder(req *types.OrderIdRequest) (resp *types.Emp
 	if !affected {
 		return nil, errs.Conflict("工单不存在或当前状态不可开工")
 	}
+	if err := store.AcceptDispatchRecord(l.ctx, l.svcCtx.DB, req.Id, identity.UID); err != nil {
+		logx.WithContext(l.ctx).Errorf("mark dispatch accepted failed order=%d worker=%d: %v", req.Id, identity.UID, err)
+	}
 	if order, err := store.FindOrder(l.ctx, l.svcCtx.DB, req.Id); err == nil {
 		l.svcCtx.WS.PublishOrder(ws.OrderEvent{
 			Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,

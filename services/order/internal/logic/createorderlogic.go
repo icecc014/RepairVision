@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"strings"
 	"time"
 
@@ -19,14 +18,6 @@ import (
 	"order/internal/ws"
 	"worker/workerclient"
 )
-
-type candidateScore struct {
-	workerID      int64
-	skillScore    float64
-	distanceScore float64
-	loadScore     float64
-	totalScore    float64
-}
 
 type CreateOrderLogic struct {
 	logx.Logger
@@ -107,7 +98,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		return nil, err
 	}
 	workerResp, err := l.svcCtx.WorkerRpc.ListWorkersByBuilding(l.ctx,
-		&workerclient.BuildingWorkersRequest{BuildingId: buildingID})
+		&workerclient.BuildingWorkersRequest{BuildingId: buildingID, WorkDate: time.Now().Format("2006-01-02")})
 	if err != nil {
 		return nil, errs.Upstream()
 	}
@@ -133,11 +124,16 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 
 	var best *candidateScore
 	if autoDispatch && len(workerResp.Workers) > 0 {
-		loads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
+		countLoads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
 		if err != nil {
 			return nil, errs.Internal(err)
 		}
-		best = l.pickBest(workerResp.Workers, buildingResp.Buildings, currentBuilding, faultType.Name, loads, skillW, distW, loadW)
+		minuteLoads, err := store.CountWorkloadByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
+		if err != nil {
+			return nil, errs.Internal(err)
+		}
+		best = pickBestOrder(workerResp.Workers, buildingResp.Buildings, currentBuilding, faultType.Name,
+			countLoads, minuteLoads, skillW, distW, loadW)
 	}
 
 	var orderID int64
@@ -198,111 +194,4 @@ func workerIDs(workers []*workerclient.WorkerInfo) []int64 {
 		ids = append(ids, w.Id)
 	}
 	return ids
-}
-
-func dispatchWeights(rules []store.DispatchRule) (skill, distance, load float64) {
-	skill, distance, load = 0.4, 0.3, 0.3
-	for _, r := range rules {
-		switch r.RuleKey {
-		case "skill_weight":
-			skill = r.RuleValue
-		case "distance_weight":
-			distance = r.RuleValue
-		case "load_weight":
-			load = r.RuleValue
-		}
-	}
-	return
-}
-
-func (l *CreateOrderLogic) pickBest(
-	workers []*workerclient.WorkerInfo,
-	buildings []*mapclient.Building,
-	current *mapclient.Building,
-	faultName string,
-	loads map[int64]int64,
-	wSkill, wDistance, wLoad float64,
-) *candidateScore {
-	buildingPos := make(map[int64]*mapclient.Building)
-	for _, b := range buildings {
-		buildingPos[b.Id] = b
-	}
-
-	maxLoad := int64(0)
-	maxDist := 0.0
-	for _, w := range workers {
-		cnt := loads[w.Id]
-		if cnt > maxLoad {
-			maxLoad = cnt
-		}
-		base := w.BaseBuildingId
-		if base <= 0 {
-			base = current.Id
-		}
-		if baseB, ok := buildingPos[base]; ok {
-			d := distance(baseB, current)
-			if d > maxDist {
-				maxDist = d
-			}
-		}
-	}
-
-	var best *candidateScore
-	for _, w := range workers {
-		score := candidateScore{workerID: w.Id}
-		score.skillScore = skillScore(w.Skills, faultName)
-		cnt := loads[w.Id]
-		if maxLoad <= 0 {
-			score.loadScore = 1
-		} else {
-			score.loadScore = 1 - float64(cnt)/float64(maxLoad)
-		}
-		base := w.BaseBuildingId
-		if base <= 0 {
-			base = current.Id
-		}
-		if baseB, ok := buildingPos[base]; ok {
-			d := distance(baseB, current)
-			if maxDist > 0 {
-				score.distanceScore = 1 - d/maxDist
-			} else {
-				score.distanceScore = 1
-			}
-		} else {
-			score.distanceScore = 0
-		}
-		total := wSkill*score.skillScore + wDistance*score.distanceScore + wLoad*score.loadScore
-		sum := wSkill + wDistance + wLoad
-		if sum > 0 {
-			total /= sum
-		}
-		score.totalScore = math.Round(total*10000) / 10000
-		if best == nil || score.totalScore > best.totalScore ||
-			(score.totalScore == best.totalScore && score.workerID < best.workerID) {
-			cp := score
-			best = &cp
-		}
-	}
-	return best
-}
-
-func skillScore(skills []*workerclient.SkillInfo, faultName string) float64 {
-	for _, s := range skills {
-		if s.Name == faultName {
-			if s.Proficiency >= 3 {
-				return 1
-			}
-			if s.Proficiency <= 1 {
-				return 1.0 / 3.0
-			}
-			return 2.0 / 3.0
-		}
-	}
-	return 0
-}
-
-func distance(a, b *mapclient.Building) float64 {
-	dx := a.PosX - b.PosX
-	dy := a.PosY - b.PosY
-	return math.Sqrt(dx*dx + dy*dy)
 }

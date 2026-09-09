@@ -51,11 +51,18 @@ func (l *UpdateUserLogic) UpdateUser(in *worker.UpdateUserRequest) (*worker.User
 	if in.Role == 2 && len(in.BuildingIds) == 0 {
 		return nil, errors.New("工人工号必须至少管辖一栋楼")
 	}
+	maxConcurrent := in.MaxConcurrent
+	if maxConcurrent <= 0 {
+		maxConcurrent = 3
+	}
+	if maxConcurrent < 1 || maxConcurrent > 10 {
+		return nil, errors.New("最大并发数需在1-10之间")
+	}
 	buildingID := sql.NullInt64{}
 	if in.Role == 3 {
 		buildingID = sql.NullInt64{Int64: in.BuildingId, Valid: true}
 	}
-	if err := store.UpdateUserProfile(l.ctx, l.svcCtx.DB, in.Id, name, strings.TrimSpace(in.Phone), in.Role, in.Status, buildingID); err != nil {
+	if err := store.UpdateUserProfile(l.ctx, l.svcCtx.DB, in.Id, name, strings.TrimSpace(in.Phone), in.Role, in.Status, maxConcurrent, buildingID); err != nil {
 		return nil, err
 	}
 	if in.Role == 2 {
@@ -71,6 +78,7 @@ func (l *UpdateUserLogic) UpdateUser(in *worker.UpdateUserRequest) (*worker.User
 	u := existing
 	u.Name = name
 	u.Role = in.Role
+	u.MaxConcurrent = maxConcurrent
 	u.BuildingID = buildingID
 	phone := strings.TrimSpace(in.Phone)
 	u.Phone = sql.NullString{}

@@ -9,17 +9,18 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
-const userColumns = "id, username, password, role, name, phone, building_id, status"
+const userColumns = "id, username, password, role, name, phone, building_id, status, max_concurrent"
 
 type User struct {
-	ID         int64          `db:"id"`
-	Username   string         `db:"username"`
-	Password   string         `db:"password"`
-	Role       int64          `db:"role"`
-	Name       string         `db:"name"`
-	Phone      sql.NullString `db:"phone"`
-	BuildingID sql.NullInt64  `db:"building_id"`
-	Status     int64          `db:"status"`
+	ID            int64          `db:"id"`
+	Username      string         `db:"username"`
+	Password      string         `db:"password"`
+	Role          int64          `db:"role"`
+	Name          string         `db:"name"`
+	Phone         sql.NullString `db:"phone"`
+	BuildingID    sql.NullInt64  `db:"building_id"`
+	Status        int64          `db:"status"`
+	MaxConcurrent int64          `db:"max_concurrent"`
 }
 
 func FindUserByUsername(ctx context.Context, conn sqlx.Session, username string) (*User, error) {
@@ -115,19 +116,22 @@ func SetUserBaseBuildingIfEmpty(ctx context.Context, conn sqlx.Session, id, buil
 	return err
 }
 func InsertUser(ctx context.Context, conn sqlx.Session, u *User) (int64, error) {
+	if u.MaxConcurrent <= 0 {
+		u.MaxConcurrent = 3
+	}
 	result, err := conn.ExecCtx(ctx,
-		"insert into users(username, password, role, name, phone, building_id, status) values(?,?,?,?,?,?,?)",
-		u.Username, u.Password, u.Role, u.Name, nullableString(u.Phone), nullableInt64(u.BuildingID), u.Status)
+		"insert into users(username, password, role, name, phone, building_id, status, max_concurrent) values(?,?,?,?,?,?,?,?)",
+		u.Username, u.Password, u.Role, u.Name, nullableString(u.Phone), nullableInt64(u.BuildingID), u.Status, u.MaxConcurrent)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
 }
 
-func UpdateUserProfile(ctx context.Context, conn sqlx.Session, id int64, name, phone string, role int64, status int64, buildingID sql.NullInt64) error {
+func UpdateUserProfile(ctx context.Context, conn sqlx.Session, id int64, name, phone string, role int64, status int64, maxConcurrent int64, buildingID sql.NullInt64) error {
 	_, err := conn.ExecCtx(ctx,
-		"update users set name = ?, phone = ?, role = ?, status = ?, building_id = ? where id = ?",
-		name, phone, role, status, nullableInt64(buildingID), id)
+		"update users set name = ?, phone = ?, role = ?, status = ?, max_concurrent = ?, building_id = ? where id = ?",
+		name, phone, role, status, maxConcurrent, nullableInt64(buildingID), id)
 	return err
 }
 

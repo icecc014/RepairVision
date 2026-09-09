@@ -47,6 +47,9 @@ func (l *CreateUserLogic) CreateUser(in *worker.CreateUserRequest) (*worker.User
 	if in.Role == 2 && len(in.BuildingIds) == 0 {
 		return nil, errors.New("工人工号必须至少管辖一栋楼")
 	}
+	if in.MaxConcurrent != 0 && (in.MaxConcurrent < 1 || in.MaxConcurrent > 10) {
+		return nil, errors.New("最大并发数需在1-10之间")
+	}
 	existing, err := store.FindUserByUsernameAll(l.ctx, l.svcCtx.DB, username)
 	if err == nil && existing != nil {
 		return nil, errors.New("用户名已存在")
@@ -59,11 +62,15 @@ func (l *CreateUserLogic) CreateUser(in *worker.CreateUserRequest) (*worker.User
 		return nil, err
 	}
 	u := &store.User{
-		Username: username,
-		Password: string(hash),
-		Role:     in.Role,
-		Name:     name,
-		Status:   1,
+		Username:      username,
+		Password:      string(hash),
+		Role:          in.Role,
+		Name:          name,
+		Status:        1,
+		MaxConcurrent: in.MaxConcurrent,
+	}
+	if u.MaxConcurrent <= 0 {
+		u.MaxConcurrent = 3
 	}
 	phone := strings.TrimSpace(in.Phone)
 	if phone != "" {
