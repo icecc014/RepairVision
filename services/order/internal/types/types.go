@@ -99,6 +99,8 @@ type AdminOrderReassignRequest struct {
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
+	Page       int64 `form:"page,optional"`
+	Size       int64 `form:"size,optional"`
 }
 
 type AdminStatsResponse struct {
@@ -305,10 +307,13 @@ type OrderItem struct {
 
 type OrderListRequest struct {
 	Status int64 `form:"status,optional"`
+	Page   int64 `form:"page,optional"`
+	Size   int64 `form:"size,optional"`
 }
 
 type OrderListResponse struct {
-	List []OrderItem `json:"list"`
+	Total int64       `json:"total"`
+	List  []OrderItem `json:"list"`
 }
 
 type ScheduleItem struct {

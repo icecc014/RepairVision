@@ -30,7 +30,16 @@ func (l *WorkerOrdersLogic) WorkerOrders(req *types.OrderListRequest) (resp *typ
 	if !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
-	orders, err := store.ListOrdersByWorker(l.ctx, l.svcCtx.DB, identity.UID, req.Status)
+	total, err := store.CountOrdersByWorkerFilter(l.ctx, l.svcCtx.DB, identity.UID, req.Status)
+	if err != nil {
+		return nil, errs.Internal(err)
+	}
+	var orders []store.Order
+	if req.Page > 0 || req.Size > 0 {
+		orders, err = store.ListOrdersByWorkerPage(l.ctx, l.svcCtx.DB, identity.UID, req.Status, req.Page, req.Size)
+	} else {
+		orders, err = store.ListOrdersByWorker(l.ctx, l.svcCtx.DB, identity.UID, req.Status)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -38,5 +47,5 @@ func (l *WorkerOrdersLogic) WorkerOrders(req *types.OrderListRequest) (resp *typ
 	if err != nil {
 		return nil, err
 	}
-	return &types.OrderListResponse{List: items}, nil
+	return &types.OrderListResponse{Total: total, List: items}, nil
 }

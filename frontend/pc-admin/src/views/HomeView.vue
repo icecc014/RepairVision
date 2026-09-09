@@ -2,8 +2,8 @@
   <AdminShell title="工单总览" subtitle="宿管报修 → 自动派单 → 维修完工，全流程一屏掌握">
     <section class="stat-grid">
       <div class="stat-card">
-        <div class="stat-num">{{ orders.length }}</div>
-        <div class="stat-label">工单总数</div>
+        <div class="stat-num">{{ total }}</div>
+        <div class="stat-label">工单总数（当前筛选）</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" style="color: #d97706">{{ pendingCount }}</div>
@@ -89,6 +89,16 @@
         description="当前筛选条件下暂无工单"
         class="table-empty"
       />
+      <div v-if="total > pageSize" class="pager">
+        <el-pagination
+          background
+          layout="prev, pager, next, total"
+          :total="total"
+          :page-size="pageSize"
+          :current-page="page"
+          @current-change="pageChange"
+        />
+      </div>
     </section>
 
     <el-dialog v-model="assignVisible" :title="assignTarget && assignTarget.status === 2 ? '改派工单' : '手动派单'" width="480px">
@@ -136,11 +146,15 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminUser, OrderItem } from '../api'
-import { apiAdminBatchDispatch, apiAdminOrderReassign, apiAdminOrders, apiAdminUsers } from '../api'
+import { apiAdminBatchDispatch, apiAdminOrderReassign, apiAdminOrders, apiAdminStats, apiAdminUsers } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import { useAuthStore } from '../stores/auth'
 
 const orders = ref<OrderItem[]>([])
+const statsValue = ref<{ status: { status: number; count: number }[] } | null>(null)
+const total = ref(0)
+const page = ref(1)
+const pageSize = 20
 const workers = ref<AdminUser[]>([])
 const loading = ref(false)
 const batching = ref(false)
@@ -155,10 +169,10 @@ const auth = useAuthStore()
 let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 
-const pendingCount = computed(() => orders.value.filter((o) => o.status === 1 || o.status === 2).length)
-const todoCount = computed(() => orders.value.filter((o) => o.status === 1).length)
-const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
-const doneCount = computed(() => orders.value.filter((o) => o.status === 4).length)
+const pendingCount = computed(() => { const row = statsValue.value?.status.find((s) => s.status === 1); return (row?.count || 0) + (statsValue.value?.status.find((s) => s.status === 2)?.count || 0) })
+const todoCount = computed(() => { const row = statsValue.value?.status.find((s) => s.status === 1); return (row?.count || 0) })
+const workingCount = computed(() => { const row = statsValue.value?.status.find((s) => s.status === 3); return (row?.count || 0) })
+const doneCount = computed(() => { const row = statsValue.value?.status.find((s) => s.status === 4); return (row?.count || 0) })
 
 const visibleOrders = computed(() => {
   const status = Number(query.status || 0)
@@ -171,16 +185,31 @@ const assignableWorkers = computed(() => {
   return workers.value.filter((w) => (w.buildingIds || []).includes(assignTarget.value!.buildingId))
 })
 
+async function loadStats() {
+  try {
+    statsValue.value = await apiAdminStats()
+  } catch {
+    // 统计卡失败不阻塞列表
+  }
+}
+
 async function load() {
   loading.value = true
   const buildingId = Number(query.buildingText || 0)
   try {
-    orders.value = await apiAdminOrders(0, buildingId > 0 ? buildingId : 0)
+    const res = await apiAdminOrders(0, buildingId > 0 ? buildingId : 0, page.value, pageSize)
+    orders.value = res.list
+    total.value = res.total
   } catch (err) {
     ElMessage.error((err as Error).message)
   } finally {
     loading.value = false
   }
+}
+
+function pageChange(p: number) {
+  page.value = p
+  load()
 }
 
 async function loadWorkers() {
@@ -194,7 +223,9 @@ async function loadWorkers() {
 function reset() {
   query.status = 0
   query.buildingText = ''
+  page.value = 1
   load()
+  loadStats()
 }
 
 function openDetail(row: OrderItem) {
@@ -242,7 +273,10 @@ async function runBatchDispatch() {
 
 function scheduleRefresh() {
   if (refreshTimer) clearTimeout(refreshTimer)
-  refreshTimer = setTimeout(() => load(), 350)
+  refreshTimer = setTimeout(() => {
+    load()
+    loadStats()
+  }, 350)
 }
 
 function connectWS() {
@@ -258,6 +292,7 @@ function connectWS() {
 
 onMounted(() => {
   load()
+  loadStats()
   loadWorkers()
   connectWS()
 })
@@ -372,6 +407,11 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
 .assign-empty {
   margin-top: 10px;
   color: #dc2626;

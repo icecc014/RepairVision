@@ -42,11 +42,21 @@ export function apiLogin(username: string, password: string): Promise<LoginResul
   return http.post('/login', { username, password })
 }
 
-export async function apiAdminOrders(status = 0, buildingId = 0): Promise<OrderItem[]> {
+export interface AdminOrderPage {
+  total: number
+  list: OrderItem[]
+}
+
+export async function apiAdminOrders(status = 0, buildingId = 0, page = 0, size = 0): Promise<AdminOrderPage> {
   const res = (await http.get('/admin/orders', {
-    params: { status: status || undefined, buildingId: buildingId || undefined },
-  })) as { list: OrderItem[] }
-  return res.list || []
+    params: {
+      status: status || undefined,
+      buildingId: buildingId || undefined,
+      page: page || undefined,
+      size: size || undefined,
+    },
+  })) as { total: number; list: OrderItem[] }
+  return { total: res.total || 0, list: res.list || [] }
 }
 
 export interface AdminFaultType {
