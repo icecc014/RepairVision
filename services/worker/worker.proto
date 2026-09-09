@@ -25,6 +25,7 @@ message User {
   int64 building_id = 6;
   int64 status = 7;
   repeated int64 building_ids = 8;
+  int64 max_concurrent = 9;
 }
 
 message LoginResponse {
@@ -33,6 +34,7 @@ message LoginResponse {
 
 message BuildingWorkersRequest {
   int64 building_id = 1;
+  string work_date = 2;
 }
 
 message SkillInfo {
@@ -47,6 +49,8 @@ message WorkerInfo {
   string phone = 4;
   int64 base_building_id = 5;
   repeated SkillInfo skills = 6;
+  int64 max_concurrent = 7;
+  string today_shift = 8;
 }
 
 message BuildingWorkersResponse {
@@ -79,6 +83,7 @@ message CreateUserRequest {
   int64 role = 5;
   int64 building_id = 6;
   repeated int64 building_ids = 7;
+  int64 max_concurrent = 8;
 }
 
 message UpdateUserRequest {
@@ -89,6 +94,7 @@ message UpdateUserRequest {
   int64 building_id = 5;
   repeated int64 building_ids = 6;
   int64 status = 7;
+  int64 max_concurrent = 8;
 }
 
 message IdRequest {
@@ -114,4 +120,32 @@ service Worker {
   rpc ResetPassword(ResetPasswordRequest) returns(Response);
   rpc DisableUser(IdRequest) returns(Response);
   rpc ListManagedBuildings(IdRequest) returns(BuildingIdsResponse);
+  rpc ListSchedules(ScheduleListRequest) returns(ScheduleListResponse);
+  rpc SaveSchedules(SaveSchedulesRequest) returns(ScheduleListResponse);
+  rpc GenerateWeekly(GenerateScheduleRequest) returns(ScheduleListResponse);
+}
+
+message ScheduleItem {
+  int64 worker_id = 1;
+  string work_date = 2;
+  string shift_type = 3;
+  string note = 4;
+}
+
+message ScheduleListRequest {
+  int64 worker_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message ScheduleListResponse {
+  repeated ScheduleItem items = 1;
+}
+
+message SaveSchedulesRequest {
+  repeated ScheduleItem items = 1;
+}
+
+message GenerateScheduleRequest {
+  string week_start = 1;
 }

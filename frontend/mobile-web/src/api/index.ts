@@ -34,6 +34,7 @@ export interface OrderItem {
   statusText: string
   workerId?: number
   workerName?: string
+  workerPhone?: string
   reporterId: number
   reporterName?: string
   source: string
@@ -109,4 +110,18 @@ export function apiWorkerMapData(): Promise<WorkerMapData> {
 
 export function apiBatchComplete(buildingId: number, faultType: string): Promise<{ count: number }> {
   return http.post('/worker/batch-complete', { buildingId, faultType })
+}
+
+export interface ScheduleItem {
+  workerId: number
+  workDate: string
+  shiftType: string
+  note?: string
+}
+
+export async function apiWorkerSchedules(startDate: string, endDate: string): Promise<ScheduleItem[]> {
+  const res = (await http.get('/worker/schedules', {
+    params: { startDate, endDate },
+  })) as { list: ScheduleItem[] }
+  return res.list || []
 }

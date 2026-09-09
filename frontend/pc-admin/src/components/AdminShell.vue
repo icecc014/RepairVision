@@ -11,10 +11,12 @@
 
       <div class="nav-label">管理导航</div>
       <router-link class="nav-item" to="/orders" active-class="active">工单总览</router-link>
+      <router-link class="nav-item" to="/dispatch-board" active-class="active">调度看板</router-link>
       <router-link class="nav-item" to="/stats" active-class="active">数据统计看板</router-link>
       <router-link class="nav-item" to="/fault-types" active-class="active">维修类型字典</router-link>
       <router-link class="nav-item" to="/dispatch-rules" active-class="active">派单规则配置</router-link>
       <router-link class="nav-item" to="/users" active-class="active">人员账号管理</router-link>
+      <router-link class="nav-item" to="/schedules" active-class="active">工人排班</router-link>
       <router-link class="nav-item" to="/buildings" active-class="active">建筑信息管理</router-link>
       <router-link class="nav-item" to="/logs" active-class="active">操作日志</router-link>
       <router-link class="nav-item" to="/permissions" active-class="active">权限说明</router-link>

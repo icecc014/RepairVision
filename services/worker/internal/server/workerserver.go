@@ -72,3 +72,18 @@ func (s *WorkerServer) ListManagedBuildings(ctx context.Context, in *worker.IdRe
 	l := logic.NewListManagedBuildingsLogic(ctx, s.svcCtx)
 	return l.ListManagedBuildings(in)
 }
+
+func (s *WorkerServer) ListSchedules(ctx context.Context, in *worker.ScheduleListRequest) (*worker.ScheduleListResponse, error) {
+	l := logic.NewListSchedulesLogic(ctx, s.svcCtx)
+	return l.ListSchedules(in)
+}
+
+func (s *WorkerServer) SaveSchedules(ctx context.Context, in *worker.SaveSchedulesRequest) (*worker.ScheduleListResponse, error) {
+	l := logic.NewSaveSchedulesLogic(ctx, s.svcCtx)
+	return l.SaveSchedules(in)
+}
+
+func (s *WorkerServer) GenerateWeekly(ctx context.Context, in *worker.GenerateScheduleRequest) (*worker.ScheduleListResponse, error) {
+	l := logic.NewGenerateWeeklyLogic(ctx, s.svcCtx)
+	return l.GenerateWeekly(in)
+}

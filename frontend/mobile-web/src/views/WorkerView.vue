@@ -11,9 +11,11 @@
     <div class="mode-tabs">
       <button class="mode-tab" :class="{ active: tab === 'orders' }" @click="tab = 'orders'">我的工单</button>
       <button class="mode-tab" :class="{ active: tab === 'map' }" @click="tab = 'map'">报修地图</button>
+      <button class="mode-tab" :class="{ active: tab === 'schedule' }" @click="tab = 'schedule'">我的班次</button>
     </div>
 
     <MapView v-if="tab === 'map'" />
+    <WorkerSchedule v-else-if="tab === 'schedule'" />
 
     <main v-else class="rv-content">
       <section class="rv-stats">
@@ -94,15 +96,16 @@ import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
 import { apiCompleteOrder, apiStartOrder, apiWorkerOrders } from '../api'
 import MapView from './MapView.vue'
+import WorkerSchedule from './WorkerSchedule.vue'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
 const auth = useAuthStore()
 
-type FilterValue = 'all' | 'todo' | 'working' | 'done'
+type FilterValue = 'all' | 'today' | 'todo' | 'working' | 'done'
 
 const orders = ref<OrderItem[]>([])
-const tab = ref<'orders' | 'map'>('orders')
+const tab = ref<'orders' | 'map' | 'schedule'>('orders')
 let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const loading = ref(false)
@@ -112,9 +115,17 @@ const filter = ref<FilterValue>('all')
 const todoCount = computed(() => orders.value.filter((o) => o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
 const doneCount = computed(() => orders.value.filter((o) => o.status === 4).length)
+function todayPrefix() {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+const todayCount = computed(() => orders.value.filter((o) => o.createdAt.startsWith(todayPrefix())).length)
 
 const chips = computed(() => [
   { label: `全部 ${orders.value.length}`, value: 'all' as FilterValue },
+  { label: `今日 ${todayCount.value}`, value: 'today' as FilterValue },
   { label: `待开工 ${todoCount.value}`, value: 'todo' as FilterValue },
   { label: `维修中 ${workingCount.value}`, value: 'working' as FilterValue },
   { label: `已完成 ${doneCount.value}`, value: 'done' as FilterValue },
@@ -122,6 +133,8 @@ const chips = computed(() => [
 
 const visibleOrders = computed(() => {
   switch (filter.value) {
+    case 'today':
+      return orders.value.filter((o) => o.createdAt.startsWith(todayPrefix()))
     case 'todo':
       return orders.value.filter((o) => o.status === 2)
     case 'working':

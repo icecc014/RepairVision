@@ -55,6 +55,7 @@
           <div class="rv-order-meta">
             <span class="rv-order-time">报修 {{ item.createdAt }}</span>
             <div class="rv-order-actions">
+              <button class="rv-btn rv-btn-ghost" @click="openDetail(item)">详情</button>
               <button v-if="item.workerName" class="rv-btn rv-btn-ghost" disabled style="opacity: 0.8">
                 {{ item.workerName }}
               </button>
@@ -111,6 +112,33 @@
       </div>
     </van-popup>
   </div>
+    <van-popup v-model:show="showDetail" position="bottom" round :style="{ maxHeight: '78vh' }">
+      <div v-if="detail" style="padding: 18px 18px 26px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:18px;font-weight:800">工单详情</div>
+          <button class="sheet-close" @click="showDetail = false">✕</button>
+        </div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">{{ detail.title }}</div>
+        <div style="color:#94a3b8;font-size:12px;margin-bottom:16px">{{ detail.orderNo }} · {{ detail.createdAt }}</div>
+        <div class="rv-form-label">位置</div>
+        <div style="color:#334155;font-size:14px;margin-bottom:12px">{{ detail.buildingName }} · {{ detail.floor }} 层 {{ detail.room }} 室</div>
+        <div class="rv-form-label">维修类型</div>
+        <div style="color:#334155;font-size:14px;margin-bottom:12px">{{ detail.faultTypeName }}</div>
+        <div class="rv-form-label">状态</div>
+        <div style="color:#334155;font-size:14px;margin-bottom:12px">{{ detail.statusText }}</div>
+        <div class="rv-form-label">故障描述</div>
+        <div style="color:#475569;font-size:14px;margin-bottom:12px;white-space:pre-wrap">{{ detail.description || '无补充说明' }}</div>
+        <div class="rv-form-label">处理工人</div>
+        <div style="color:#334155;font-size:14px;margin-bottom:14px">{{ detail.workerName || '待派单' }}</div>
+        <a
+          v-if="detail.workerName && detail.workerPhone"
+          :href="`tel:${detail.workerPhone}`"
+          style="display:block;text-align:center;padding:12px;color:#fff;background:#2563eb;border-radius:12px;font-weight:700;text-decoration:none"
+        >
+          联系 {{ detail.workerName }}：{{ detail.workerPhone }}
+        </a>
+      </div>
+    </van-popup>
 </template>
 
 <script setup lang="ts">
@@ -132,6 +160,8 @@ const faultTypes = ref<FaultType[]>([])
 const loading = ref(false)
 const submitting = ref(false)
 const showCreate = ref(false)
+const showDetail = ref(false)
+const detail = ref<OrderItem | null>(null)
 const filter = ref<FilterValue>('all')
 const createForm = reactive({ faultType: '', room: '', description: '' })
 
@@ -180,6 +210,10 @@ async function load() {
   }
 }
 
+function openDetail(item: OrderItem) {
+  detail.value = item
+  showDetail.value = true
+}
 async function openCreate() {
   if (faultTypes.value.length === 0) {
     try {

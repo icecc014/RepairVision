@@ -33,13 +33,14 @@ func (l *AdminUserUpdateLogic) AdminUserUpdate(req *types.AdminUserUpdateRequest
 		return nil, errs.BadRequest("角色不合法")
 	}
 	if _, err := l.svcCtx.WorkerRpc.UpdateUser(l.ctx, &workerclient.UpdateUserRequest{
-		Id:          req.Id,
-		Name:        strings.TrimSpace(req.Name),
-		Phone:       strings.TrimSpace(req.Phone),
-		Role:        req.Role,
-		Status:      req.Status,
-		BuildingId:  req.BuildingId,
-		BuildingIds: req.BuildingIds,
+		Id:            req.Id,
+		Name:          strings.TrimSpace(req.Name),
+		Phone:         strings.TrimSpace(req.Phone),
+		Role:          req.Role,
+		Status:        req.Status,
+		BuildingId:    req.BuildingId,
+		BuildingIds:   req.BuildingIds,
+		MaxConcurrent: req.MaxConcurrent,
 	}); err != nil {
 		return nil, rpcBizError(err)
 	}

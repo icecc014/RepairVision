@@ -78,6 +78,24 @@ type AdminFaultTypeUpdateRequest struct {
 	Status int64  `json:"status,optional"`
 }
 
+type AdminBatchDispatchItem struct {
+	OrderId  int64 `json:"orderId"`
+	WorkerId int64 `json:"workerId"`
+}
+
+type AdminBatchDispatchRequest struct {
+	OrderIds   []int64 `json:"orderIds,optional"`
+	BuildingId int64   `json:"buildingId,optional"`
+}
+
+type AdminBatchDispatchResponse struct {
+	Dispatched []AdminBatchDispatchItem `json:"dispatched"`
+	Remained   int64                    `json:"remained"`
+}
+type AdminOrderReassignRequest struct {
+	Id       int64 `path:"id"`
+	WorkerId int64 `json:"workerId"`
+}
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
@@ -91,13 +109,14 @@ type AdminStatsResponse struct {
 }
 
 type AdminUserCreateRequest struct {
-	Username    string  `json:"username"`
-	Password    string  `json:"password"`
-	Name        string  `json:"name"`
-	Phone       string  `json:"phone,optional"`
-	Role        int64   `json:"role"`
-	BuildingId  int64   `json:"buildingId,optional"`
-	BuildingIds []int64 `json:"buildingIds,optional"`
+	Username      string  `json:"username"`
+	Password      string  `json:"password"`
+	Name          string  `json:"name"`
+	Phone         string  `json:"phone,optional"`
+	Role          int64   `json:"role"`
+	BuildingId    int64   `json:"buildingId,optional"`
+	BuildingIds   []int64 `json:"buildingIds,optional"`
+	MaxConcurrent int64   `json:"maxConcurrent,optional"`
 }
 
 type AdminUserIdRequest struct {
@@ -105,18 +124,19 @@ type AdminUserIdRequest struct {
 }
 
 type AdminUserItem struct {
-	Id          int64    `json:"id"`
-	Username    string   `json:"username"`
-	Name        string   `json:"name"`
-	Phone       string   `json:"phone"`
-	Role        int64    `json:"role"`
-	RoleText    string   `json:"roleText"`
-	BuildingId  int64    `json:"buildingId,optional"`
-	Status      int64    `json:"status"`
-	StatusText  string   `json:"statusText"`
-	BuildingIds []int64  `json:"buildingIds,optional"`
-	Buildings   []string `json:"buildings,optional"`
-	CreatedAt   string   `json:"createdAt"`
+	Id            int64    `json:"id"`
+	Username      string   `json:"username"`
+	Name          string   `json:"name"`
+	Phone         string   `json:"phone"`
+	Role          int64    `json:"role"`
+	RoleText      string   `json:"roleText"`
+	BuildingId    int64    `json:"buildingId,optional"`
+	Status        int64    `json:"status"`
+	StatusText    string   `json:"statusText"`
+	BuildingIds   []int64  `json:"buildingIds,optional"`
+	MaxConcurrent int64    `json:"maxConcurrent,optional"`
+	Buildings     []string `json:"buildings,optional"`
+	CreatedAt     string   `json:"createdAt"`
 }
 
 type AdminUserListRequest struct {
@@ -135,13 +155,14 @@ type AdminUserResetPasswordRequest struct {
 }
 
 type AdminUserUpdateRequest struct {
-	Id          int64   `path:"id"`
-	Name        string  `json:"name"`
-	Phone       string  `json:"phone,optional"`
-	Role        int64   `json:"role"`
-	Status      int64   `json:"status,optional"`
-	BuildingId  int64   `json:"buildingId,optional"`
-	BuildingIds []int64 `json:"buildingIds,optional"`
+	Id            int64   `path:"id"`
+	Name          string  `json:"name"`
+	Phone         string  `json:"phone,optional"`
+	Role          int64   `json:"role"`
+	Status        int64   `json:"status,optional"`
+	BuildingId    int64   `json:"buildingId,optional"`
+	BuildingIds   []int64 `json:"buildingIds,optional"`
+	MaxConcurrent int64   `json:"maxConcurrent,optional"`
 }
 
 type BatchCompleteRequest struct {
@@ -233,8 +254,8 @@ type OperationLogItem struct {
 }
 
 type OperationLogListRequest struct {
-	Page    int64  `form:"page,optional"`
-	Size    int64  `form:"size,optional"`
+	Page      int64  `form:"page,optional"`
+	Size      int64  `form:"size,optional"`
 	Module    string `form:"module,optional"`
 	Action    string `form:"action,optional"`
 	Keyword   string `form:"keyword,optional"`
@@ -270,6 +291,7 @@ type OrderItem struct {
 	StatusText    string  `json:"statusText"`
 	WorkerId      int64   `json:"workerId,optional"`
 	WorkerName    string  `json:"workerName,optional"`
+	WorkerPhone   string  `json:"workerPhone,optional"`
 	DispatchScore float64 `json:"dispatchScore,optional"`
 	SkillScore    float64 `json:"skillScore,optional"`
 	DistanceScore float64 `json:"distanceScore,optional"`
@@ -289,6 +311,54 @@ type OrderListResponse struct {
 	List []OrderItem `json:"list"`
 }
 
+type ScheduleItem struct {
+	WorkerId  int64  `json:"workerId"`
+	WorkDate  string `json:"workDate"`
+	ShiftType string `json:"shiftType"`
+	Note      string `json:"note,optional"`
+}
+
+type ScheduleQueryRequest struct {
+	WorkerId  int64  `form:"workerId,optional"`
+	StartDate string `form:"startDate,optional"`
+	EndDate   string `form:"endDate,optional"`
+}
+
+type ScheduleListResponse struct {
+	List []ScheduleItem `json:"list"`
+}
+
+type ScheduleSaveRequest struct {
+	Items []ScheduleItem `json:"items"`
+}
+
+type ScheduleGenerateRequest struct {
+	WeekStart string `json:"weekStart"`
+}
+type AdminWorkerBoardItem struct {
+	WorkerId       int64    `json:"workerId"`
+	Name           string   `json:"name"`
+	Username       string   `json:"username"`
+	BuildingNames  []string `json:"buildingNames"`
+	MaxConcurrent  int64    `json:"maxConcurrent"`
+	TodayShift     string   `json:"todayShift"`
+	ActiveOrders   int64    `json:"activeOrders"`
+	TodayCompleted int64    `json:"todayCompleted"`
+	Available      bool     `json:"available"`
+}
+
+type AdminWorkerBoardResponse struct {
+	List []AdminWorkerBoardItem `json:"list"`
+}
+type SlaOverviewResponse struct {
+	PendingTimeoutHours    int64       `json:"pendingTimeoutHours"`
+	DispatchedTimeoutHours int64       `json:"dispatchedTimeoutHours"`
+	PendingOverdue         int64       `json:"pendingOverdue"`
+	DispatchedOverdue      int64       `json:"dispatchedOverdue"`
+	AvgDispatchMinutes     float64     `json:"avgDispatchMinutes"`
+	AvgRepairMinutes       float64     `json:"avgRepairMinutes"`
+	OverdueOrders          []OrderItem `json:"overdueOrders"`
+}
 type PingRequest struct {
 	Name string `path:"name"`
 }

@@ -33,13 +33,14 @@ func (l *AdminUserCreateLogic) AdminUserCreate(req *types.AdminUserCreateRequest
 		return nil, errs.BadRequest("角色不合法")
 	}
 	if _, err := l.svcCtx.WorkerRpc.CreateUser(l.ctx, &workerclient.CreateUserRequest{
-		Username:    strings.TrimSpace(req.Username),
-		Password:    req.Password,
-		Name:        strings.TrimSpace(req.Name),
-		Phone:       strings.TrimSpace(req.Phone),
-		Role:        req.Role,
-		BuildingId:  req.BuildingId,
-		BuildingIds: req.BuildingIds,
+		Username:      strings.TrimSpace(req.Username),
+		Password:      req.Password,
+		Name:          strings.TrimSpace(req.Name),
+		Phone:         strings.TrimSpace(req.Phone),
+		Role:          req.Role,
+		BuildingId:    req.BuildingId,
+		BuildingIds:   req.BuildingIds,
+		MaxConcurrent: req.MaxConcurrent,
 	}); err != nil {
 		return nil, rpcBizError(err)
 	}

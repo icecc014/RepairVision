@@ -32,8 +32,11 @@ var accounts = []accountSpec{
 	{Username: "dorm1", Name: "1号宿舍管理员", Role: 3, BuildingID: 1},
 	{Username: "dorm2", Name: "2号宿舍管理员", Role: 3, BuildingID: 2},
 	{Username: "dorm3", Name: "3号宿舍管理员", Role: 3, BuildingID: 3},
+	{Username: "dorm4", Name: "4号宿舍管理员", Role: 3, BuildingID: 4},
 	{Username: "worker1", Name: "李工", Role: 2, BuildingID: 1, Buildings: []int64{1, 2}},
 	{Username: "worker2", Name: "王工", Role: 2, BuildingID: 2, Buildings: []int64{2, 3}},
+	{Username: "worker3", Name: "赵工", Role: 2, BuildingID: 3, Buildings: []int64{3, 4}},
+	{Username: "worker4", Name: "孙工", Role: 2, BuildingID: 4, Buildings: []int64{1, 4}},
 }
 
 var workerSkills = []workerSkillSpec{
@@ -41,6 +44,10 @@ var workerSkills = []workerSkillSpec{
 	{Username: "worker1", Skill: "水维修", Proficiency: 2},
 	{Username: "worker2", Skill: "水维修", Proficiency: 3},
 	{Username: "worker2", Skill: "电维修", Proficiency: 2},
+	{Username: "worker3", Skill: "电维修", Proficiency: 2},
+	{Username: "worker3", Skill: "水维修", Proficiency: 2},
+	{Username: "worker4", Skill: "电维修", Proficiency: 1},
+	{Username: "worker4", Skill: "水维修", Proficiency: 3},
 }
 
 func Ensure(ctx context.Context, conn sqlx.SqlConn) error {

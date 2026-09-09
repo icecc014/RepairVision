@@ -24,6 +24,9 @@
         <el-table-column prop="phone" label="手机" width="130">
           <template #default="{ row }">{{ row.phone || '—' }}</template>
         </el-table-column>
+        <el-table-column label="最大并发" width="100">
+          <template #default="{ row }">{{ row.role === 2 ? (row.maxConcurrent || 3) : '—' }}</template>
+        </el-table-column>
         <el-table-column label="绑定" min-width="220">
           <template #default="{ row }">
             <template v-if="row.role === 2">{{ (row.buildings || []).join('、') || '—' }}</template>
@@ -81,7 +84,11 @@
             <el-option v-for="b in buildings" :key="b.id" :label="b.code + ' ' + b.name" :value="b.id" />
           </el-select>
         </el-form-item>
-      </el-form>
+        <el-form-item v-if="form.role === 2" label="最大并发">
+          <el-input-number v-model="form.maxConcurrent" :min="1" :max="10" style="width: 100%" />
+          <div class="form-tip">在途工单达到该值后不再自动派单</div>
+        </el-form-item>
+            </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="save">保存</el-button>
@@ -131,6 +138,7 @@ const form = reactive({
   role: 3,
   buildingId: 0,
   buildingIds: [] as number[],
+  maxConcurrent: 3,
 })
 
 async function load() {
@@ -172,6 +180,7 @@ function openCreate() {
     role: 3,
     buildingId: buildings.value[0]?.id || 0,
     buildingIds: [] as number[],
+    maxConcurrent: 3,
   })
   dialogVisible.value = true
 }
@@ -187,6 +196,7 @@ function openEdit(row: AdminUser) {
     role: row.role,
     buildingId: row.buildingId || 0,
     buildingIds: row.buildingIds ? [...row.buildingIds] : [],
+    maxConcurrent: row.maxConcurrent || 3,
   })
   dialogVisible.value = true
 }
@@ -207,6 +217,7 @@ async function save() {
         status: row?.status === 1 ? 1 : 1,
         buildingId: form.role === 3 ? form.buildingId : 0,
         buildingIds: form.role === 2 ? form.buildingIds : [],
+        maxConcurrent: form.maxConcurrent,
       })
     } else {
       await apiCreateUser({
@@ -217,6 +228,7 @@ async function save() {
         role: form.role,
         buildingId: form.role === 3 ? form.buildingId : 0,
         buildingIds: form.role === 2 ? form.buildingIds : [],
+        maxConcurrent: form.maxConcurrent,
       })
     }
     ElMessage.success('保存成功')
@@ -276,6 +288,7 @@ async function enable(row: AdminUser) {
       status: 1,
       buildingId: row.buildingId || 0,
       buildingIds: row.buildingIds || [],
+      maxConcurrent: row.maxConcurrent || 3,
     })
     ElMessage.success('已启用')
     load()
@@ -306,5 +319,11 @@ onMounted(() => {
 }
 .empty {
   padding: 24px 0;
+}
+.form-tip {
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.5;
 }
 </style>

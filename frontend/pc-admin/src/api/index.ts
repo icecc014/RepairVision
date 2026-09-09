@@ -26,6 +26,7 @@ export interface OrderItem {
   statusText: string
   workerId?: number
   workerName?: string
+  workerPhone?: string
   dispatchScore?: number
   skillScore?: number
   distanceScore?: number
@@ -116,7 +117,8 @@ export interface AdminUser {
   buildingId?: number
   status: number
   statusText: string
-  buildingIds?: number[]
+  buildingIds?: number[]
+  maxConcurrent?: number
   buildings?: string[]
 }
 
@@ -145,7 +147,8 @@ export function apiCreateUser(payload: {
   phone: string
   role: number
   buildingId?: number
-  buildingIds?: number[]
+  buildingIds?: number[]
+  maxConcurrent?: number
 }): Promise<unknown> {
   return http.post('/admin/users', payload)
 }
@@ -158,7 +161,8 @@ export function apiUpdateUser(
     role: number
     status: number
     buildingId?: number
-    buildingIds?: number[]
+    buildingIds?: number[]
+    maxConcurrent?: number
   },
 ): Promise<unknown> {
   return http.put(`/admin/users/${id}`, payload)
@@ -233,4 +237,79 @@ export interface AdminStats {
 
 export function apiAdminStats(): Promise<AdminStats> {
   return http.get('/admin/stats')
+}
+
+export interface AdminReassignPayload {
+  workerId: number
+}
+
+export interface BatchDispatchItem {
+  orderId: number
+  workerId: number
+}
+
+export interface BatchDispatchResult {
+  dispatched: BatchDispatchItem[]
+  remained: number
+}
+
+export function apiAdminOrderReassign(id: number, workerId: number): Promise<unknown> {
+  return http.post(`/admin/orders/${id}/reassign`, { workerId })
+}
+
+export function apiAdminBatchDispatch(payload?: { buildingId?: number; orderIds?: number[] }): Promise<BatchDispatchResult> {
+  return http.post('/admin/orders/batch-dispatch', payload || {})
+}
+
+export interface ScheduleItem {
+  workerId: number
+  workDate: string
+  shiftType: string
+  note?: string
+}
+
+export async function apiAdminSchedules(workerId: number, startDate: string, endDate: string): Promise<ScheduleItem[]> {
+  const res = (await http.get('/admin/schedules', {
+    params: { workerId: workerId || undefined, startDate, endDate },
+  })) as { list: ScheduleItem[] }
+  return res.list || []
+}
+
+export function apiSaveSchedules(items: ScheduleItem[]): Promise<{ list: ScheduleItem[] }> {
+  return http.post('/admin/schedules', { items })
+}
+
+export function apiGenerateWeekly(weekStart: string): Promise<{ list: ScheduleItem[] }> {
+  return http.post('/admin/schedules/generate', { weekStart })
+}
+
+export interface WorkerBoardItem {
+  workerId: number
+  name: string
+  username: string
+  buildingNames: string[]
+  maxConcurrent: number
+  todayShift: string
+  activeOrders: number
+  todayCompleted: number
+  available: boolean
+}
+
+export async function apiAdminWorkerBoard(): Promise<WorkerBoardItem[]> {
+  const res = (await http.get('/admin/worker-board')) as { list: WorkerBoardItem[] }
+  return res.list || []
+}
+
+export interface SlaOverview {
+  pendingTimeoutHours: number
+  dispatchedTimeoutHours: number
+  pendingOverdue: number
+  dispatchedOverdue: number
+  avgDispatchMinutes: number
+  avgRepairMinutes: number
+  overdueOrders: OrderItem[]
+}
+
+export function apiAdminSlaOverview(): Promise<SlaOverview> {
+  return http.get('/admin/sla-overview')
 }

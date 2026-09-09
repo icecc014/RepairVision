@@ -18,15 +18,20 @@ func userToPbWithBuildings(u store.User, buildingIDs []int64) *worker.User {
 	if u.BuildingID.Valid {
 		buildingID = u.BuildingID.Int64
 	}
+	maxConcurrent := u.MaxConcurrent
+	if maxConcurrent <= 0 {
+		maxConcurrent = 3
+	}
 	return &worker.User{
-		Id:          u.ID,
-		Username:    u.Username,
-		Role:        u.Role,
-		Name:        u.Name,
-		Phone:       phone,
-		BuildingId:  buildingID,
-		Status:      u.Status,
-		BuildingIds: buildingIDs,
+		Id:            u.ID,
+		Username:      u.Username,
+		Role:          u.Role,
+		Name:          u.Name,
+		Phone:         phone,
+		BuildingId:    buildingID,
+		Status:        u.Status,
+		BuildingIds:   buildingIDs,
+		MaxConcurrent: maxConcurrent,
 	}
 }
 
@@ -41,6 +46,11 @@ func workerInfoToPb(u store.User, baseBuildingID int64, skills []store.Skill) *w
 		Name:           u.Name,
 		Phone:          phone,
 		BaseBuildingId: baseBuildingID,
+	}
+	if u.MaxConcurrent > 0 {
+		info.MaxConcurrent = u.MaxConcurrent
+	} else {
+		info.MaxConcurrent = 3
 	}
 	for _, s := range skills {
 		info.Skills = append(info.Skills, &worker.SkillInfo{
