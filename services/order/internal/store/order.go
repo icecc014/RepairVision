@@ -17,22 +17,27 @@ const (
 )
 
 type Order struct {
-	ID          int64         `db:"id"`
-	OrderNo     string        `db:"order_no"`
-	Title       string        `db:"title"`
-	Description string        `db:"description"`
-	BuildingID  int64         `db:"building_id"`
-	Room        string        `db:"room"`
-	Floor       int64         `db:"floor"`
-	FaultType   string        `db:"fault_type"`
-	Status      int64         `db:"status"`
-	IsMerged    int64         `db:"is_merged"`
-	MainOrderID sql.NullInt64 `db:"main_order_id"`
-	WorkerID    sql.NullInt64 `db:"worker_id"`
-	ReporterID  int64         `db:"reporter_id"`
-	Source      string        `db:"source"`
-	CreatedAt   time.Time     `db:"created_at"`
-	UpdatedAt   time.Time     `db:"updated_at"`
+	ID            int64         `db:"id"`
+	OrderNo       string        `db:"order_no"`
+	Title         string        `db:"title"`
+	Description   string        `db:"description"`
+	BuildingID    int64         `db:"building_id"`
+	Room          string        `db:"room"`
+	Floor         int64         `db:"floor"`
+	FaultType     string        `db:"fault_type"`
+	Status        int64         `db:"status"`
+	Priority      int64         `db:"priority"`
+	ExpectMinutes int64         `db:"expect_minutes"`
+	IsMerged      int64         `db:"is_merged"`
+	MainOrderID   sql.NullInt64 `db:"main_order_id"`
+	WorkerID      sql.NullInt64 `db:"worker_id"`
+	DispatchedAt  sql.NullTime  `db:"dispatched_at"`
+	StartedAt     sql.NullTime  `db:"started_at"`
+	CompletedAt   sql.NullTime  `db:"completed_at"`
+	ReporterID    int64         `db:"reporter_id"`
+	Source        string        `db:"source"`
+	CreatedAt     time.Time     `db:"created_at"`
+	UpdatedAt     time.Time     `db:"updated_at"`
 }
 
 type WorkerLoad struct {
@@ -41,8 +46,8 @@ type WorkerLoad struct {
 }
 
 const orderColumns = `id, order_no, title, description, building_id, room, floor, fault_type,
-	status, is_merged, main_order_id, worker_id, reporter_id, source, created_at, updated_at`
-
+    priority, expect_minutes, status, is_merged, main_order_id, worker_id,
+    dispatched_at, started_at, completed_at, reporter_id, source, created_at, updated_at`
 const orderBase = "select " + orderColumns + " from orders "
 
 func FindOrder(ctx context.Context, conn sqlx.Session, id int64) (*Order, error) {
@@ -124,12 +129,19 @@ func ListAllOrders(ctx context.Context, conn sqlx.Session, status, buildingID in
 }
 
 func InsertOrder(ctx context.Context, conn sqlx.Session, o *Order) (int64, error) {
+	if o.Priority <= 0 {
+		o.Priority = 1
+	}
+	if o.ExpectMinutes <= 0 {
+		o.ExpectMinutes = 30
+	}
 	result, err := conn.ExecCtx(ctx,
 		`insert into orders(order_no, title, description, building_id, room, floor, fault_type,
-			status, is_merged, main_order_id, worker_id, reporter_id, source)
-		 values(?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            priority, expect_minutes, status, is_merged, main_order_id, worker_id, reporter_id, source)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		o.OrderNo, o.Title, o.Description, o.BuildingID, o.Room, o.Floor, o.FaultType,
-		o.Status, o.IsMerged, nullableInt64(o.MainOrderID), nullableInt64(o.WorkerID), o.ReporterID, o.Source)
+		o.Priority, o.ExpectMinutes, o.Status, o.IsMerged, nullableInt64(o.MainOrderID),
+		nullableInt64(o.WorkerID), o.ReporterID, o.Source)
 	if err != nil {
 		return 0, err
 	}
@@ -138,8 +150,8 @@ func InsertOrder(ctx context.Context, conn sqlx.Session, o *Order) (int64, error
 
 func AssignOrder(ctx context.Context, conn sqlx.Session, orderID, workerID int64) error {
 	_, err := conn.ExecCtx(ctx,
-		"update orders set status = ?, worker_id = ? where id = ? and status = ?",
-		StatusDispatched, workerID, orderID, StatusPending)
+		"update orders set status = ?, worker_id = ?, dispatched_at = ? where id = ? and status = ?",
+		StatusDispatched, workerID, time.Now(), orderID, StatusPending)
 	return err
 }
 
@@ -222,7 +234,7 @@ func CountInProgressByWorkers(ctx context.Context, conn sqlx.Session, workerIDs 
 }
 
 func CancelOrder(ctx context.Context, conn sqlx.Session, orderID, buildingID int64) (bool, error) {
-	query := "update orders set status = ?, worker_id = null where id = ? and status in (?,?)"
+	query := "update orders set status = ?, worker_id = null, started_at = null where id = ? and status in (?,?)"
 	args := []any{StatusCanceled, orderID, StatusPending, StatusDispatched}
 	if buildingID > 0 {
 		query += " and building_id = ?"
@@ -238,8 +250,8 @@ func CancelOrder(ctx context.Context, conn sqlx.Session, orderID, buildingID int
 
 func StartOrder(ctx context.Context, conn sqlx.Session, orderID, workerID int64) (bool, error) {
 	result, err := conn.ExecCtx(ctx,
-		"update orders set status = ? where id = ? and worker_id = ? and status = ?",
-		StatusWorking, orderID, workerID, StatusDispatched)
+		"update orders set status = ?, started_at = ? where id = ? and worker_id = ? and status = ?",
+		StatusWorking, time.Now(), orderID, workerID, StatusDispatched)
 	if err != nil {
 		return false, err
 	}
@@ -272,8 +284,8 @@ func BatchCompleteOrders(ctx context.Context, conn sqlx.Session, workerID, build
 		args[i] = id
 	}
 	_, err := conn.ExecCtx(ctx,
-		"update orders set status = ? where id in ("+join(placeholders)+") and worker_id = ?",
-		append([]any{StatusCompleted}, append(args, workerID)...)...)
+		"update orders set status = ?, completed_at = ? where id in ("+join(placeholders)+") and worker_id = ?",
+		append([]any{StatusCompleted, time.Now()}, append(args, workerID)...)...)
 	if err != nil {
 		return nil, err
 	}
@@ -281,8 +293,8 @@ func BatchCompleteOrders(ctx context.Context, conn sqlx.Session, workerID, build
 }
 func CompleteOrder(ctx context.Context, conn sqlx.Session, orderID, workerID int64) (bool, error) {
 	result, err := conn.ExecCtx(ctx,
-		"update orders set status = ? where id = ? and worker_id = ? and status = ?",
-		StatusCompleted, orderID, workerID, StatusWorking)
+		"update orders set status = ?, completed_at = ? where id = ? and worker_id = ? and status = ?",
+		StatusCompleted, time.Now(), orderID, workerID, StatusWorking)
 	if err != nil {
 		return false, err
 	}

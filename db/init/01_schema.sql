@@ -13,10 +13,15 @@ CREATE TABLE orders (
   room VARCHAR(20) NOT NULL,
   floor TINYINT NOT NULL DEFAULT 1 COMMENT '故障楼层，3D故障点定位用',
   fault_type VARCHAR(20) NOT NULL COMMENT '电维修/水维修/其他',
+  priority TINYINT NOT NULL DEFAULT 1 COMMENT '1普通 2紧急',
+  expect_minutes INT NOT NULL DEFAULT 30 COMMENT '预计维修时长(分钟)',
   status TINYINT DEFAULT 1 COMMENT '1待派单 2已派单 3维修中 4已完成 5已取消',
   is_merged TINYINT DEFAULT 0 COMMENT '0独立单 1主单(已合并子单) 2子单(被并入主单，不再派单)',
   main_order_id BIGINT DEFAULT NULL COMMENT '子单指向主单ID；独立单/主单为NULL',
   worker_id BIGINT DEFAULT NULL,
+  dispatched_at DATETIME DEFAULT NULL COMMENT '派单时间',
+  started_at DATETIME DEFAULT NULL COMMENT '工人开工时间',
+  completed_at DATETIME DEFAULT NULL COMMENT '完成时间',
   reporter_id BIGINT NOT NULL COMMENT '宿管用户ID',
   source VARCHAR(20) DEFAULT 'dormitory' COMMENT '来源：dormitory/admin',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -101,6 +106,7 @@ CREATE TABLE users (
   phone VARCHAR(15),
   building_id INT DEFAULT NULL COMMENT '宿管绑定楼栋',
   status TINYINT DEFAULT 1 COMMENT '1启用 0禁用',
+  max_concurrent TINYINT NOT NULL DEFAULT 3 COMMENT '最大在途工单数',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   KEY idx_role_building (role, building_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -125,6 +131,19 @@ CREATE TABLE worker_buildings (
   UNIQUE KEY uk_worker_building (worker_id, building_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+CREATE TABLE worker_schedules (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  worker_id BIGINT NOT NULL,
+  work_date DATE NOT NULL,
+  shift_type VARCHAR(20) NOT NULL DEFAULT 'DAY'
+    COMMENT 'DAY全天班 MORNING午班 AFTERNOON晚班 OFF休息',
+  note VARCHAR(100),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_worker_date (worker_id, work_date),
+  KEY idx_date (work_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE DATABASE IF NOT EXISTS map_db CHARACTER SET utf8mb4;
 USE map_db;
 

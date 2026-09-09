@@ -4,3 +4,4 @@ dist/
 .tools/
 *.log
 .DS_Store
+db/backups/

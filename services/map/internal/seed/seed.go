@@ -12,6 +12,7 @@ var buildings = []store.Building{
 	{ID: 1, Code: "A1", Name: "1号宿舍楼", PosX: 100, PosY: 220, Width: 60, Height: 36, Floors: 6, FloorHeight: 3.5, RoomsPerFloor: 20},
 	{ID: 2, Code: "A2", Name: "2号宿舍楼", PosX: 300, PosY: 220, Width: 60, Height: 36, Floors: 6, FloorHeight: 3.5, RoomsPerFloor: 20},
 	{ID: 3, Code: "B1", Name: "3号宿舍楼", PosX: 200, PosY: 60, Width: 70, Height: 40, Floors: 5, FloorHeight: 3.5, RoomsPerFloor: 18},
+	{ID: 4, Code: "B2", Name: "4号宿舍楼", PosX: 420, PosY: 80, Width: 70, Height: 40, Floors: 6, FloorHeight: 3.5, RoomsPerFloor: 16},
 }
 
 func Ensure(ctx context.Context, conn sqlx.SqlConn) error {

@@ -103,6 +103,9 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	}
 
 	// F17 加权派单候选
+	if err := validateRoomForBuilding(req.Room, floor, currentBuilding); err != nil {
+		return nil, err
+	}
 	workerResp, err := l.svcCtx.WorkerRpc.ListWorkersByBuilding(l.ctx,
 		&workerclient.BuildingWorkersRequest{BuildingId: buildingID})
 	if err != nil {
@@ -140,17 +143,19 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	var orderID int64
 	err = l.svcCtx.DB.TransactCtx(l.ctx, func(txCtx context.Context, session sqlx.Session) error {
 		order := &store.Order{
-			OrderNo:     orderNo,
-			Title:       faultType.Name + "（" + req.Room + "室）",
-			Description: description,
-			BuildingID:  buildingID,
-			Room:        room,
-			Floor:       floor,
-			FaultType:   req.FaultType,
-			Status:      store.StatusPending,
-			IsMerged:    0,
-			ReporterID:  identity.UID,
-			Source:      "dormitory",
+			OrderNo:       orderNo,
+			Title:         faultType.Name + "（" + req.Room + "室）",
+			Description:   description,
+			BuildingID:    buildingID,
+			Room:          room,
+			Floor:         floor,
+			FaultType:     req.FaultType,
+			Priority:      1,
+			ExpectMinutes: 30,
+			Status:        store.StatusPending,
+			IsMerged:      0,
+			ReporterID:    identity.UID,
+			Source:        "dormitory",
 		}
 		id, err := store.InsertOrder(txCtx, session, order)
 		if err != nil {

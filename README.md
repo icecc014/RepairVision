@@ -24,8 +24,11 @@
 | 宿管（1号楼） | dorm1 | admin123 |
 | 宿管（2号楼） | dorm2 | admin123 |
 | 宿管（3号楼） | dorm3 | admin123 |
+| 宿管（4号楼） | dorm4 | admin123 |
 | 工人 | worker1 | admin123 |
 | 工人 | worker2 | admin123 |
+| 工人 | worker3 | admin123 |
+| 工人 | worker4 | admin123 |
 
 ## 快速启动
 
@@ -76,6 +79,13 @@ docker compose up -d --build
 | P2 | 管理端 CRUD / 去重 / 加权派单 / 日志 / WebSocket | ✅ |
 | P3 | 2D 地图 / 3D 楼宇 / 批量完工 / fault_markers 同步 | ✅ |
 | P4 | 统计看板 / Kafka 异步日志 / 论文与演示材料 | 部分完成 |
+
+
+## V3（feature/v3 分支 · 开发中）
+
+- V3.0 领域数据：新增第 4 栋测试楼与 dorm4/worker3/worker4；
+  工单增加优先级、预计时长与派单/开工/完成时间点；
+  服务端房间号合法性校验；worker_db 预留 max_concurrent 与 worker_schedules 排班表。
 
 ## V2（feature/v2 分支）
 
