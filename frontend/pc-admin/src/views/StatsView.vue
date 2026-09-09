@@ -1,10 +1,29 @@
 <template>
-  <AdminShell title="数据统计看板" subtitle="工单状态、楼栋分布、维修类型与近7日趋势">
-    <section v-if="stats" class="stats-body">
+  <AdminShell title="数据统计看板" subtitle="工单状态、SLA 超时、处理时长、楼栋与类型分布">
+    <section v-if="stats && sla" class="stats-body">
       <div class="status-grid">
         <div v-for="s in stats.status" :key="s.status" class="status-card" :class="'sc' + s.status">
           <div class="status-num">{{ s.count }}</div>
           <div class="status-label">{{ s.statusText }}</div>
+        </div>
+      </div>
+
+      <div class="sla-grid">
+        <div class="sla-card danger">
+          <div class="sla-num">{{ sla.pendingOverdue }}</div>
+          <div class="sla-label">待派超时（&gt; {{ sla.pendingTimeoutHours }}h）</div>
+        </div>
+        <div class="sla-card warning">
+          <div class="sla-num">{{ sla.dispatchedOverdue }}</div>
+          <div class="sla-label">已派未开工超时（&gt; {{ sla.dispatchedTimeoutHours }}h）</div>
+        </div>
+        <div class="sla-card blue">
+          <div class="sla-num">{{ sla.avgDispatchMinutes }}</div>
+          <div class="sla-label">平均派单时长（分钟）</div>
+        </div>
+        <div class="sla-card green">
+          <div class="sla-num">{{ sla.avgRepairMinutes }}</div>
+          <div class="sla-label">平均维修时长（分钟）</div>
         </div>
       </div>
 
@@ -48,6 +67,26 @@
           </el-table-column>
         </el-table>
       </section>
+
+      <section v-if="sla.overdueOrders.length > 0" class="panel">
+        <div class="panel-title">当前 SLA 超时工单</div>
+        <el-table :data="sla.overdueOrders" border stripe size="default">
+          <el-table-column prop="orderNo" label="工单号" width="180" />
+          <el-table-column label="位置" min-width="180">
+            <template #default="{ row }">{{ row.buildingName }} {{ row.floor }}F-{{ row.room }}</template>
+          </el-table-column>
+          <el-table-column prop="faultTypeName" label="类型" width="110" />
+          <el-table-column label="状态" width="120">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 1 ? 'warning' : 'danger'" size="small">{{ row.statusText }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="workerName" label="工人" width="110">
+            <template #default="{ row }">{{ row.workerName || '—' }}</template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="175" />
+        </el-table>
+      </section>
     </section>
     <el-skeleton v-else :rows="6" animated />
   </AdminShell>
@@ -56,15 +95,21 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { AdminStats } from '../api'
-import { apiAdminStats } from '../api'
+import type { AdminStats, SlaOverview } from '../api'
+import { apiAdminSlaOverview, apiAdminStats } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 
 const stats = ref<AdminStats | null>(null)
+const sla = ref<SlaOverview | null>(null)
 
 async function load() {
   try {
     stats.value = await apiAdminStats()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+  try {
+    sla.value = await apiAdminSlaOverview()
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
@@ -138,6 +183,38 @@ onMounted(load)
 }
 .sc5 {
   background: linear-gradient(135deg, #94a3b8, #64748b);
+}
+.sla-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.sla-card {
+  padding: 20px;
+  color: #fff;
+  border-radius: 14px;
+}
+.sla-card.danger {
+  background: linear-gradient(135deg, #f43f5e, #e11d48);
+}
+.sla-card.warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.sla-card.blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+.sla-card.green {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+.sla-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+.sla-label {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.94;
 }
 .grid-2 {
   display: grid;

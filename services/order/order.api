@@ -39,6 +39,15 @@ type AdminWorkerBoardItem {
 type AdminWorkerBoardResponse {
 	List []AdminWorkerBoardItem `json:"list"`
 }
+type SlaOverviewResponse {
+	PendingTimeoutHours    int64       `json:"pendingTimeoutHours"`
+	DispatchedTimeoutHours int64       `json:"dispatchedTimeoutHours"`
+	PendingOverdue         int64       `json:"pendingOverdue"`
+	DispatchedOverdue      int64       `json:"dispatchedOverdue"`
+	AvgDispatchMinutes     float64     `json:"avgDispatchMinutes"`
+	AvgRepairMinutes       float64     `json:"avgRepairMinutes"`
+	OverdueOrders          []OrderItem `json:"overdueOrders"`
+}
 type PingRequest {
 	Name string `path:"name"`
 }
@@ -514,6 +523,9 @@ service order-api {
 
 	@handler AdminScheduleGenerateHandler
 	post /api/admin/schedules/generate (ScheduleGenerateRequest) returns (ScheduleListResponse)
+	@handler AdminSlaOverviewHandler
+	get /api/admin/sla-overview returns (SlaOverviewResponse)
+
 	@handler AdminStatsHandler
 	get /api/admin/stats returns (AdminStatsResponse)
 }

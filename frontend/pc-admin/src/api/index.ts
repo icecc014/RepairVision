@@ -299,3 +299,17 @@ export async function apiAdminWorkerBoard(): Promise<WorkerBoardItem[]> {
   const res = (await http.get('/admin/worker-board')) as { list: WorkerBoardItem[] }
   return res.list || []
 }
+
+export interface SlaOverview {
+  pendingTimeoutHours: number
+  dispatchedTimeoutHours: number
+  pendingOverdue: number
+  dispatchedOverdue: number
+  avgDispatchMinutes: number
+  avgRepairMinutes: number
+  overdueOrders: OrderItem[]
+}
+
+export function apiAdminSlaOverview(): Promise<SlaOverview> {
+  return http.get('/admin/sla-overview')
+}

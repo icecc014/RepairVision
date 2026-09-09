@@ -350,6 +350,15 @@ type AdminWorkerBoardItem struct {
 type AdminWorkerBoardResponse struct {
 	List []AdminWorkerBoardItem `json:"list"`
 }
+type SlaOverviewResponse struct {
+	PendingTimeoutHours    int64       `json:"pendingTimeoutHours"`
+	DispatchedTimeoutHours int64       `json:"dispatchedTimeoutHours"`
+	PendingOverdue         int64       `json:"pendingOverdue"`
+	DispatchedOverdue      int64       `json:"dispatchedOverdue"`
+	AvgDispatchMinutes     float64     `json:"avgDispatchMinutes"`
+	AvgRepairMinutes       float64     `json:"avgRepairMinutes"`
+	OverdueOrders          []OrderItem `json:"overdueOrders"`
+}
 type PingRequest struct {
 	Name string `path:"name"`
 }
