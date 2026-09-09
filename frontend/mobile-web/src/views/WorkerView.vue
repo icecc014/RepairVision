@@ -102,7 +102,7 @@ import { useAuthStore } from '../stores/auth'
 const emit = defineEmits<{ (e: 'logout'): void }>()
 const auth = useAuthStore()
 
-type FilterValue = 'all' | 'todo' | 'working' | 'done'
+type FilterValue = 'all' | 'today' | 'todo' | 'working' | 'done'
 
 const orders = ref<OrderItem[]>([])
 const tab = ref<'orders' | 'map' | 'schedule'>('orders')
@@ -115,9 +115,17 @@ const filter = ref<FilterValue>('all')
 const todoCount = computed(() => orders.value.filter((o) => o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
 const doneCount = computed(() => orders.value.filter((o) => o.status === 4).length)
+function todayPrefix() {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+const todayCount = computed(() => orders.value.filter((o) => o.createdAt.startsWith(todayPrefix())).length)
 
 const chips = computed(() => [
   { label: `全部 ${orders.value.length}`, value: 'all' as FilterValue },
+  { label: `今日 ${todayCount.value}`, value: 'today' as FilterValue },
   { label: `待开工 ${todoCount.value}`, value: 'todo' as FilterValue },
   { label: `维修中 ${workingCount.value}`, value: 'working' as FilterValue },
   { label: `已完成 ${doneCount.value}`, value: 'done' as FilterValue },
@@ -125,6 +133,8 @@ const chips = computed(() => [
 
 const visibleOrders = computed(() => {
   switch (filter.value) {
+    case 'today':
+      return orders.value.filter((o) => o.createdAt.startsWith(todayPrefix()))
     case 'todo':
       return orders.value.filter((o) => o.status === 2)
     case 'working':

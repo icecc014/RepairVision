@@ -34,6 +34,7 @@ export interface OrderItem {
   statusText: string
   workerId?: number
   workerName?: string
+  workerPhone?: string
   reporterId: number
   reporterName?: string
   source: string

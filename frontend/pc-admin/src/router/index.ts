@@ -6,6 +6,7 @@ import FaultTypesView from '../views/FaultTypesView.vue'
 import DispatchRulesView from '../views/DispatchRulesView.vue'
 import UsersView from '../views/UsersView.vue'
 import SchedulesView from '../views/SchedulesView.vue'
+import DispatchBoardView from '../views/DispatchBoardView.vue'
 import BuildingsView from '../views/BuildingsView.vue'
 import LogsView from '../views/LogsView.vue'
 import StatsView from '../views/StatsView.vue'
@@ -18,6 +19,7 @@ const router = createRouter({
     { path: '/', redirect: '/orders' },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/orders', name: 'orders', component: HomeView, meta: { requiresAuth: true } },
+    { path: '/dispatch-board', name: 'dispatch-board', component: DispatchBoardView, meta: { requiresAuth: true } },
     { path: '/fault-types', name: 'fault-types', component: FaultTypesView, meta: { requiresAuth: true } },
     { path: '/dispatch-rules', name: 'dispatch-rules', component: DispatchRulesView, meta: { requiresAuth: true } },
     { path: '/users', name: 'users', component: UsersView, meta: { requiresAuth: true } },

@@ -291,6 +291,7 @@ type OrderItem struct {
 	StatusText    string  `json:"statusText"`
 	WorkerId      int64   `json:"workerId,optional"`
 	WorkerName    string  `json:"workerName,optional"`
+	WorkerPhone   string  `json:"workerPhone,optional"`
 	DispatchScore float64 `json:"dispatchScore,optional"`
 	SkillScore    float64 `json:"skillScore,optional"`
 	DistanceScore float64 `json:"distanceScore,optional"`
@@ -333,6 +334,21 @@ type ScheduleSaveRequest struct {
 
 type ScheduleGenerateRequest struct {
 	WeekStart string `json:"weekStart"`
+}
+type AdminWorkerBoardItem struct {
+	WorkerId       int64    `json:"workerId"`
+	Name           string   `json:"name"`
+	Username       string   `json:"username"`
+	BuildingNames  []string `json:"buildingNames"`
+	MaxConcurrent  int64    `json:"maxConcurrent"`
+	TodayShift     string   `json:"todayShift"`
+	ActiveOrders   int64    `json:"activeOrders"`
+	TodayCompleted int64    `json:"todayCompleted"`
+	Available      bool     `json:"available"`
+}
+
+type AdminWorkerBoardResponse struct {
+	List []AdminWorkerBoardItem `json:"list"`
 }
 type PingRequest struct {
 	Name string `path:"name"`

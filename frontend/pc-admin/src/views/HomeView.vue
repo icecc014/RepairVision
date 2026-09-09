@@ -71,8 +71,9 @@
         </el-table-column>
         <el-table-column prop="reporterName" label="报修宿管" width="110" />
         <el-table-column prop="createdAt" label="创建时间" width="170" />
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="210" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" @click="openDetail(row)">详情</el-button>
             <el-button v-if="row.status === 1" size="small" type="primary" plain @click="openAssign(row)">
               手动派单
             </el-button>
@@ -108,6 +109,26 @@
         </el-button>
       </template>
     </el-dialog>
+    <el-drawer v-model="detailVisible" title="工单详情" size="480px">
+      <el-descriptions v-if="detailRow" :column="1" border>
+        <el-descriptions-item label="工单号">{{ detailRow.orderNo }}</el-descriptions-item>
+        <el-descriptions-item label="标题">{{ detailRow.title }}</el-descriptions-item>
+        <el-descriptions-item label="位置">{{ detailRow.buildingName }} · {{ detailRow.floor }} 层 {{ detailRow.room }} 室</el-descriptions-item>
+        <el-descriptions-item label="类型">{{ detailRow.faultTypeName }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ detailRow.statusText }}</el-descriptions-item>
+        <el-descriptions-item label="报修宿管">{{ detailRow.reporterName }}</el-descriptions-item>
+        <el-descriptions-item label="维修工人">
+          {{ detailRow.workerName || '—' }}
+          <span v-if="detailRow.workerPhone" style="color:#94a3b8">（{{ detailRow.workerPhone }}）</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="故障描述">{{ detailRow.description }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ detailRow.createdAt }}</el-descriptions-item>
+        <el-descriptions-item label="更新时间">{{ detailRow.updatedAt }}</el-descriptions-item>
+        <el-descriptions-item v-if="detailRow.dispatchScore !== undefined && detailRow.dispatchScore > 0" label="派单评分">
+          {{ detailRow.dispatchScore }}（技能 {{ detailRow.skillScore }} · 距离 {{ detailRow.distanceScore }} · 负载 {{ detailRow.loadScore }}）
+        </el-descriptions-item>
+      </el-descriptions>
+    </el-drawer>
   </AdminShell>
 </template>
 
@@ -127,6 +148,8 @@ const assigning = ref(false)
 const assignVisible = ref(false)
 const assignTarget = ref<OrderItem | null>(null)
 const assignWorkerId = ref<number | null>(null)
+const detailVisible = ref(false)
+const detailRow = ref<OrderItem | null>(null)
 const query = reactive({ status: 0, buildingText: '' })
 const auth = useAuthStore()
 let ws: WebSocket | null = null
@@ -174,6 +197,10 @@ function reset() {
   load()
 }
 
+function openDetail(row: OrderItem) {
+  detailRow.value = row
+  detailVisible.value = true
+}
 function openAssign(row: OrderItem) {
   assignTarget.value = row
   assignWorkerId.value = row.workerId || null

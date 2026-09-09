@@ -26,6 +26,7 @@ export interface OrderItem {
   statusText: string
   workerId?: number
   workerName?: string
+  workerPhone?: string
   dispatchScore?: number
   skillScore?: number
   distanceScore?: number
@@ -280,4 +281,21 @@ export function apiSaveSchedules(items: ScheduleItem[]): Promise<{ list: Schedul
 
 export function apiGenerateWeekly(weekStart: string): Promise<{ list: ScheduleItem[] }> {
   return http.post('/admin/schedules/generate', { weekStart })
+}
+
+export interface WorkerBoardItem {
+  workerId: number
+  name: string
+  username: string
+  buildingNames: string[]
+  maxConcurrent: number
+  todayShift: string
+  activeOrders: number
+  todayCompleted: number
+  available: boolean
+}
+
+export async function apiAdminWorkerBoard(): Promise<WorkerBoardItem[]> {
+  const res = (await http.get('/admin/worker-board')) as { list: WorkerBoardItem[] }
+  return res.list || []
 }

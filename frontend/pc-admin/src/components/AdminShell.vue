@@ -11,6 +11,7 @@
 
       <div class="nav-label">管理导航</div>
       <router-link class="nav-item" to="/orders" active-class="active">工单总览</router-link>
+      <router-link class="nav-item" to="/dispatch-board" active-class="active">调度看板</router-link>
       <router-link class="nav-item" to="/stats" active-class="active">数据统计看板</router-link>
       <router-link class="nav-item" to="/fault-types" active-class="active">维修类型字典</router-link>
       <router-link class="nav-item" to="/dispatch-rules" active-class="active">派单规则配置</router-link>

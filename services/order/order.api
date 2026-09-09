@@ -24,6 +24,21 @@ type ScheduleSaveRequest {
 type ScheduleGenerateRequest {
 	WeekStart string `json:"weekStart"`
 }
+type AdminWorkerBoardItem {
+	WorkerId       int64    `json:"workerId"`
+	Name           string   `json:"name"`
+	Username       string   `json:"username"`
+	BuildingNames  []string `json:"buildingNames"`
+	MaxConcurrent  int64    `json:"maxConcurrent"`
+	TodayShift     string   `json:"todayShift"`
+	ActiveOrders   int64    `json:"activeOrders"`
+	TodayCompleted int64    `json:"todayCompleted"`
+	Available      bool     `json:"available"`
+}
+
+type AdminWorkerBoardResponse {
+	List []AdminWorkerBoardItem `json:"list"`
+}
 type PingRequest {
 	Name string `path:"name"`
 }
@@ -120,6 +135,7 @@ type OrderItem {
 	StatusText    string  `json:"statusText"`
 	WorkerId      int64   `json:"workerId,optional"`
 	WorkerName    string  `json:"workerName,optional"`
+	WorkerPhone   string  `json:"workerPhone,optional"`
 	DispatchScore float64 `json:"dispatchScore,optional"`
 	SkillScore    float64 `json:"skillScore,optional"`
 	DistanceScore float64 `json:"distanceScore,optional"`
@@ -486,6 +502,9 @@ service order-api {
 
 	@handler AdminOrderReassignHandler
 	post /api/admin/orders/:id/reassign (AdminOrderReassignRequest) returns (EmptyResponse)
+
+	@handler AdminWorkerBoardHandler
+	get /api/admin/worker-board returns (AdminWorkerBoardResponse)
 
 	@handler AdminSchedulesHandler
 	get /api/admin/schedules (ScheduleQueryRequest) returns (ScheduleListResponse)

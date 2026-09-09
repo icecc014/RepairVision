@@ -49,6 +49,7 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 
 	buildingNames := make(map[int64]string)
 	userNames := make(map[int64]string)
+	userPhones := make(map[int64]string)
 	faultNames := make(map[string]string)
 
 	orderIDList := make([]int64, 0, len(orders))
@@ -85,6 +86,7 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 		}
 		for _, u := range userResp.Users {
 			userNames[u.Id] = u.Name
+			userPhones[u.Id] = u.Phone
 		}
 	}
 
@@ -120,6 +122,7 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 		if o.WorkerID.Valid {
 			item.WorkerId = o.WorkerID.Int64
 			item.WorkerName = userNames[o.WorkerID.Int64]
+			item.WorkerPhone = userPhones[o.WorkerID.Int64]
 		}
 		if ds, ok := dispatchMap[o.ID]; ok {
 			item.DispatchScore = ds.Score

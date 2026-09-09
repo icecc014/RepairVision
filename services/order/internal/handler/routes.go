@@ -39,6 +39,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(1), []rest.Route{
 		{Method: http.MethodGet, Path: "/api/admin/orders", Handler: AdminOrdersHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/schedules", Handler: AdminSchedulesHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/worker-board", Handler: AdminWorkerBoardHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/schedules", Handler: AdminScheduleSaveHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/schedules/generate", Handler: AdminScheduleGenerateHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/stats", Handler: AdminStatsHandler(serverCtx)},
