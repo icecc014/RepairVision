@@ -36,7 +36,7 @@
       <el-empty v-if="!loading && list.length === 0" description="暂无楼栋" class="empty" />
     </section>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑楼栋' : '新增楼栋'" width="560px">
+    <el-dialog append-to-body v-model="dialogVisible" :title="editingId ? '编辑楼栋' : '新增楼栋'" width="560px">
       <el-form :model="form" label-width="110px">
         <el-form-item label="楼栋编码">
           <el-input v-model="form.code" placeholder="如 A3" />

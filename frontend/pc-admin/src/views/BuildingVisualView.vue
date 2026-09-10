@@ -19,7 +19,7 @@
       </div>
     </section>
 
-    <el-dialog
+    <el-dialog append-to-body
       v-model="dialogVisible"
       :title="selected ? `${selected.code} ${selected.name}` : ''"
       width="900px"

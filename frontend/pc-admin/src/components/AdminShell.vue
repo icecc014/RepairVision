@@ -240,6 +240,12 @@ function logout() {
 
 .content {
   padding: 22px 28px 36px;
-  animation: rv-fade-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* 只做淡入、不使用 transform：避免 .content 变成 position:fixed 弹层的包含块与层叠上下文 */
+  animation: rv-content-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rv-content-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog
+  <el-dialog append-to-body
     :model-value="modelValue"
     :title="`楼层布局设计 · ${building?.name || ''}`"
     width="980px"

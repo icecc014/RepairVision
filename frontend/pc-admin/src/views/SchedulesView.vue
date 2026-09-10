@@ -35,7 +35,7 @@
       <p class="hint">点击任意日期可调整班次；生成逻辑：每名工人每周休 1 天，轮休日按周错开。</p>
     </section>
 
-    <el-dialog v-model="editVisible" title="调整班次" width="460px">
+    <el-dialog append-to-body v-model="editVisible" title="调整班次" width="460px">
       <template v-if="editTarget">
         <p class="edit-hint">
           {{ editTarget.name }}（{{ editTarget.username }}）· {{ dateLabel(editDate) }}

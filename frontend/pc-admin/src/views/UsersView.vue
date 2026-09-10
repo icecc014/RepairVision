@@ -53,7 +53,7 @@
       <el-empty v-if="!loading && list.length === 0" description="暂无账号" class="empty" />
     </section>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑账号' : '新增账号'" width="560px">
+    <el-dialog append-to-body v-model="dialogVisible" :title="editingId ? '编辑账号' : '新增账号'" width="560px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="账号">
           <el-input v-model="form.username" :disabled="!!editingId" placeholder="登录账号" />
@@ -95,7 +95,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="resetVisible" title="重置密码" width="420px">
+    <el-dialog append-to-body v-model="resetVisible" title="重置密码" width="420px">
       <el-input v-model="resetPassword" type="password" show-password placeholder="输入新密码（至少6位）" />
       <template #footer>
         <el-button @click="resetVisible = false">取消</el-button>

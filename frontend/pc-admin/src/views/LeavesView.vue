@@ -41,7 +41,7 @@
       <el-empty v-if="!loading && list.length === 0" description="暂无请假申请" class="empty" />
     </section>
 
-    <el-dialog v-model="reviewVisible" :title="reviewStatus === 2 ? '通过请假' : '驳回请假'" width="460px">
+    <el-dialog append-to-body v-model="reviewVisible" :title="reviewStatus === 2 ? '通过请假' : '驳回请假'" width="460px">
       <template v-if="reviewTarget">
         <p class="review-hint">
           {{ reviewTarget.workerName || ('#' + reviewTarget.workerId) }} · {{ reviewTarget.startDate }} ~ {{ reviewTarget.endDate }}

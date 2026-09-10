@@ -30,7 +30,7 @@
       <el-empty v-if="!loading && list.length === 0" description="暂无派单规则" class="empty" />
     </section>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑规则' : '新增规则'" width="460px">
+    <el-dialog append-to-body v-model="dialogVisible" :title="editingId ? '编辑规则' : '新增规则'" width="460px">
       <el-form :model="form" label-width="90px">
         <el-form-item label="规则标识">
           <el-input v-model="form.ruleKey" :disabled="!!editingId" placeholder="如 load_weight" />
