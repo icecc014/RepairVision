@@ -135,91 +135,83 @@ onMounted(load)
 .schedule-page {
   padding: 0 16px 24px;
 }
-
 .schedule-head {
   display: flex;
   align-items: center;
   margin-bottom: 14px;
 }
-
 .schedule-title {
   font-size: 17px;
   font-weight: 800;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-
 .schedule-range {
   margin-top: 4px;
-  color: #64748b;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
-
 .schedule-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .schedule-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(46, 68, 112, 0.09);
 }
-
 .schedule-card.is-off {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.45);
 }
-
 .schedule-date {
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
-
 .schedule-weekday {
   font-size: 15px;
   font-weight: 800;
+  color: var(--rv-text);
 }
-
 .schedule-daynum {
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
-
 .schedule-right {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .shift-badge {
   padding: 4px 12px;
   font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
 }
-
 .shift-day {
-  color: #1d4ed8;
-  background: #dbeafe;
+  color: #2462d9;
+  background: var(--rv-grad-1);
 }
-
 .shift-part {
-  color: #7c3aed;
-  background: #ede9fe;
+  color: #6a4bc0;
+  background: var(--rv-grad-2);
 }
-
 .shift-off {
-  color: #64748b;
-  background: #e2e8f0;
+  color: #5a6a85;
+  background: var(--rv-grad-8);
 }
-
 .schedule-note {
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
 </style>

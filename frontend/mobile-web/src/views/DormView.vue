@@ -145,7 +145,7 @@
         <a
           v-if="detail.workerName && detail.workerPhone"
           :href="`tel:${detail.workerPhone}`"
-          style="display:block;text-align:center;padding:12px;color:#fff;background:#2563eb;border-radius:12px;font-weight:700;text-decoration:none"
+          style="display:block;text-align:center;padding:12px;color:#fff;background:linear-gradient(135deg,#7fb2ff,#3478f6);border-radius:12px;font-weight:700;text-decoration:none"
         >
           联系 {{ detail.workerName }}：{{ detail.workerPhone }}
         </a>
@@ -397,39 +397,24 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 18px 18px 0;
 }
-
 .sheet-title {
   font-size: 17px;
   font-weight: 800;
+  color: var(--rv-text);
 }
-
 .sheet-close {
   width: 28px;
   height: 28px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 14px;
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.62);
   border: none;
   border-radius: 50%;
   cursor: pointer;
 }
-</style>
-
 .floor-hint {
   margin: 6px 2px 0;
-  color: #2563eb;
+  color: var(--rv-primary-deep);
   font-size: 12px;
 }
-
-.rv-load-more {
-  display: block;
-  width: 100%;
-  padding: 11px;
-  margin: 12px 0 4px;
-  color: #2563eb;
-  font-size: 14px;
-  font-weight: 700;
-  background: #eff6ff;
-  border: none;
-  border-radius: 12px;
-}
+</style>

@@ -554,17 +554,21 @@ defineExpose({ disposeScene })
 .title {
   font-size: 17px;
   font-weight: 800;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .head-meta {
-  color: #64748b;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
 .close {
   margin-left: auto;
   width: 28px;
   height: 28px;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--rv-text-sub);
+  background: rgba(255, 255, 255, 0.6);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -578,17 +582,21 @@ defineExpose({ disposeScene })
 .chip {
   flex: 0 0 auto;
   padding: 6px 14px;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
   border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s ease, box-shadow 0.25s ease;
 }
 .chip.active {
   color: #fff;
-  background: #2563eb;
-  border-color: #2563eb;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
 }
 .three-mount {
   width: 100%;
@@ -603,21 +611,22 @@ defineExpose({ disposeScene })
 .floor-chip {
   flex: 0 0 auto;
   padding: 6px 12px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
+  border-radius: 10px;
   cursor: pointer;
 }
 .floor-chip.active {
   color: #fff;
-  background: #1d4ed8;
-  border-color: #1d4ed8;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 6px 14px rgba(52, 120, 246, 0.26);
 }
 .fallback {
   padding: 20px;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
 }
 .legend {
@@ -625,18 +634,19 @@ defineExpose({ disposeScene })
   align-items: center;
   gap: 6px;
   padding: 10px 18px 0;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
 .dot.fault {
   width: 10px;
   height: 10px;
-  background: #ef4444;
+  background: linear-gradient(135deg, #ffb9cd, #e0648a);
   border-radius: 50%;
+  animation: rv-dot-pulse 2.2s ease-out infinite;
 }
 .tip {
   margin: 4px 0 12px;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
   text-align: center;
 }

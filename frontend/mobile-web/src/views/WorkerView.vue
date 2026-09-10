@@ -267,8 +267,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-</style>
-<style scoped>
 .page .rv-header {
   padding-bottom: 16px;
 }
@@ -279,33 +277,45 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
   padding: 10px 14px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mode-tabs::-webkit-scrollbar {
+  display: none;
 }
 .mode-tab {
+  flex: 0 0 auto;
   padding: 8px 16px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 14px;
   font-weight: 600;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
   border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s ease, box-shadow 0.25s ease;
 }
 .mode-tab.active {
   color: #fff;
-  background: #2563eb;
-  border-color: #2563eb;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
 }
-</style>
-
 .rv-load-more {
   display: block;
   width: 100%;
   padding: 11px;
   margin: 12px 0 4px;
-  color: #2563eb;
+  color: var(--rv-primary-deep);
   font-size: 14px;
   font-weight: 700;
-  background: #eff6ff;
-  border: none;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(120, 145, 190, 0.22);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
 }
+</style>

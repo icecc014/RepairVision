@@ -115,105 +115,85 @@ onMounted(() => {
 .leave-page {
   padding: 0 16px 24px;
 }
-
 .leave-form {
   padding: 16px;
   margin-bottom: 16px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(46, 68, 112, 0.1);
 }
-
 .leave-form-title,
 .leave-list-title {
   margin-bottom: 12px;
   font-size: 16px;
   font-weight: 800;
+  color: var(--rv-text);
 }
-
 .leave-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
 }
-
 .leave-label {
   width: 40px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 13px;
 }
-
 .leave-list {
   margin-top: 6px;
 }
-
 .leave-card {
   padding: 14px;
   margin-bottom: 10px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(46, 68, 112, 0.09);
 }
-
 .leave-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-
 .leave-range {
   font-size: 14px;
   font-weight: 700;
+  color: var(--rv-text);
 }
-
 .leave-status {
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
 }
-
-.ls1 {
-  color: #b45309;
-  background: #fef3c7;
-}
-
-.ls2 {
-  color: #15803d;
-  background: #dcfce7;
-}
-
-.ls3 {
-  color: #b91c1c;
-  background: #fee2e2;
-}
-
-.ls4 {
-  color: #64748b;
-  background: #f1f5f9;
-}
-
+.ls1 { color: #b96b1c; background: var(--rv-grad-4); }
+.ls2 { color: #17865a; background: var(--rv-grad-6); }
+.ls3 { color: #b34568; background: var(--rv-grad-3); }
+.ls4 { color: #5a6a85; background: var(--rv-grad-8); }
 .leave-reason {
   margin-top: 8px;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
 }
-
 .leave-note {
   margin-top: 6px;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
-
 .leave-cancel {
   margin-top: 10px;
   padding: 6px 12px;
-  color: #dc2626;
+  color: #b34568;
   font-size: 12px;
   font-weight: 700;
-  background: #fef2f2;
-  border: none;
+  background: var(--rv-grad-3);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
 }
 </style>
