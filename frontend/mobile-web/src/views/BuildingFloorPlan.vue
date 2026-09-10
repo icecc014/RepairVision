@@ -14,50 +14,59 @@
 
     <div class="legend-line">
       <span><i class="red"></i> 待处理工单</span>
+      <span><i class="blue"></i> 普通房间</span>
       <span>点击房间查看工单</span>
     </div>
 
-    <svg class="plan-svg" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet">
+    <svg class="plan-svg" :viewBox="`0 0 ${PLAN_WIDTH} ${PLAN_DEPTH}`" preserveAspectRatio="xMidYMid meet">
       <!-- 外墙 -->
-      <rect x="8" y="8" width="944" height="584" fill="#f8fafc" stroke="#1e293b" stroke-width="5" rx="8" />
-      <text x="480" y="28" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">
-        {{ building.name }} · {{ activeFloor }}F 标准层（共16间）
-      </text>
+      <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
 
-      <!-- 左公共区：楼梯间 + 盥洗/卫生间 -->
-      <rect x="24" y="48" width="72" height="152" fill="#e2e8f0" stroke="#475569" stroke-width="2" />
-      <text x="60" y="100" text-anchor="middle" font-size="11" fill="#334155">楼</text>
-      <text x="60" y="115" text-anchor="middle" font-size="11" fill="#334155">梯</text>
-      <text x="60" y="130" text-anchor="middle" font-size="11" fill="#334155">间</text>
-      <rect x="24" y="206" width="72" height="86" fill="#e2e8f0" stroke="#475569" stroke-width="2" />
-      <text x="60" y="242" text-anchor="middle" font-size="10" fill="#334155">盥洗</text>
-      <text x="60" y="258" text-anchor="middle" font-size="10" fill="#334155">卫生间</text>
-      <rect x="24" y="298" width="72" height="64" fill="#e2e8f0" stroke="#475569" stroke-width="2" />
-      <text x="60" y="332" text-anchor="middle" font-size="10" fill="#334155">开水间</text>
-      <rect x="24" y="368" width="72" height="220" fill="#e2e8f0" stroke="#475569" stroke-width="2" />
-      <text x="60" y="430" text-anchor="middle" font-size="10" fill="#334155">配电/</text>
-      <text x="60" y="446" text-anchor="middle" font-size="10" fill="#334155">管理间</text>
+      <!-- 贯通走廊 -->
+      <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
+      <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
 
-      <!-- 北侧房间 1-8 -->
-      <g v-for="(room, idx) in rooms('north')" :key="room.no">
-        <rect :x="room.x" y="48" width="96" height="150" :fill="room.active ? '#fee2e2' : '#dbeafe'" stroke="#1e3a8a" stroke-width="2" />
-        <rect :x="room.x" y="130" width="96" height="30" fill="#bfdbfe" opacity="0.7" />
-        <text :x="room.x + 48" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">{{ room.no }}</text>
-        <text :x="room.x + 48" y="105" text-anchor="middle" font-size="9" fill="#475569">门 | 窗</text>
-        <rect :x="room.x + 40" y="188" width="16" height="12" fill="#f59e0b" @click="select(room)" style="cursor:pointer" />
+      <!-- 两处核心筒：封闭防火楼梯 + 公共区域 -->
+      <g v-for="core in plan.cores" :key="core.index">
+        <rect :x="0" :y="core.z" :width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
+        <text x="16" :y="core.z + core.d / 2 - 1.6" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火</text>
+        <text x="16" :y="core.z + core.d / 2 + 3.4" text-anchor="middle" font-size="3.4" fill="#334155">楼梯间①</text>
+        <rect :x="32" :y="core.z" :width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
+        <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
       </g>
 
-      <!-- 中央走廊 -->
-      <rect x="110" y="198" width="824" height="204" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="8 6" stroke-width="2" />
-      <text x="540" y="305" text-anchor="middle" font-size="16" fill="#64748b">中 央 走 廊</text>
-
-      <!-- 南侧房间 9-16 -->
-      <g v-for="(room, idx) in rooms('south')" :key="room.no">
-        <rect :x="room.x" y="402" width="96" height="150" :fill="room.active ? '#fee2e2' : '#dbeafe'" stroke="#1e3a8a" stroke-width="2" />
-        <rect :x="room.x" y="402" width="96" height="30" fill="#bfdbfe" opacity="0.7" />
-        <text :x="room.x + 48" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">{{ room.no }}</text>
-        <text :x="room.x + 48" y="430" text-anchor="middle" font-size="9" fill="#475569">窗 | 门</text>
-        <rect :x="room.x + 40" y="390" width="16" height="12" fill="#f59e0b" @click="select(room)" style="cursor:pointer" />
+      <!-- 房间（北区/中区/南区，按设计 2 列排布） -->
+      <g v-for="room in plan.rooms" :key="room.no">
+        <rect
+          :x="room.x"
+          :y="room.z"
+          :width="room.w"
+          :height="room.d"
+          :fill="roomOrders(room)[0] ? '#fee2e2' : '#dbeafe'"
+          stroke="#1e3a8a"
+          stroke-width="0.8"
+          @click="select(room)"
+          style="cursor: pointer"
+        />
+        <text
+          :x="room.x + room.w / 2"
+          :y="room.z + room.d / 2 + 1.4"
+          text-anchor="middle"
+          font-size="4.6"
+          font-weight="bold"
+          fill="#1e3a8a"
+        >
+          {{ room.no }}
+        </text>
+        <circle
+          v-if="roomOrders(room).length"
+          :cx="room.x + room.w - 5"
+          :cy="room.z + 5"
+          r="3.4"
+          fill="#ef4444"
+          @click="select(room)"
+          style="cursor: pointer"
+        />
       </g>
     </svg>
   </div>
@@ -66,26 +75,43 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
+import {
+  PLAN_DEPTH,
+  PLAN_WIDTH,
+  buildFloorPlan,
+  buildGridRooms,
+  matchRoomOrders,
+  supportsCorridorLayout,
+  type PlanRoom,
+} from '../utils/floorLayout'
 
 const props = defineProps<{ building: WorkerMapBuilding; orders: OrderItem[] }>()
 const emit = defineEmits<{ (e: 'selectRoom', room: { num: string; floor: number; orders: OrderItem[] }): void }>()
 
 const activeFloor = ref(1)
-const roomStartX = 112
 
-function rooms(side: 'north' | 'south') {
-  const list: { no: string; x: number; active: boolean; orders: OrderItem[]; floor: number }[] = []
-  for (let i = 1; i <= 8; i++) {
-    const seq = side === 'north' ? i : i + 8
-    const no = `${activeFloor.value}${String(seq).padStart(2, '0')}`
-    const orders = props.orders.filter((o) => o.buildingId === props.building.id && o.floor === activeFloor.value && (o.room === no || o.room === `${seq}` || o.room?.endsWith(String(seq).padStart(2, '0'))))
-    list.push({ no, x: roomStartX + (i - 1) * 104, active: orders.length > 0, orders, floor: activeFloor.value })
+const plan = computed(() => {
+  if (supportsCorridorLayout(props.building.roomsPerFloor)) {
+    return buildFloorPlan(activeFloor.value, props.building.roomsPerFloor)
   }
-  return list
+  return {
+    floor: activeFloor.value,
+    rooms: buildGridRooms(activeFloor.value, props.building.roomsPerFloor || 8),
+    corridor: { x: 0, z: 0, w: 0, d: 0 },
+    cores: [],
+  }
+})
+
+function roomOrders(room: PlanRoom) {
+  return matchRoomOrders(
+    props.orders.filter((o) => o.buildingId === props.building.id),
+    activeFloor.value,
+    room.no,
+  )
 }
 
-function select(room: { no: string; floor: number; orders: OrderItem[] }) {
-  emit('selectRoom', { num: room.no, floor: room.floor, orders: room.orders })
+function select(room: PlanRoom) {
+  emit('selectRoom', { num: room.no, floor: activeFloor.value, orders: roomOrders(room) })
 }
 </script>
 
@@ -96,5 +122,6 @@ function select(room: { no: string; floor: number; orders: OrderItem[] }) {
 .floor-tab.active { color: #fff; background: #2563eb; }
 .legend-line { display: flex; gap: 14px; margin-bottom: 4px; color: #64748b; font-size: 11px; }
 .red { display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+.blue { display: inline-block; width: 8px; height: 8px; background: #dbeafe; border: 1px solid #1e3a8a; border-radius: 2px; }
 .plan-svg { width: 100%; height: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
 </style>

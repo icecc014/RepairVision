@@ -6,37 +6,65 @@
     </div>
 
     <div v-if="mode === 'plan'" class="plan-tab">
-      <div class="plan-head">{{ building.name }} · 第 {{ floor }} 层 · 共 16 间</div>
-      <svg class="plan-svg" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet">
-        <rect x="8" y="8" width="944" height="584" fill="#f8fafc" stroke="#1e293b" stroke-width="5" rx="8" />
-        <rect x="24" y="48" width="72" height="152" fill="#e2e8f0" stroke="#475569" stroke-width="2" />
-        <text x="60" y="110" text-anchor="middle" font-size="11" fill="#334155">楼梯间</text>
-        <rect x="24" y="206" width="72" height="86" fill="#e2e8f0" stroke="#475569" stroke-width="2" />
-        <text x="60" y="250" text-anchor="middle" font-size="10" fill="#334155">盥洗/卫生间</text>
-        <g v-for="(r, idx) in roomsRow(true)" :key="r.no">
-          <rect :x="r.x" y="48" width="96" height="150" :fill="r.active ? '#fee2e2' : '#dbeafe'" stroke="#1e3a8a" stroke-width="2" />
-          <text :x="r.x + 48" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">{{ r.no }}</text>
+      <div class="floor-tabs">
+        <button
+          v-for="f in building.floors"
+          :key="f"
+          class="floor-chip"
+          :class="{ active: floor === f }"
+          @click="floor = f"
+        >
+          {{ f }}F
+        </button>
+      </div>
+      <div class="plan-head">
+        {{ building.name }} · 第 {{ floor }} 层 · 每层 {{ building.roomsPerFloor }} 间
+      </div>
+      <svg class="plan-svg" :viewBox="`0 0 ${PLAN_WIDTH} ${PLAN_DEPTH}`" preserveAspectRatio="xMidYMid meet">
+        <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
+        <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
+        <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
+        <g v-for="core in plan.cores" :key="core.index">
+          <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
+          <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯间</text>
+          <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
+          <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
         </g>
-        <rect x="110" y="198" width="824" height="204" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="8 6" stroke-width="2" />
-        <text x="540" y="305" text-anchor="middle" font-size="16" fill="#64748b">中央走廊</text>
-        <g v-for="(r, idx) in roomsRow(false)" :key="r.no">
-          <rect :x="r.x" y="402" width="96" height="150" :fill="r.active ? '#fee2e2' : '#dbeafe'" stroke="#1e3a8a" stroke-width="2" />
-          <text :x="r.x + 48" y="478" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">{{ r.no }}</text>
+        <g v-for="room in plan.rooms" :key="room.no">
+          <rect
+            :x="room.x" :y="room.z" :width="room.w" :height="room.d"
+            :fill="roomOrders(room).length ? '#fee2e2' : '#dbeafe'"
+            stroke="#1e3a8a" stroke-width="0.8"
+          />
+          <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#1e3a8a">
+            {{ room.no }}
+          </text>
+          <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" fill="#ef4444" />
         </g>
       </svg>
+      <p class="hint">北区 01-04 · 中区 05-12 · 南区 13-16 · 每栋楼按同样标准层逐层映射</p>
     </div>
 
     <div v-else class="three-tab">
       <div ref="mountRef" class="three-mount"></div>
       <p v-if="webglError" class="error">{{ errorText || 'WebGL 初始化失败，可切回楼层户型' }}</p>
-      <p class="hint">拖拽旋转 · 滚轮缩放</p>
+      <p class="hint">拖拽旋转 · 滚轮缩放 · 每层含走廊与两处核心筒</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import type { AdminBuilding, OrderItem } from '../api'
+import {
+  PLAN_DEPTH,
+  PLAN_WIDTH,
+  buildFloorPlan,
+  buildGridRooms,
+  matchRoomOrders,
+  supportsCorridorLayout,
+  type PlanRoom,
+} from '../utils/floorLayout'
 
 const props = defineProps<{ building: AdminBuilding; orders: OrderItem[] }>()
 const mode = ref<'plan' | '3d'>('plan')
@@ -45,14 +73,24 @@ const mountRef = ref<HTMLDivElement | null>(null)
 const webglError = ref(false)
 const errorText = ref('')
 
-const activeOrders = computed(() => props.orders.filter((o) => o.buildingId === props.building.id && o.floor === floor.value && [1, 2, 3].includes(o.status)))
+const plan = computed(() => {
+  if (supportsCorridorLayout(props.building.roomsPerFloor)) {
+    return buildFloorPlan(floor.value, props.building.roomsPerFloor)
+  }
+  return {
+    floor: floor.value,
+    rooms: buildGridRooms(floor.value, props.building.roomsPerFloor || 8),
+    corridor: { x: 0, z: 0, w: 0, d: 0 },
+    cores: [] as { index: number; z: number; d: number }[],
+  }
+})
 
-function roomsRow(top: boolean) {
-  return Array.from({ length: 8 }, (_, i) => {
-    const seq = top ? i + 1 : i + 9
-    const no = `${floor.value}${String(seq).padStart(2, '0')}`
-    return { no, x: 112 + i * 104, active: activeOrders.value.some((o) => o.room === no || o.room?.endsWith(String(seq).padStart(2, '0'))) }
-  })
+function roomOrders(room: PlanRoom) {
+  return matchRoomOrders(
+    props.orders.filter((o) => o.buildingId === props.building.id),
+    floor.value,
+    room.no,
+  )
 }
 
 async function switch3d() {
@@ -73,51 +111,71 @@ async function init3d() {
     const height = 430
     const scene = new THREE.Scene()
     scene.background = new THREE.Color(0x0b1e45)
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000)
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 4000)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(width, height)
     el.innerHTML = ''
     el.appendChild(renderer.domElement)
-    camera.position.set(180, 170, 220)
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9))
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9)
+    const boxW = 140
+    const boxD = (boxW * PLAN_DEPTH) / PLAN_WIDTH
+    const floorH = 10
+    camera.position.set(boxW * 1.5, floorH * 3.2, boxD * 1.4)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.92))
+    const dir = new THREE.DirectionalLight(0xffffff, 0.85)
     dir.position.set(80, 160, 60)
     scene.add(dir)
 
     const controls = new controlsModule.OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
-    controls.target.set(0, 50, 0)
+    controls.target.set(0, floorH * 1.6, 0)
     controls.update()
 
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(420, 320), new THREE.MeshLambertMaterial({ color: '#12264e', side: THREE.DoubleSide }))
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(boxW * 3, boxD * 2), new THREE.MeshLambertMaterial({ color: '#12264e', side: THREE.DoubleSide }))
     ground.rotation.x = -Math.PI / 2
-    ground.position.y = -2
+    ground.position.y = -1.2
     scene.add(ground)
 
     const totalFloors = Math.max(props.building.floors, 1)
-    const floorH = 12
     for (let f = 0; f < totalFloors; f++) {
-      const yBase = f * (floorH + 1.5)
-      const slab = new THREE.Mesh(new THREE.BoxGeometry(330, 1.2, 120), new THREE.MeshLambertMaterial({ color: '#1e3a8a' }))
-      slab.position.y = yBase + 0.6
+      const yBase = f * (floorH + 1)
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(boxW + 6, 0.9, boxD + 6), new THREE.MeshLambertMaterial({ color: '#1e3a8a' }))
+      slab.position.y = yBase + 0.45
       scene.add(slab)
-      for (let row = 0; row < 2; row++) {
-        for (let col = 0; col < 8; col++) {
-          const w = 32
-          const gap = 5
-          const x = -160 + 6 + col * (w + gap)
-          const z = row === 0 ? -46 : 24
-          const mat = new THREE.MeshLambertMaterial({ color: row === 0 ? '#60a5fa' : '#34d399', transparent: true, opacity: 0.82 })
-          const tile = new THREE.Mesh(new THREE.BoxGeometry(w, 1.1, 34), mat)
-          tile.position.set(x, yBase + 1.1, z)
-          scene.add(tile)
-        }
-      }
-      const corridor = new THREE.Mesh(new THREE.BoxGeometry(310, 0.8, 18), new THREE.MeshLambertMaterial({ color: '#cbd5e1' }))
-      corridor.position.set(0, yBase + 0.8, -10)
-      scene.add(corridor)
+      const p = supportsCorridorLayout(props.building.roomsPerFloor)
+        ? buildFloorPlan(f + 1, props.building.roomsPerFloor)
+        : { rooms: buildGridRooms(f + 1, props.building.roomsPerFloor || 8), corridor: { x: 0, z: 0, w: 0, d: 0 }, cores: [] as { index: number; z: number; d: number }[] }
 
+      for (const room of p.rooms) {
+        const w = (room.w / PLAN_WIDTH) * boxW * 0.92
+        const d = (room.d / PLAN_DEPTH) * boxD * 0.92
+        const x = ((room.x + room.w / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
+        const z = ((room.z + room.d / 2 - PLAN_DEPTH / 2) / PLAN_DEPTH) * boxD
+        const mat = new THREE.MeshLambertMaterial({ color: f % 2 === 0 ? '#60a5fa' : '#34d399', transparent: true, opacity: 0.85 })
+        const tile = new THREE.Mesh(new THREE.BoxGeometry(w, 1, d), mat)
+        tile.position.set(x, yBase + 1, z)
+        scene.add(tile)
+      }
+
+      if (p.corridor.w > 0) {
+        const cw = (p.corridor.w / PLAN_WIDTH) * boxW
+        const cd = (p.corridor.d / PLAN_DEPTH) * boxD
+        const corridor = new THREE.Mesh(new THREE.BoxGeometry(cw, 0.7, cd), new THREE.MeshLambertMaterial({ color: '#cbd5e1' }))
+        corridor.position.set(0, yBase + 0.8, 0)
+        scene.add(corridor)
+      }
+
+      for (const core of p.cores) {
+        const cw = (32 / PLAN_WIDTH) * boxW
+        const cd = (core.d / PLAN_DEPTH) * boxD
+        const cz = ((core.z + core.d / 2 - PLAN_DEPTH / 2) / PLAN_DEPTH) * boxD
+        const stair = new THREE.Mesh(
+          new THREE.BoxGeometry(cw, floorH * 0.9, cd),
+          new THREE.MeshLambertMaterial({ color: '#94a3b8', transparent: true, opacity: 0.8 }),
+        )
+        stair.position.set(((16 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW, yBase + floorH * 0.45, cz)
+        scene.add(stair)
+      }
     }
 
     const animate = () => {
@@ -139,6 +197,9 @@ async function init3d() {
 .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
 .tab { padding: 8px 18px; border-radius: 999px; border: 1px solid #c7d2fe; background: #eef2ff; cursor: pointer; }
 .tab.active { background: #2563eb; color: #fff; }
+.floor-tabs { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.floor-chip { padding: 5px 12px; font-size: 12px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; cursor: pointer; }
+.floor-chip.active { color: #fff; background: #2563eb; }
 .plan-head { margin-bottom: 6px; font-weight: 700; }
 .plan-svg { width: 100%; height: auto; background: #fff; border-radius: 10px; }
 .three-mount { width: 100%; height: 430px; }
