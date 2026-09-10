@@ -44,30 +44,6 @@
       <div class="legend"><i class="dot fault"></i> 待处理故障</div>
       <p class="tip">手指拖拽旋转 · 双指缩放 · 点击楼层只看该层</p>
     </template>
-
-    <div v-if="selected" class="room-panel">
-      <div class="room-panel-head">
-        <div>
-          <span class="room-no">{{ selected.roomNo }}</span>
-          <span class="room-floor">{{ selected.floorNo }} 层 · {{ selected.orders.length }} 个待处理工单</span>
-        </div>
-        <button class="panel-close" @click="selected = null">关闭</button>
-      </div>
-      <div v-if="selected.orders.length === 0" class="panel-empty">该房间暂无工单</div>
-      <div v-for="o in selected.orders" :key="o.id" class="room-order">
-        <div class="order-row">
-          <span class="type">{{ o.faultTypeName }}</span>
-          <span class="status" :class="'s' + o.status">{{ o.statusText }}</span>
-        </div>
-        <div class="order-title">{{ o.title }}</div>
-        <div class="order-meta">报修 {{ o.createdAt }} · 工人 {{ o.workerName || '待派' }}</div>
-        <div class="order-actions">
-          <button v-if="o.status === 2" class="mini" @click="runAction(o, 'start')">开工</button>
-          <button v-if="o.status === 3" class="mini done" @click="runAction(o, 'complete')">完工</button>
-        </div>
-      </div>
-    </div>
-
   </van-popup>
 </template>
 
@@ -250,6 +226,7 @@ async function initScene() {
     const orderByFloorRoom = new Map<string, OrderItem[]>()
     for (const o of props.orders) {
       if (o.buildingId !== b.id) continue
+      if (o.status !== 1 && o.status !== 2 && o.status !== 3) continue
       const key = `${o.floor}:${o.room || ''}`
       if (!orderByFloorRoom.has(key)) orderByFloorRoom.set(key, [])
       orderByFloorRoom.get(key)!.push(o)

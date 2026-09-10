@@ -168,7 +168,7 @@ function roomOrders(room: PlanRoom) {
     props.orders.filter((o) => o.buildingId === props.building.id),
     activeFloor.value,
     room.no,
-  )
+  ).filter((o) => o.status === 1 || o.status === 2 || o.status === 3)
 }
 
 function switchFloor(f: number) {

@@ -57,9 +57,15 @@ function orderCount(id: number) {
   return orders.value.filter((o) => o.buildingId === id).length
 }
 
-function open(b: AdminBuilding) {
+async function open(b: AdminBuilding) {
   selected.value = b
   dialogVisible.value = true
+  try {
+    const page = await apiAdminOrders(0, 0, 1, 200)
+    orders.value = page.list
+  } catch {
+    // 刷新失败时沿用已有数据
+  }
 }
 
 onMounted(load)
