@@ -206,6 +206,67 @@ export function apiDeleteBuilding(id: number): Promise<unknown> {
   return http.delete(`/admin/buildings/${id}`)
 }
 
+export interface RepairRecordItem {
+  id: number
+  orderNo: string
+  title: string
+  description: string
+  buildingId: number
+  buildingName: string
+  room: string
+  floor: number
+  faultType: string
+  faultTypeName: string
+  status: number
+  statusText: string
+  reporterId: number
+  reporterName?: string
+  workerId?: number
+  workerName?: string
+  workerPhone?: string
+  source: string
+  createdAt: string
+  dispatchedAt?: string
+  startedAt?: string
+  completedAt?: string
+}
+
+export interface RepairRecordSummary {
+  total: number
+  pending: number
+  working: number
+  done: number
+  canceled: number
+}
+
+export interface RepairRecordPage {
+  total: number
+  summary: RepairRecordSummary
+  list: RepairRecordItem[]
+}
+
+export function apiAdminRepairRecords(params: {
+  buildingId?: number
+  faultType?: string
+  status?: number
+  keyword?: string
+  days?: number
+  page?: number
+  size?: number
+}): Promise<RepairRecordPage> {
+  return http.get('/admin/repair-records', {
+    params: {
+      buildingId: params.buildingId || undefined,
+      faultType: params.faultType || undefined,
+      status: params.status || undefined,
+      keyword: params.keyword || undefined,
+      days: params.days || undefined,
+      page: params.page || 1,
+      size: params.size || 20,
+    },
+  })
+}
+
 export interface OperationLogItem {
   id: number
   userId?: number

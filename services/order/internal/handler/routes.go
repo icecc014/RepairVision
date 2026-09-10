@@ -73,5 +73,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodPost, Path: "/api/admin/dispatch-rules", Handler: AdminDispatchRuleCreateHandler(serverCtx)},
 		{Method: http.MethodPut, Path: "/api/admin/dispatch-rules/:id", Handler: AdminDispatchRuleUpdateHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/logs", Handler: AdminOperationLogsHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/repair-records", Handler: AdminRepairRecordsHandler(serverCtx)},
 	}...), jwtOpt)
 }

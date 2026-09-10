@@ -6,8 +6,11 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -70,6 +73,9 @@ func Middleware(conn sqlx.SqlConn, pusher Pusher, useKafka bool) rest.Middleware
 				log.Username.String = identity.Username
 				log.Role.Valid = true
 				log.Role.Int64 = identity.Role
+			}
+			if err := appendFileLog(log); err != nil {
+				logx.WithContext(r.Context()).Errorf("write file operation log failed: %v", err)
 			}
 			insertCtx := context.Background()
 			if useKafka && pusher != nil {
@@ -155,4 +161,41 @@ func clientIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+var (
+	fileLogOnce sync.Once
+	fileLogDir  string
+	fileLogErr  error
+)
+
+// appendFileLog 把技术日志以 JSON Lines 写入服务端本地文件（按天切分）。
+// 目录默认 /app/logs（容器内），可通过 OPLOG_DIR 覆盖；失败时仅记录，不影响业务。
+func appendFileLog(log interface{}) error {
+	fileLogOnce.Do(func() {
+		fileLogDir = os.Getenv("OPLOG_DIR")
+		if fileLogDir == "" {
+			fileLogDir = "/app/logs"
+		}
+		if err := os.MkdirAll(fileLogDir, 0o755); err != nil {
+			fileLogErr = err
+		}
+	})
+	if fileLogErr != nil {
+		return fileLogErr
+	}
+	body, err := json.Marshal(log)
+	if err != nil {
+		return err
+	}
+	name := "operation-" + time.Now().Format("20060102") + ".log"
+	file, err := os.OpenFile(filepath.Join(fileLogDir, name), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	if _, err := file.Write(append(body, '\n')); err != nil {
+		return err
+	}
+	return nil
 }

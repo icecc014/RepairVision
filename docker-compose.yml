@@ -74,6 +74,9 @@ services:
       ETCD_ENDPOINTS: ${ETCD_ENDPOINTS}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      OPLOG_DIR: /app/logs
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       mysql:
         condition: service_healthy

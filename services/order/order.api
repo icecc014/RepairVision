@@ -440,6 +440,57 @@ type AdminBuildingIdRequest {
 	Id int64 `path:"id"`
 }
 
+type RepairRecordItem {
+	Id            int64  `json:"id"`
+	OrderNo       string `json:"orderNo"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	BuildingId    int64  `json:"buildingId"`
+	BuildingName  string `json:"buildingName"`
+	Room          string `json:"room"`
+	Floor         int64  `json:"floor"`
+	FaultType     string `json:"faultType"`
+	FaultTypeName string `json:"faultTypeName"`
+	Status        int64  `json:"status"`
+	StatusText    string `json:"statusText"`
+	ReporterId    int64  `json:"reporterId"`
+	ReporterName  string `json:"reporterName,optional"`
+	WorkerId      int64  `json:"workerId,optional"`
+	WorkerName    string `json:"workerName,optional"`
+	WorkerPhone   string `json:"workerPhone,optional"`
+	Source        string `json:"source"`
+	CreatedAt     string `json:"createdAt"`
+	DispatchedAt  string `json:"dispatchedAt,optional"`
+	StartedAt     string `json:"startedAt,optional"`
+	CompletedAt   string `json:"completedAt,optional"`
+}
+
+type RepairRecordSummary {
+	Total    int64 `json:"total"`
+	Pending  int64 `json:"pending"`
+	Working  int64 `json:"working"`
+	Done     int64 `json:"done"`
+	Canceled int64 `json:"canceled"`
+}
+
+type RepairRecordListRequest {
+	BuildingId int64  `form:"buildingId,optional"`
+	Status     int64  `form:"status,optional"`
+	FaultType  string `form:"faultType,optional"`
+	Keyword    string `form:"keyword,optional"`
+	Days       int64  `form:"days,optional"`
+	StartDate  string `form:"startDate,optional"`
+	EndDate    string `form:"endDate,optional"`
+	Page       int64  `form:"page,optional"`
+	Size       int64  `form:"size,optional"`
+}
+
+type RepairRecordListResponse {
+	Total   int64               `json:"total"`
+	Summary RepairRecordSummary `json:"summary"`
+	List    []RepairRecordItem  `json:"list"`
+}
+
 type OperationLogItem {
 	Id           int64  `json:"id"`
 	UserId       int64  `json:"userId,optional"`
@@ -623,6 +674,9 @@ service order-api {
 
 	@handler AdminOperationLogsHandler
 	get /api/admin/logs (OperationLogListRequest) returns (OperationLogListResponse)
+
+	@handler AdminRepairRecordsHandler
+	get /api/admin/repair-records (RepairRecordListRequest) returns (RepairRecordListResponse)
 
 	@handler WorkerLeaveSubmitHandler
 	post /api/worker/leaves (WorkerLeaveSubmitRequest) returns (LeaveItem)

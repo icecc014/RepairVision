@@ -9,7 +9,7 @@ import SchedulesView from '../views/SchedulesView.vue'
 import DispatchBoardView from '../views/DispatchBoardView.vue'
 import LeavesView from '../views/LeavesView.vue'
 import BuildingsView from '../views/BuildingsView.vue'
-import LogsView from '../views/LogsView.vue'
+import RepairRecordsView from '../views/RepairRecordsView.vue'
 import StatsView from '../views/StatsView.vue'
 import PermissionsView from '../views/PermissionsView.vue'
 import BuildingVisualView from '../views/BuildingVisualView.vue'
@@ -27,7 +27,7 @@ const router = createRouter({
     { path: '/schedules', name: 'schedules', component: SchedulesView, meta: { requiresAuth: true } },
     { path: '/leaves', name: 'leaves', component: LeavesView, meta: { requiresAuth: true } },
     { path: '/buildings', name: 'buildings', component: BuildingsView, meta: { requiresAuth: true } },
-    { path: '/logs', name: 'logs', component: LogsView, meta: { requiresAuth: true } },
+    { path: '/logs', name: 'repair-records', component: RepairRecordsView, meta: { requiresAuth: true } },
     { path: '/stats', name: 'stats', component: StatsView, meta: { requiresAuth: true } },
     { path: '/permissions', name: 'permissions', component: PermissionsView, meta: { requiresAuth: true } },
     { path: '/building-visual', name: 'building-visual', component: BuildingVisualView, meta: { requiresAuth: true } },
