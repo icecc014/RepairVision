@@ -17,6 +17,7 @@
       <router-link class="nav-item" to="/dispatch-rules" active-class="active">派单规则配置</router-link>
       <router-link class="nav-item" to="/users" active-class="active">人员账号管理</router-link>
       <router-link class="nav-item" to="/schedules" active-class="active">工人排班</router-link>
+      <router-link class="nav-item" to="/leaves" active-class="active">请假审批</router-link>
       <router-link class="nav-item" to="/buildings" active-class="active">建筑信息管理</router-link>
       <router-link class="nav-item" to="/logs" active-class="active">操作日志</router-link>
       <router-link class="nav-item" to="/permissions" active-class="active">权限说明</router-link>

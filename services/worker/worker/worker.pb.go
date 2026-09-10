@@ -1353,6 +1353,422 @@ func (x *GenerateScheduleRequest) GetWeekStart() string {
 	return ""
 }
 
+type LeaveItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	WorkerId      int64                  `protobuf:"varint,2,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	StartDate     string                 `protobuf:"bytes,3,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate       string                 `protobuf:"bytes,4,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	Reason        string                 `protobuf:"bytes,5,opt,name=reason,proto3" json:"reason,omitempty"`
+	Status        int64                  `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
+	ReviewerId    int64                  `protobuf:"varint,7,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
+	ReviewNote    string                 `protobuf:"bytes,8,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LeaveItem) Reset() {
+	*x = LeaveItem{}
+	mi := &file_worker_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LeaveItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaveItem) ProtoMessage() {}
+
+func (x *LeaveItem) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaveItem.ProtoReflect.Descriptor instead.
+func (*LeaveItem) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *LeaveItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *LeaveItem) GetWorkerId() int64 {
+	if x != nil {
+		return x.WorkerId
+	}
+	return 0
+}
+
+func (x *LeaveItem) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
+	}
+	return ""
+}
+
+func (x *LeaveItem) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+func (x *LeaveItem) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *LeaveItem) GetStatus() int64 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *LeaveItem) GetReviewerId() int64 {
+	if x != nil {
+		return x.ReviewerId
+	}
+	return 0
+}
+
+func (x *LeaveItem) GetReviewNote() string {
+	if x != nil {
+		return x.ReviewNote
+	}
+	return ""
+}
+
+func (x *LeaveItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+type SubmitLeaveRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId      int64                  `protobuf:"varint,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	StartDate     string                 `protobuf:"bytes,2,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate       string                 `protobuf:"bytes,3,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	Reason        string                 `protobuf:"bytes,4,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubmitLeaveRequest) Reset() {
+	*x = SubmitLeaveRequest{}
+	mi := &file_worker_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubmitLeaveRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitLeaveRequest) ProtoMessage() {}
+
+func (x *SubmitLeaveRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitLeaveRequest.ProtoReflect.Descriptor instead.
+func (*SubmitLeaveRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SubmitLeaveRequest) GetWorkerId() int64 {
+	if x != nil {
+		return x.WorkerId
+	}
+	return 0
+}
+
+func (x *SubmitLeaveRequest) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
+	}
+	return ""
+}
+
+func (x *SubmitLeaveRequest) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+func (x *SubmitLeaveRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type ListLeavesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId      int64                  `protobuf:"varint,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	Status        int64                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	Page          int64                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	Size          int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListLeavesRequest) Reset() {
+	*x = ListLeavesRequest{}
+	mi := &file_worker_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListLeavesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListLeavesRequest) ProtoMessage() {}
+
+func (x *ListLeavesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListLeavesRequest.ProtoReflect.Descriptor instead.
+func (*ListLeavesRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ListLeavesRequest) GetWorkerId() int64 {
+	if x != nil {
+		return x.WorkerId
+	}
+	return 0
+}
+
+func (x *ListLeavesRequest) GetStatus() int64 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ListLeavesRequest) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListLeavesRequest) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+type ListLeavesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Items         []*LeaveItem           `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListLeavesResponse) Reset() {
+	*x = ListLeavesResponse{}
+	mi := &file_worker_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListLeavesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListLeavesResponse) ProtoMessage() {}
+
+func (x *ListLeavesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListLeavesResponse.ProtoReflect.Descriptor instead.
+func (*ListLeavesResponse) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ListLeavesResponse) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *ListLeavesResponse) GetItems() []*LeaveItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type ReviewLeaveRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Status        int64                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	ReviewerId    int64                  `protobuf:"varint,3,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
+	ReviewNote    string                 `protobuf:"bytes,4,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReviewLeaveRequest) Reset() {
+	*x = ReviewLeaveRequest{}
+	mi := &file_worker_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReviewLeaveRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReviewLeaveRequest) ProtoMessage() {}
+
+func (x *ReviewLeaveRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReviewLeaveRequest.ProtoReflect.Descriptor instead.
+func (*ReviewLeaveRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ReviewLeaveRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *ReviewLeaveRequest) GetStatus() int64 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ReviewLeaveRequest) GetReviewerId() int64 {
+	if x != nil {
+		return x.ReviewerId
+	}
+	return 0
+}
+
+func (x *ReviewLeaveRequest) GetReviewNote() string {
+	if x != nil {
+		return x.ReviewNote
+	}
+	return ""
+}
+
+type LeaveIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	WorkerId      int64                  `protobuf:"varint,2,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LeaveIdRequest) Reset() {
+	*x = LeaveIdRequest{}
+	mi := &file_worker_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LeaveIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaveIdRequest) ProtoMessage() {}
+
+func (x *LeaveIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaveIdRequest.ProtoReflect.Descriptor instead.
+func (*LeaveIdRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *LeaveIdRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *LeaveIdRequest) GetWorkerId() int64 {
+	if x != nil {
+		return x.WorkerId
+	}
+	return 0
+}
+
 var File_worker_proto protoreflect.FileDescriptor
 
 const file_worker_proto_rawDesc = "" +
@@ -1452,7 +1868,45 @@ const file_worker_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2\x14.worker.ScheduleItemR\x05items\"8\n" +
 	"\x17GenerateScheduleRequest\x12\x1d\n" +
 	"\n" +
-	"week_start\x18\x01 \x01(\tR\tweekStart2\xe7\x06\n" +
+	"week_start\x18\x01 \x01(\tR\tweekStart\"\x83\x02\n" +
+	"\tLeaveItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\tworker_id\x18\x02 \x01(\x03R\bworkerId\x12\x1d\n" +
+	"\n" +
+	"start_date\x18\x03 \x01(\tR\tstartDate\x12\x19\n" +
+	"\bend_date\x18\x04 \x01(\tR\aendDate\x12\x16\n" +
+	"\x06reason\x18\x05 \x01(\tR\x06reason\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\x03R\x06status\x12\x1f\n" +
+	"\vreviewer_id\x18\a \x01(\x03R\n" +
+	"reviewerId\x12\x1f\n" +
+	"\vreview_note\x18\b \x01(\tR\n" +
+	"reviewNote\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\t \x01(\tR\tcreatedAt\"\x83\x01\n" +
+	"\x12SubmitLeaveRequest\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\x03R\bworkerId\x12\x1d\n" +
+	"\n" +
+	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
+	"\bend_date\x18\x03 \x01(\tR\aendDate\x12\x16\n" +
+	"\x06reason\x18\x04 \x01(\tR\x06reason\"p\n" +
+	"\x11ListLeavesRequest\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\x03R\bworkerId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\x03R\x06status\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x03R\x04page\x12\x12\n" +
+	"\x04size\x18\x04 \x01(\x03R\x04size\"S\n" +
+	"\x12ListLeavesResponse\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x03R\x05total\x12'\n" +
+	"\x05items\x18\x02 \x03(\v2\x11.worker.LeaveItemR\x05items\"~\n" +
+	"\x12ReviewLeaveRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\x03R\x06status\x12\x1f\n" +
+	"\vreviewer_id\x18\x03 \x01(\x03R\n" +
+	"reviewerId\x12\x1f\n" +
+	"\vreview_note\x18\x04 \x01(\tR\n" +
+	"reviewNote\"=\n" +
+	"\x0eLeaveIdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\tworker_id\x18\x02 \x01(\x03R\bworkerId2\xe2\b\n" +
 	"\x06Worker\x12)\n" +
 	"\x04Ping\x12\x0f.worker.Request\x1a\x10.worker.Response\x124\n" +
 	"\x05Login\x12\x14.worker.LoginRequest\x1a\x15.worker.LoginResponse\x12X\n" +
@@ -1468,7 +1922,12 @@ const file_worker_proto_rawDesc = "" +
 	"\x14ListManagedBuildings\x12\x11.worker.IdRequest\x1a\x1b.worker.BuildingIdsResponse\x12J\n" +
 	"\rListSchedules\x12\x1b.worker.ScheduleListRequest\x1a\x1c.worker.ScheduleListResponse\x12K\n" +
 	"\rSaveSchedules\x12\x1c.worker.SaveSchedulesRequest\x1a\x1c.worker.ScheduleListResponse\x12O\n" +
-	"\x0eGenerateWeekly\x12\x1f.worker.GenerateScheduleRequest\x1a\x1c.worker.ScheduleListResponseB\n" +
+	"\x0eGenerateWeekly\x12\x1f.worker.GenerateScheduleRequest\x1a\x1c.worker.ScheduleListResponse\x12<\n" +
+	"\vSubmitLeave\x12\x1a.worker.SubmitLeaveRequest\x1a\x11.worker.LeaveItem\x12C\n" +
+	"\n" +
+	"ListLeaves\x12\x19.worker.ListLeavesRequest\x1a\x1a.worker.ListLeavesResponse\x12<\n" +
+	"\vReviewLeave\x12\x1a.worker.ReviewLeaveRequest\x1a\x11.worker.LeaveItem\x128\n" +
+	"\vCancelLeave\x12\x16.worker.LeaveIdRequest\x1a\x11.worker.LeaveItemB\n" +
 	"Z\b./workerb\x06proto3"
 
 var (
@@ -1483,7 +1942,7 @@ func file_worker_proto_rawDescGZIP() []byte {
 	return file_worker_proto_rawDescData
 }
 
-var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_worker_proto_goTypes = []any{
 	(*Request)(nil),                 // 0: worker.Request
 	(*Response)(nil),                // 1: worker.Response
@@ -1508,6 +1967,12 @@ var file_worker_proto_goTypes = []any{
 	(*ScheduleListResponse)(nil),    // 20: worker.ScheduleListResponse
 	(*SaveSchedulesRequest)(nil),    // 21: worker.SaveSchedulesRequest
 	(*GenerateScheduleRequest)(nil), // 22: worker.GenerateScheduleRequest
+	(*LeaveItem)(nil),               // 23: worker.LeaveItem
+	(*SubmitLeaveRequest)(nil),      // 24: worker.SubmitLeaveRequest
+	(*ListLeavesRequest)(nil),       // 25: worker.ListLeavesRequest
+	(*ListLeavesResponse)(nil),      // 26: worker.ListLeavesResponse
+	(*ReviewLeaveRequest)(nil),      // 27: worker.ReviewLeaveRequest
+	(*LeaveIdRequest)(nil),          // 28: worker.LeaveIdRequest
 }
 var file_worker_proto_depIdxs = []int32{
 	3,  // 0: worker.LoginResponse.user:type_name -> worker.User
@@ -1517,37 +1982,46 @@ var file_worker_proto_depIdxs = []int32{
 	3,  // 4: worker.ListUsersResponse.users:type_name -> worker.User
 	18, // 5: worker.ScheduleListResponse.items:type_name -> worker.ScheduleItem
 	18, // 6: worker.SaveSchedulesRequest.items:type_name -> worker.ScheduleItem
-	0,  // 7: worker.Worker.Ping:input_type -> worker.Request
-	2,  // 8: worker.Worker.Login:input_type -> worker.LoginRequest
-	5,  // 9: worker.Worker.ListWorkersByBuilding:input_type -> worker.BuildingWorkersRequest
-	9,  // 10: worker.Worker.GetUsers:input_type -> worker.UserIdsRequest
-	11, // 11: worker.Worker.ListUsers:input_type -> worker.ListUsersRequest
-	13, // 12: worker.Worker.CreateUser:input_type -> worker.CreateUserRequest
-	14, // 13: worker.Worker.UpdateUser:input_type -> worker.UpdateUserRequest
-	17, // 14: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
-	15, // 15: worker.Worker.DisableUser:input_type -> worker.IdRequest
-	15, // 16: worker.Worker.ListManagedBuildings:input_type -> worker.IdRequest
-	19, // 17: worker.Worker.ListSchedules:input_type -> worker.ScheduleListRequest
-	21, // 18: worker.Worker.SaveSchedules:input_type -> worker.SaveSchedulesRequest
-	22, // 19: worker.Worker.GenerateWeekly:input_type -> worker.GenerateScheduleRequest
-	1,  // 20: worker.Worker.Ping:output_type -> worker.Response
-	4,  // 21: worker.Worker.Login:output_type -> worker.LoginResponse
-	8,  // 22: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
-	10, // 23: worker.Worker.GetUsers:output_type -> worker.UsersResponse
-	12, // 24: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
-	10, // 25: worker.Worker.CreateUser:output_type -> worker.UsersResponse
-	10, // 26: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
-	1,  // 27: worker.Worker.ResetPassword:output_type -> worker.Response
-	1,  // 28: worker.Worker.DisableUser:output_type -> worker.Response
-	16, // 29: worker.Worker.ListManagedBuildings:output_type -> worker.BuildingIdsResponse
-	20, // 30: worker.Worker.ListSchedules:output_type -> worker.ScheduleListResponse
-	20, // 31: worker.Worker.SaveSchedules:output_type -> worker.ScheduleListResponse
-	20, // 32: worker.Worker.GenerateWeekly:output_type -> worker.ScheduleListResponse
-	20, // [20:33] is the sub-list for method output_type
-	7,  // [7:20] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	23, // 7: worker.ListLeavesResponse.items:type_name -> worker.LeaveItem
+	0,  // 8: worker.Worker.Ping:input_type -> worker.Request
+	2,  // 9: worker.Worker.Login:input_type -> worker.LoginRequest
+	5,  // 10: worker.Worker.ListWorkersByBuilding:input_type -> worker.BuildingWorkersRequest
+	9,  // 11: worker.Worker.GetUsers:input_type -> worker.UserIdsRequest
+	11, // 12: worker.Worker.ListUsers:input_type -> worker.ListUsersRequest
+	13, // 13: worker.Worker.CreateUser:input_type -> worker.CreateUserRequest
+	14, // 14: worker.Worker.UpdateUser:input_type -> worker.UpdateUserRequest
+	17, // 15: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
+	15, // 16: worker.Worker.DisableUser:input_type -> worker.IdRequest
+	15, // 17: worker.Worker.ListManagedBuildings:input_type -> worker.IdRequest
+	19, // 18: worker.Worker.ListSchedules:input_type -> worker.ScheduleListRequest
+	21, // 19: worker.Worker.SaveSchedules:input_type -> worker.SaveSchedulesRequest
+	22, // 20: worker.Worker.GenerateWeekly:input_type -> worker.GenerateScheduleRequest
+	24, // 21: worker.Worker.SubmitLeave:input_type -> worker.SubmitLeaveRequest
+	25, // 22: worker.Worker.ListLeaves:input_type -> worker.ListLeavesRequest
+	27, // 23: worker.Worker.ReviewLeave:input_type -> worker.ReviewLeaveRequest
+	28, // 24: worker.Worker.CancelLeave:input_type -> worker.LeaveIdRequest
+	1,  // 25: worker.Worker.Ping:output_type -> worker.Response
+	4,  // 26: worker.Worker.Login:output_type -> worker.LoginResponse
+	8,  // 27: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
+	10, // 28: worker.Worker.GetUsers:output_type -> worker.UsersResponse
+	12, // 29: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
+	10, // 30: worker.Worker.CreateUser:output_type -> worker.UsersResponse
+	10, // 31: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
+	1,  // 32: worker.Worker.ResetPassword:output_type -> worker.Response
+	1,  // 33: worker.Worker.DisableUser:output_type -> worker.Response
+	16, // 34: worker.Worker.ListManagedBuildings:output_type -> worker.BuildingIdsResponse
+	20, // 35: worker.Worker.ListSchedules:output_type -> worker.ScheduleListResponse
+	20, // 36: worker.Worker.SaveSchedules:output_type -> worker.ScheduleListResponse
+	20, // 37: worker.Worker.GenerateWeekly:output_type -> worker.ScheduleListResponse
+	23, // 38: worker.Worker.SubmitLeave:output_type -> worker.LeaveItem
+	26, // 39: worker.Worker.ListLeaves:output_type -> worker.ListLeavesResponse
+	23, // 40: worker.Worker.ReviewLeave:output_type -> worker.LeaveItem
+	23, // 41: worker.Worker.CancelLeave:output_type -> worker.LeaveItem
+	25, // [25:42] is the sub-list for method output_type
+	8,  // [8:25] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_worker_proto_init() }
@@ -1561,7 +2035,7 @@ func file_worker_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_worker_proto_rawDesc), len(file_worker_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

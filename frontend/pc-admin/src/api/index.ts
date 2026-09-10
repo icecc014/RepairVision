@@ -380,3 +380,36 @@ export function apiNotificationRead(id: number): Promise<unknown> {
 export function apiNotificationReadAll(): Promise<unknown> {
   return http.post('/notifications/read-all')
 }
+
+export interface LeaveItem {
+  id: number
+  workerId: number
+  workerName?: string
+  startDate: string
+  endDate: string
+  reason: string
+  status: number
+  statusText: string
+  reviewNote?: string
+  createdAt: string
+}
+
+export interface LeavePage {
+  total: number
+  list: LeaveItem[]
+}
+
+export function apiAdminLeaves(params: { workerId?: number; status?: number; page?: number; size?: number }): Promise<LeavePage> {
+  return http.get('/admin/leaves', {
+    params: {
+      workerId: params.workerId || undefined,
+      status: params.status || undefined,
+      page: params.page || 1,
+      size: params.size || 20,
+    },
+  })
+}
+
+export function apiAdminLeaveReview(id: number, status: number, reviewNote: string): Promise<unknown> {
+  return http.post(`/admin/leaves/${id}/review`, { status, reviewNote })
+}

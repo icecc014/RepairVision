@@ -32,6 +32,10 @@ const (
 	Worker_ListSchedules_FullMethodName         = "/worker.Worker/ListSchedules"
 	Worker_SaveSchedules_FullMethodName         = "/worker.Worker/SaveSchedules"
 	Worker_GenerateWeekly_FullMethodName        = "/worker.Worker/GenerateWeekly"
+	Worker_SubmitLeave_FullMethodName           = "/worker.Worker/SubmitLeave"
+	Worker_ListLeaves_FullMethodName            = "/worker.Worker/ListLeaves"
+	Worker_ReviewLeave_FullMethodName           = "/worker.Worker/ReviewLeave"
+	Worker_CancelLeave_FullMethodName           = "/worker.Worker/CancelLeave"
 )
 
 // WorkerClient is the client API for Worker service.
@@ -51,6 +55,10 @@ type WorkerClient interface {
 	ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 	SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 	GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+	SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
+	ListLeaves(ctx context.Context, in *ListLeavesRequest, opts ...grpc.CallOption) (*ListLeavesResponse, error)
+	ReviewLeave(ctx context.Context, in *ReviewLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
+	CancelLeave(ctx context.Context, in *LeaveIdRequest, opts ...grpc.CallOption) (*LeaveItem, error)
 }
 
 type workerClient struct {
@@ -191,6 +199,46 @@ func (c *workerClient) GenerateWeekly(ctx context.Context, in *GenerateScheduleR
 	return out, nil
 }
 
+func (c *workerClient) SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LeaveItem)
+	err := c.cc.Invoke(ctx, Worker_SubmitLeave_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) ListLeaves(ctx context.Context, in *ListLeavesRequest, opts ...grpc.CallOption) (*ListLeavesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListLeavesResponse)
+	err := c.cc.Invoke(ctx, Worker_ListLeaves_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) ReviewLeave(ctx context.Context, in *ReviewLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LeaveItem)
+	err := c.cc.Invoke(ctx, Worker_ReviewLeave_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) CancelLeave(ctx context.Context, in *LeaveIdRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LeaveItem)
+	err := c.cc.Invoke(ctx, Worker_CancelLeave_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WorkerServer is the server API for Worker service.
 // All implementations must embed UnimplementedWorkerServer
 // for forward compatibility.
@@ -208,6 +256,10 @@ type WorkerServer interface {
 	ListSchedules(context.Context, *ScheduleListRequest) (*ScheduleListResponse, error)
 	SaveSchedules(context.Context, *SaveSchedulesRequest) (*ScheduleListResponse, error)
 	GenerateWeekly(context.Context, *GenerateScheduleRequest) (*ScheduleListResponse, error)
+	SubmitLeave(context.Context, *SubmitLeaveRequest) (*LeaveItem, error)
+	ListLeaves(context.Context, *ListLeavesRequest) (*ListLeavesResponse, error)
+	ReviewLeave(context.Context, *ReviewLeaveRequest) (*LeaveItem, error)
+	CancelLeave(context.Context, *LeaveIdRequest) (*LeaveItem, error)
 	mustEmbedUnimplementedWorkerServer()
 }
 
@@ -256,6 +308,18 @@ func (UnimplementedWorkerServer) SaveSchedules(context.Context, *SaveSchedulesRe
 }
 func (UnimplementedWorkerServer) GenerateWeekly(context.Context, *GenerateScheduleRequest) (*ScheduleListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GenerateWeekly not implemented")
+}
+func (UnimplementedWorkerServer) SubmitLeave(context.Context, *SubmitLeaveRequest) (*LeaveItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitLeave not implemented")
+}
+func (UnimplementedWorkerServer) ListLeaves(context.Context, *ListLeavesRequest) (*ListLeavesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListLeaves not implemented")
+}
+func (UnimplementedWorkerServer) ReviewLeave(context.Context, *ReviewLeaveRequest) (*LeaveItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReviewLeave not implemented")
+}
+func (UnimplementedWorkerServer) CancelLeave(context.Context, *LeaveIdRequest) (*LeaveItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelLeave not implemented")
 }
 func (UnimplementedWorkerServer) mustEmbedUnimplementedWorkerServer() {}
 func (UnimplementedWorkerServer) testEmbeddedByValue()                {}
@@ -512,6 +576,78 @@ func _Worker_GenerateWeekly_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Worker_SubmitLeave_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubmitLeaveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).SubmitLeave(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_SubmitLeave_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).SubmitLeave(ctx, req.(*SubmitLeaveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_ListLeaves_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListLeavesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).ListLeaves(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_ListLeaves_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).ListLeaves(ctx, req.(*ListLeavesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_ReviewLeave_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReviewLeaveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).ReviewLeave(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_ReviewLeave_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).ReviewLeave(ctx, req.(*ReviewLeaveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_CancelLeave_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LeaveIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).CancelLeave(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_CancelLeave_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).CancelLeave(ctx, req.(*LeaveIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Worker_ServiceDesc is the grpc.ServiceDesc for Worker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -570,6 +706,22 @@ var Worker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateWeekly",
 			Handler:    _Worker_GenerateWeekly_Handler,
+		},
+		{
+			MethodName: "SubmitLeave",
+			Handler:    _Worker_SubmitLeave_Handler,
+		},
+		{
+			MethodName: "ListLeaves",
+			Handler:    _Worker_ListLeaves_Handler,
+		},
+		{
+			MethodName: "ReviewLeave",
+			Handler:    _Worker_ReviewLeave_Handler,
+		},
+		{
+			MethodName: "CancelLeave",
+			Handler:    _Worker_CancelLeave_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

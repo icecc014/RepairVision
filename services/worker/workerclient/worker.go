@@ -26,6 +26,12 @@ type (
 	Request                 = worker.Request
 	ResetPasswordRequest    = worker.ResetPasswordRequest
 	GenerateScheduleRequest = worker.GenerateScheduleRequest
+	LeaveIdRequest          = worker.LeaveIdRequest
+	LeaveItem               = worker.LeaveItem
+	ListLeavesRequest       = worker.ListLeavesRequest
+	ListLeavesResponse      = worker.ListLeavesResponse
+	ReviewLeaveRequest      = worker.ReviewLeaveRequest
+	SubmitLeaveRequest      = worker.SubmitLeaveRequest
 	SaveSchedulesRequest    = worker.SaveSchedulesRequest
 	ScheduleItem            = worker.ScheduleItem
 	ScheduleListRequest     = worker.ScheduleListRequest
@@ -52,6 +58,10 @@ type (
 		ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 		SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 		GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+		SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
+		ListLeaves(ctx context.Context, in *ListLeavesRequest, opts ...grpc.CallOption) (*ListLeavesResponse, error)
+		ReviewLeave(ctx context.Context, in *ReviewLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
+		CancelLeave(ctx context.Context, in *LeaveIdRequest, opts ...grpc.CallOption) (*LeaveItem, error)
 	}
 
 	defaultWorker struct {
@@ -128,4 +138,24 @@ func (m *defaultWorker) SaveSchedules(ctx context.Context, in *SaveSchedulesRequ
 func (m *defaultWorker) GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
 	client := worker.NewWorkerClient(m.cli.Conn())
 	return client.GenerateWeekly(ctx, in, opts...)
+}
+
+func (m *defaultWorker) SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.SubmitLeave(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ListLeaves(ctx context.Context, in *ListLeavesRequest, opts ...grpc.CallOption) (*ListLeavesResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ListLeaves(ctx, in, opts...)
+}
+
+func (m *defaultWorker) ReviewLeave(ctx context.Context, in *ReviewLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.ReviewLeave(ctx, in, opts...)
+}
+
+func (m *defaultWorker) CancelLeave(ctx context.Context, in *LeaveIdRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.CancelLeave(ctx, in, opts...)
 }

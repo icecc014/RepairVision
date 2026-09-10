@@ -123,6 +123,10 @@ service Worker {
   rpc ListSchedules(ScheduleListRequest) returns(ScheduleListResponse);
   rpc SaveSchedules(SaveSchedulesRequest) returns(ScheduleListResponse);
   rpc GenerateWeekly(GenerateScheduleRequest) returns(ScheduleListResponse);
+  rpc SubmitLeave(SubmitLeaveRequest) returns(LeaveItem);
+  rpc ListLeaves(ListLeavesRequest) returns(ListLeavesResponse);
+  rpc ReviewLeave(ReviewLeaveRequest) returns(LeaveItem);
+  rpc CancelLeave(LeaveIdRequest) returns(LeaveItem);
 }
 
 message ScheduleItem {
@@ -148,4 +152,47 @@ message SaveSchedulesRequest {
 
 message GenerateScheduleRequest {
   string week_start = 1;
+}
+
+message LeaveItem {
+  int64 id = 1;
+  int64 worker_id = 2;
+  string start_date = 3;
+  string end_date = 4;
+  string reason = 5;
+  int64 status = 6;
+  int64 reviewer_id = 7;
+  string review_note = 8;
+  string created_at = 9;
+}
+
+message SubmitLeaveRequest {
+  int64 worker_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+  string reason = 4;
+}
+
+message ListLeavesRequest {
+  int64 worker_id = 1;
+  int64 status = 2;
+  int64 page = 3;
+  int64 size = 4;
+}
+
+message ListLeavesResponse {
+  int64 total = 1;
+  repeated LeaveItem items = 2;
+}
+
+message ReviewLeaveRequest {
+  int64 id = 1;
+  int64 status = 2;
+  int64 reviewer_id = 3;
+  string review_note = 4;
+}
+
+message LeaveIdRequest {
+  int64 id = 1;
+  int64 worker_id = 2;
 }

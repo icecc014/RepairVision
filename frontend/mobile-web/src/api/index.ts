@@ -179,3 +179,33 @@ export function apiNotificationRead(id: number): Promise<unknown> {
 export function apiNotificationReadAll(): Promise<unknown> {
   return http.post('/notifications/read-all')
 }
+
+export interface LeaveItem {
+  id: number
+  workerId: number
+  workerName?: string
+  startDate: string
+  endDate: string
+  reason: string
+  status: number
+  statusText: string
+  reviewNote?: string
+  createdAt: string
+}
+
+export interface LeavePage {
+  total: number
+  list: LeaveItem[]
+}
+
+export function apiWorkerLeaveSubmit(payload: { startDate: string; endDate: string; reason: string }): Promise<LeaveItem> {
+  return http.post('/worker/leaves', payload)
+}
+
+export function apiWorkerLeaves(status = 0, page = 1, size = 20): Promise<LeavePage> {
+  return http.get('/worker/leaves', { params: { status: status || undefined, page, size } })
+}
+
+export function apiWorkerLeaveCancel(id: number): Promise<unknown> {
+  return http.post(`/worker/leaves/${id}/cancel`)
+}

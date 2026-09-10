@@ -397,6 +397,52 @@ type AdminFeedbackStatsResponse struct {
 	Ratings   []FeedbackRatingItem `json:"ratings"`
 	Recent    []FeedbackRecentItem `json:"recent"`
 }
+type LeaveItem struct {
+	Id         int64  `json:"id"`
+	WorkerId   int64  `json:"workerId"`
+	WorkerName string `json:"workerName,optional"`
+	StartDate  string `json:"startDate"`
+	EndDate    string `json:"endDate"`
+	Reason     string `json:"reason"`
+	Status     int64  `json:"status"`
+	StatusText string `json:"statusText"`
+	ReviewNote string `json:"reviewNote,optional"`
+	CreatedAt  string `json:"createdAt"`
+}
+
+type WorkerLeaveSubmitRequest struct {
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
+	Reason    string `json:"reason"`
+}
+
+type WorkerLeaveListRequest struct {
+	Status int64 `form:"status,optional"`
+	Page   int64 `form:"page,optional"`
+	Size   int64 `form:"size,optional"`
+}
+
+type AdminLeaveListRequest struct {
+	WorkerId int64 `form:"workerId,optional"`
+	Status   int64 `form:"status,optional"`
+	Page     int64 `form:"page,optional"`
+	Size     int64 `form:"size,optional"`
+}
+
+type LeaveListResponse struct {
+	Total int64       `json:"total"`
+	List  []LeaveItem `json:"list"`
+}
+
+type LeaveReviewRequest struct {
+	Id         int64  `path:"id"`
+	Status     int64  `json:"status"`
+	ReviewNote string `json:"reviewNote,optional"`
+}
+
+type LeaveIdRequest struct {
+	Id int64 `path:"id"`
+}
 type NotificationItem struct {
 	Id        int64  `json:"id"`
 	Type      string `json:"type"`
