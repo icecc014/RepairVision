@@ -118,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { AdminFeedbackStats, AdminStats, SlaOverview } from '../api'
 import { apiAdminFeedbackStats, apiAdminSlaOverview, apiAdminStats } from '../api'
@@ -127,6 +127,7 @@ import AdminShell from '../components/AdminShell.vue'
 const stats = ref<AdminStats | null>(null)
 const sla = ref<SlaOverview | null>(null)
 const feedback = ref<AdminFeedbackStats | null>(null)
+const animated = ref(false)
 
 async function load() {
   try {
@@ -144,6 +145,8 @@ async function load() {
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
+  await nextTick()
+  animated.value = true
 }
 
 function maxCount() {
@@ -288,7 +291,7 @@ onMounted(load)
   height: 100%;
   background: linear-gradient(90deg, #9bc3ff, #3478f6);
   border-radius: 999px;
-  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.95s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .bar-fill.blue {
   background: linear-gradient(90deg, #9fe6cb, #22b573);

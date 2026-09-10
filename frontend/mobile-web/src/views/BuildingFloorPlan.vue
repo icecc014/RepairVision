@@ -396,27 +396,32 @@ function onPointerUp(e: PointerEvent) {
   100% { opacity: 1; transform: scale(1); }
 }
 .fault-card {
-  position: absolute; top: 6px; right: 6px; width: min(72%, 300px);
+  position: absolute; top: 6px; right: 6px; width: min(76%, 320px);
   max-height: calc(100% - 12px); overflow: auto;
   z-index: 6;
-  padding: 10px 12px; color: #e2e8f0; background: rgba(15, 37, 87, 0.95);
-  border: 1px solid #3b5ca8; border-radius: 12px; box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+  padding: 12px 14px; color: #2b3445;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(46, 68, 112, 0.18);
 }
 .fault-head { display: flex; align-items: center; justify-content: space-between; }
 .fault-room { color: var(--rv-primary-deep); font-size: 16px; font-weight: 800; }
-.fault-floor { margin-left: 6px; color: var(--rv-text-light); font-size: 12px; }
+.fault-floor { margin-left: 6px; color: #6b7a94; font-size: 12px; }
 .fault-close { width: 24px; height: 24px; color: var(--rv-text-sub); background: rgba(120,145,190,0.14); border: none; border-radius: 50%; cursor: pointer; }
 .fault-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(120,145,190,0.24); }
 .fault-row { display: flex; align-items: center; gap: 8px; }
 .fault-type { padding: 2px 8px; color: #2462d9; font-size: 12px; background: var(--rv-grad-1); border-radius: 999px; }
 .fault-status { font-size: 12px; font-weight: 700; }
-.fs1, .fs2 { color: #fbbf24; }
-.fs3 { color: #60a5fa; }
-.fs4 { color: #4ade80; }
-.fs5 { color: #94a3b8; }
-.fault-label { margin-top: 7px; color: var(--rv-primary-deep); font-size: 11px; }
-.fault-text { margin-top: 2px; color: var(--rv-text); font-size: 12px; line-height: 1.5; }
-.fault-meta { margin-top: 6px; color: var(--rv-text-light); font-size: 11px; }
+.fs1, .fs2 { color: #b96b1c; }
+.fs3 { color: #2462d9; }
+.fs4 { color: #17865a; }
+.fs5 { color: #5a6a85; }
+.fault-label { margin-top: 7px; color: #2462d9; font-size: 11px; }
+.fault-text { margin-top: 2px; color: #2b3445; font-size: 12px; line-height: 1.5; }
+.fault-meta { margin-top: 6px; color: #6b7a94; font-size: 11px; }
 .fault-actions { margin-top: 8px; display: flex; gap: 8px; }
 .fault-btn { padding: 5px 14px; color: #fff; font-size: 12px; background: linear-gradient(135deg,#7fb2ff,#3478f6); border: none; border-radius: 999px; cursor: pointer; }
 .fault-btn.done { background: linear-gradient(135deg,#7fe6c8,#22b573); }

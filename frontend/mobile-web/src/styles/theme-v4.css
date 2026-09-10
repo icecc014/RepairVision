@@ -279,3 +279,42 @@ body::before {
   0% { background-position: -280px 0; }
   100% { background-position: 280px 0; }
 }
+
+/* ===== V4 补充：选项卡/胶囊悬停与按压动效 ===== */
+.mode-tab,
+.rv-filter-chip,
+.building-chip,
+.floor-chip,
+.chip,
+.zoom-btn,
+.mini-btn,
+.fault-btn,
+.rv-btn {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease,
+    background 0.22s ease, color 0.22s ease;
+}
+
+.mode-tab:hover,
+.rv-filter-chip:hover,
+.building-chip:hover,
+.floor-chip:hover,
+.chip:hover,
+.zoom-btn:hover,
+.mini-btn:hover,
+.fault-btn:hover,
+.rv-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(46, 68, 112, 0.18);
+}
+
+.mode-tab:active,
+.rv-filter-chip:active,
+.building-chip:active,
+.floor-chip:active,
+.chip:active,
+.zoom-btn:active,
+.mini-btn:active,
+.fault-btn:active,
+.rv-btn:active {
+  transform: translateY(0) scale(0.97);
+}
