@@ -10,7 +10,13 @@
         <el-button type="success" :loading="generating" @click="generateWeek">一键生成当周排班</el-button>
       </div>
 
-      <el-table :data="rows" v-loading="loading" border stripe>
+      <div class="coverage-row">
+        <el-tag type="warning" effect="plain">午班 {{ shiftCount('MORNING') }}</el-tag>
+        <el-tag type="primary" effect="plain">晚班 {{ shiftCount('AFTERNOON') }}</el-tag>
+        <el-tag type="success" effect="plain">全天 {{ shiftCount('DAY') }}</el-tag>
+        <el-tag type="info" effect="plain">休息 {{ shiftCount('OFF') }}</el-tag>
+        <span class="coverage-tip">每栋楼每日尽量保证午/晚班各 1 人</span>
+      </div>      <el-table :data="rows" v-loading="loading" border stripe>
         <el-table-column label="维修工人" width="150">
           <template #default="{ row }">
             <div class="worker-name">{{ row.name }}</div>
@@ -95,7 +101,10 @@ function shiftCellClass(shift: string) {
     return 'shift-' + key
   }
   return 'shift-empty'
-}function shiftText(shift: string) {
+}function shiftCount(shift: string) {
+  return Object.values(scheduleMap.value).filter((x) => x.shiftType === shift).length
+}
+function shiftText(shift: string) {
   switch (shift) {
     case 'DAY':
       return '全天'
@@ -238,6 +247,16 @@ onMounted(() => {
   gap: 10px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+}
+.coverage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.coverage-tip {
+  color: #94a3b8;
+  font-size: 12px;
 }
 .week-title {
   font-weight: 800;

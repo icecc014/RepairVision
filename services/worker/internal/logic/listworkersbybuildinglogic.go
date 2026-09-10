@@ -40,11 +40,19 @@ func (l *ListWorkersByBuildingLogic) ListWorkersByBuilding(in *worker.BuildingWo
 		}
 		info := workerInfoToPb(u, base, skills)
 		if in.WorkDate != "" {
-			shift, err := store.FindWorkerShift(l.ctx, l.svcCtx.DB, u.ID, in.WorkDate)
+			onLeave, err := store.FindApprovedLeaveForDate(l.ctx, l.svcCtx.DB, u.ID, in.WorkDate)
 			if err != nil {
 				return nil, err
 			}
-			info.TodayShift = shift
+			if onLeave {
+				info.TodayShift = "OFF"
+			} else {
+				shift, err := store.FindWorkerShift(l.ctx, l.svcCtx.DB, u.ID, in.WorkDate)
+				if err != nil {
+					return nil, err
+				}
+				info.TodayShift = shift
+			}
 		}
 
 		resp.Workers = append(resp.Workers, info)

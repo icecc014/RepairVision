@@ -87,3 +87,23 @@ func (s *WorkerServer) GenerateWeekly(ctx context.Context, in *worker.GenerateSc
 	l := logic.NewGenerateWeeklyLogic(ctx, s.svcCtx)
 	return l.GenerateWeekly(in)
 }
+
+func (s *WorkerServer) SubmitLeave(ctx context.Context, in *worker.SubmitLeaveRequest) (*worker.LeaveItem, error) {
+	l := logic.NewSubmitLeaveLogic(ctx, s.svcCtx)
+	return l.SubmitLeave(in)
+}
+
+func (s *WorkerServer) ListLeaves(ctx context.Context, in *worker.ListLeavesRequest) (*worker.ListLeavesResponse, error) {
+	l := logic.NewListLeavesLogic(ctx, s.svcCtx)
+	return l.ListLeaves(in)
+}
+
+func (s *WorkerServer) ReviewLeave(ctx context.Context, in *worker.ReviewLeaveRequest) (*worker.LeaveItem, error) {
+	l := logic.NewReviewLeaveLogic(ctx, s.svcCtx)
+	return l.ReviewLeave(in)
+}
+
+func (s *WorkerServer) CancelLeave(ctx context.Context, in *worker.LeaveIdRequest) (*worker.LeaveItem, error) {
+	l := logic.NewCancelLeaveLogic(ctx, s.svcCtx)
+	return l.CancelLeave(in)
+}

@@ -29,7 +29,16 @@ func (l *AdminOrdersLogic) AdminOrders(req *types.AdminOrderListRequest) (resp *
 	if _, ok := auth.IdentityFromContext(l.ctx); !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
-	orders, err := store.ListAllOrders(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId)
+	total, err := store.CountAllOrdersFilter(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId)
+	if err != nil {
+		return nil, errs.Internal(err)
+	}
+	var orders []store.Order
+	if req.Page > 0 || req.Size > 0 {
+		orders, err = store.ListAllOrdersPage(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId, req.Page, req.Size)
+	} else {
+		orders, err = store.ListAllOrders(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -37,5 +46,8 @@ func (l *AdminOrdersLogic) AdminOrders(req *types.AdminOrderListRequest) (resp *
 	if err != nil {
 		return nil, err
 	}
-	return &types.OrderListResponse{List: items}, nil
+	if err := enrichPendingReasons(l.ctx, l.svcCtx, orders, items); err != nil {
+		return nil, errs.Internal(err)
+	}
+	return &types.OrderListResponse{Total: total, List: items}, nil
 }

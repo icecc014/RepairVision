@@ -46,6 +46,9 @@ func (l *StartOrderLogic) StartOrder(req *types.OrderIdRequest) (resp *types.Emp
 			Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
 			BuildingId: order.BuildingID, WorkerId: identity.UID, Status: order.Status,
 		})
+		recipients := append([]int64{order.ReporterID}, adminUserIDs(l.ctx, l.svcCtx)...)
+		notifyUsers(l.ctx, l.svcCtx, recipients, "start",
+			"工单已开工 "+order.OrderNo, order.Room+"室 工人已开工", order.ID)
 	}
 	return &types.EmptyResponse{}, nil
 }

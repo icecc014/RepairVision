@@ -22,8 +22,8 @@
     <el-dialog
       v-model="dialogVisible"
       :title="selected ? `${selected.code} ${selected.name}` : ''"
-      width="92%"
-      top="5vh"
+      width="900px"
+      top="6vh"
     >
       <AdminBuildingVisual v-if="selected" :building="selected" :orders="orders" />
     </el-dialog>
@@ -46,7 +46,8 @@ const dialogVisible = ref(false)
 async function load() {
   try {
     buildings.value = await apiAdminBuildings()
-    orders.value = await apiAdminOrders(0, 0)
+    const orderPage = await apiAdminOrders(0, 0, 1, 200)
+    orders.value = orderPage.list
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
@@ -56,9 +57,15 @@ function orderCount(id: number) {
   return orders.value.filter((o) => o.buildingId === id).length
 }
 
-function open(b: AdminBuilding) {
+async function open(b: AdminBuilding) {
   selected.value = b
   dialogVisible.value = true
+  try {
+    const page = await apiAdminOrders(0, 0, 1, 200)
+    orders.value = page.list
+  } catch {
+    // 刷新失败时沿用已有数据
+  }
 }
 
 onMounted(load)

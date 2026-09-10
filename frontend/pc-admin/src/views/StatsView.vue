@@ -1,6 +1,6 @@
 <template>
   <AdminShell title="数据统计看板" subtitle="工单状态、SLA 超时、处理时长、楼栋与类型分布">
-    <section v-if="stats && sla" class="stats-body">
+    <section v-if="stats && sla && feedback" class="stats-body">
       <div class="status-grid">
         <div v-for="s in stats.status" :key="s.status" class="status-card" :class="'sc' + s.status">
           <div class="status-num">{{ s.count }}</div>
@@ -25,7 +25,32 @@
           <div class="sla-num">{{ sla.avgRepairMinutes }}</div>
           <div class="sla-label">平均维修时长（分钟）</div>
         </div>
+            <div class="sla-grid eval-grid">
+        <div class="sla-card blue">
+          <div class="sla-num">{{ feedback.total }}</div>
+          <div class="sla-label">累计评价数</div>
+        </div>
+        <div class="sla-card green">
+          <div class="sla-num">{{ feedback.avgRating }}</div>
+          <div class="sla-label">平均评分（满分5）</div>
+        </div>
       </div>
+
+      <section v-if="feedback.recent.length > 0" class="panel">
+        <div class="panel-title">最近评价</div>
+        <el-table :data="feedback.recent" border stripe size="default">
+          <el-table-column prop="orderNo" label="工单号" width="180" />
+          <el-table-column label="位置" min-width="170">
+            <template #default="{ row }">{{ row.buildingName }} {{ row.room }}</template>
+          </el-table-column>
+          <el-table-column prop="workerName" label="工人" width="110">
+            <template #default="{ row }">{{ row.workerName || '—' }}</template>
+          </el-table-column>
+          <el-table-column prop="rating" label="评分" width="90" />
+          <el-table-column prop="comment" label="评价" min-width="220" show-overflow-tooltip />
+          <el-table-column prop="createdAt" label="时间" width="170" />
+        </el-table>
+      </section></div>
 
       <div class="grid-2">
         <section class="panel">
@@ -95,12 +120,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { AdminStats, SlaOverview } from '../api'
-import { apiAdminSlaOverview, apiAdminStats } from '../api'
+import type { AdminFeedbackStats, AdminStats, SlaOverview } from '../api'
+import { apiAdminFeedbackStats, apiAdminSlaOverview, apiAdminStats } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 
 const stats = ref<AdminStats | null>(null)
 const sla = ref<SlaOverview | null>(null)
+const feedback = ref<AdminFeedbackStats | null>(null)
 
 async function load() {
   try {
@@ -110,6 +136,11 @@ async function load() {
   }
   try {
     sla.value = await apiAdminSlaOverview()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+  try {
+    feedback.value = await apiAdminFeedbackStats()
   } catch (err) {
     ElMessage.error((err as Error).message)
   }

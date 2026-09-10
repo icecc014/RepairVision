@@ -22,7 +22,8 @@
       v-if="mode === 'plan' && building"
       :building="building"
       :orders="orders"
-      @select-room="onPlanSelect"
+      @select-room="onPlanSelect"
+      @refresh="emit('refresh')"
     />
 
     <template v-if="mode === '3d'">
@@ -43,30 +44,6 @@
       <div class="legend"><i class="dot fault"></i> 待处理故障</div>
       <p class="tip">手指拖拽旋转 · 双指缩放 · 点击楼层只看该层</p>
     </template>
-
-    <div v-if="selected" class="room-panel">
-      <div class="room-panel-head">
-        <div>
-          <span class="room-no">{{ selected.roomNo }}</span>
-          <span class="room-floor">{{ selected.floorNo }} 层 · {{ selected.orders.length }} 个待处理工单</span>
-        </div>
-        <button class="panel-close" @click="selected = null">关闭</button>
-      </div>
-      <div v-if="selected.orders.length === 0" class="panel-empty">该房间暂无工单</div>
-      <div v-for="o in selected.orders" :key="o.id" class="room-order">
-        <div class="order-row">
-          <span class="type">{{ o.faultTypeName }}</span>
-          <span class="status" :class="'s' + o.status">{{ o.statusText }}</span>
-        </div>
-        <div class="order-title">{{ o.title }}</div>
-        <div class="order-meta">报修 {{ o.createdAt }} · 工人 {{ o.workerName || '待派' }}</div>
-        <div class="order-actions">
-          <button v-if="o.status === 2" class="mini" @click="runAction(o, 'start')">开工</button>
-          <button v-if="o.status === 3" class="mini done" @click="runAction(o, 'complete')">完工</button>
-        </div>
-      </div>
-    </div>
-
   </van-popup>
 </template>
 
@@ -75,6 +52,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
 import { apiCompleteOrder, apiStartOrder } from '../api'
 import BuildingFloorPlan from './BuildingFloorPlan.vue'
+import { PLAN_DEPTH, PLAN_WIDTH, buildFloorPlan, buildGridRooms, supportsCorridorLayout } from '../utils/floorLayout'
 import { showConfirmDialog, showToast } from 'vant'
 
 const props = defineProps<{ building: WorkerMapBuilding | null; orders: OrderItem[] }>()
@@ -248,6 +226,7 @@ async function initScene() {
     const orderByFloorRoom = new Map<string, OrderItem[]>()
     for (const o of props.orders) {
       if (o.buildingId !== b.id) continue
+      if (o.status !== 1 && o.status !== 2 && o.status !== 3) continue
       const key = `${o.floor}:${o.room || ''}`
       if (!orderByFloorRoom.has(key)) orderByFloorRoom.set(key, [])
       orderByFloorRoom.get(key)!.push(o)
@@ -265,23 +244,19 @@ async function initScene() {
       slab.position.y = yBase + slabH / 2
       group.add(slab)
 
-      const { cols, rows } = layout(Math.max(b.roomsPerFloor, 1))
-      const gap = 0.5
-      const usableW = boxW - gap * (cols - 1)
-      const usableD = boxD - gap * (rows - 1)
-      const roomW = usableW / cols
-      const roomD = usableD / rows
+      const plan = supportsCorridorLayout(b.roomsPerFloor)
+        ? buildFloorPlan(floorNo, b.roomsPerFloor)
+        : { floor: floorNo, rooms: buildGridRooms(floorNo, Math.max(b.roomsPerFloor, 1)), corridor: { x: 0, z: 0, w: 0, d: 0 }, cores: [] }
       const roomH = 0.8
-      const tileColors = [
-'#3b82f6', '#60a5fa', '#7cb3f8', '#94c3fa', '#38bdf8'
-]
+      const tileColors = ['#3b82f6', '#60a5fa', '#7cb3f8', '#94c3fa', '#38bdf8']
 
-      for (let i = 0; i < Math.max(b.roomsPerFloor, 1); i++) {
-        const col = i % cols
-        const row = Math.floor(i / cols)
-        const cx = -boxW / 2 + roomW / 2 + col * (roomW + gap)
-        const cz = -boxD / 2 + roomD / 2 + row * (roomD + gap)
-        const roomNum = `${floorNo}${String(i + 1).padStart(2, "0")}`
+      for (const room of plan.rooms) {
+        const roomW = (room.w / PLAN_WIDTH) * boxW * 0.92
+        const roomD = (room.d / PLAN_DEPTH) * boxD * 0.92
+        const cx = ((room.x + room.w / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
+        const cz = ((room.z + room.d / 2 - PLAN_DEPTH / 2) / PLAN_DEPTH) * boxD
+        const roomNum = room.no
+        const i = room.index - 1
 
         const tileMat = new THREE.MeshLambertMaterial({
           color: tileColors[(floor + i) % tileColors.length],
@@ -289,14 +264,14 @@ async function initScene() {
           transparent: true,
           opacity: 0.92,
         })
-        const tile = new THREE.Mesh(new THREE.PlaneGeometry(roomW * 0.9, roomD * 0.9), tileMat)
+        const tile = new THREE.Mesh(new THREE.PlaneGeometry(roomW * 0.94, roomD * 0.94), tileMat)
         tile.rotation.x = -Math.PI / 2
         tile.position.set(cx, yBase + slabH + 0.06, cz)
         tile.userData = { roomNo: roomNum, floorNo }
         group.add(tile)
         roomMeshes.push(tile)
 
-        const outlineGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW * 0.9, 0.04, roomD * 0.9))
+        const outlineGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW * 0.94, 0.04, roomD * 0.94))
         const outline = new THREE.LineSegments(
           outlineGeo,
           new THREE.LineBasicMaterial({ color: "#0f2557", transparent: true, opacity: 0.75 }),
@@ -311,7 +286,11 @@ async function initScene() {
         }
 
         const orders = orderByFloorRoom.get(`${floorNo}:${roomNum}`) || []
-        const ordersByRawRoom = orderByFloorRoom.get(`${floorNo}:${String(i + 1).padStart(2, '0')}`) || []
+        const suffix = roomNum.slice(String(floorNo).length)
+        const ordersByRawRoom =
+          orderByFloorRoom.get(`${floorNo}:${suffix}`) ||
+          orderByFloorRoom.get(`${floorNo}:${String(i + 1).padStart(2, '0')}`) ||
+          []
         const matched = orders.length > 0 ? orders : ordersByRawRoom
         allRoomOrders.set(`${floorNo}:${roomNum}`, matched)
         if (matched.length > 0) {
@@ -327,6 +306,50 @@ async function initScene() {
           const active = makeLabel(THREE, `${roomNum} ${matched[0].faultTypeName || '维修'}`, 1.8, cx, yBase + slabH + roomH + 1.45, cz, 0)
           if (active) group.add(active)
         }
+      }
+
+      // 贯通走廊
+      if (plan.corridor && plan.corridor.w > 0) {
+        const corridorW = (plan.corridor.w / PLAN_WIDTH) * boxW
+        const corridorD = (plan.corridor.d / PLAN_DEPTH) * boxD
+        const corridorCx = ((plan.corridor.x + plan.corridor.w / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
+        const corridor = new THREE.Mesh(
+          new THREE.PlaneGeometry(corridorW * 0.96, corridorD * 0.98),
+          new THREE.MeshLambertMaterial({ color: '#e2e8f0' }),
+        )
+        corridor.rotation.x = -Math.PI / 2
+        corridor.position.set(corridorCx, yBase + slabH + 0.05, 0)
+        group.add(corridor)
+        const corridorLabel = makeLabel(THREE, '走廊', 1.6, corridorCx, yBase + slabH + 0.55, 0)
+        if (corridorLabel) group.add(corridorLabel)
+      }
+
+      // 两处核心筒：封闭防火楼梯 + 公共区域
+      for (const core of plan.cores) {
+        const stairW = (32 / PLAN_WIDTH) * boxW
+        const coreD = (core.d / PLAN_DEPTH) * boxD
+        const coreCz = ((core.z + core.d / 2 - PLAN_DEPTH / 2) / PLAN_DEPTH) * boxD
+        const stairX = ((16 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
+        const stair = new THREE.Mesh(
+          new THREE.BoxGeometry(stairW * 0.96, floorH * 0.96, coreD * 0.96),
+          new THREE.MeshLambertMaterial({ color: '#94a3b8', transparent: true, opacity: 0.75 }),
+        )
+        stair.position.set(stairX, yBase + slabH + floorH / 2, coreCz)
+        group.add(stair)
+        const stairLabel = makeLabel(THREE, '楼梯间', 1.4, stairX, yBase + slabH + floorH + 0.5, coreCz)
+        if (stairLabel) group.add(stairLabel)
+
+        const publicW = ((PLAN_WIDTH - 32) / PLAN_WIDTH) * boxW
+        const publicCx = ((32 + (PLAN_WIDTH - 32) / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
+        const publicArea = new THREE.Mesh(
+          new THREE.PlaneGeometry(publicW * 0.95, coreD * 0.95),
+          new THREE.MeshLambertMaterial({ color: '#dbeafe' }),
+        )
+        publicArea.rotation.x = -Math.PI / 2
+        publicArea.position.set(publicCx, yBase + slabH + 0.06, coreCz)
+        group.add(publicArea)
+        const publicLabel = makeLabel(THREE, '公共区域', 1.8, publicCx, yBase + slabH + 0.55, coreCz)
+        if (publicLabel) group.add(publicLabel)
       }
 
       const floorEdge = new THREE.EdgesGeometry(new THREE.BoxGeometry(boxW, 0.04, boxD))
@@ -413,7 +436,7 @@ async function initScene() {
     animateFn(0)
 
     // store methods
-    ;(window as any).__building3d = {
+    const helper3d = {
       applyFloorFilter,
       updateTransparent() {
         glassMats.forEach((m: any) => {
@@ -430,9 +453,10 @@ async function initScene() {
         })
       },
     }
-    (window as any).__building3d = helper3d
+    ;(window as any).__building3d = helper3d
     helper3d.updateLabels()
-    helper3d.updateTransparent()  } catch (err) {
+    helper3d.updateTransparent()
+  } catch (err) {
     console.error('3D init failed:', err)
     loadError.value = (err as Error)?.message || String(err)
     webglError.value = true

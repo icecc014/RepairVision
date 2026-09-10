@@ -208,6 +208,8 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 			OrderId:  po.order.ID,
 			WorkerId: worker.Id,
 		})
+		notifyUsers(l.ctx, l.svcCtx, []int64{worker.Id, po.order.ReporterID}, "dispatch",
+			"工单已派单 "+po.order.OrderNo, po.order.Room+"室 已派单", po.order.ID)
 		l.svcCtx.WS.PublishOrder(ws.OrderEvent{
 			Type: "order_changed", OrderId: po.order.ID, OrderNo: po.order.OrderNo,
 			BuildingId: po.order.BuildingID, WorkerId: worker.Id, Status: store.StatusDispatched,

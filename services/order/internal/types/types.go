@@ -99,6 +99,8 @@ type AdminOrderReassignRequest struct {
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
+	Page       int64 `form:"page,optional"`
+	Size       int64 `form:"size,optional"`
 }
 
 type AdminStatsResponse struct {
@@ -277,38 +279,45 @@ type OrderIdRequest struct {
 }
 
 type OrderItem struct {
-	Id            int64   `json:"id"`
-	OrderNo       string  `json:"orderNo"`
-	Title         string  `json:"title"`
-	Description   string  `json:"description"`
-	BuildingId    int64   `json:"buildingId"`
-	BuildingName  string  `json:"buildingName"`
-	Room          string  `json:"room"`
-	Floor         int64   `json:"floor"`
-	FaultType     string  `json:"faultType"`
-	FaultTypeName string  `json:"faultTypeName"`
-	Status        int64   `json:"status"`
-	StatusText    string  `json:"statusText"`
-	WorkerId      int64   `json:"workerId,optional"`
-	WorkerName    string  `json:"workerName,optional"`
-	WorkerPhone   string  `json:"workerPhone,optional"`
-	DispatchScore float64 `json:"dispatchScore,optional"`
-	SkillScore    float64 `json:"skillScore,optional"`
-	DistanceScore float64 `json:"distanceScore,optional"`
-	LoadScore     float64 `json:"loadScore,optional"`
-	ReporterId    int64   `json:"reporterId"`
-	ReporterName  string  `json:"reporterName,optional"`
-	Source        string  `json:"source"`
-	CreatedAt     string  `json:"createdAt"`
-	UpdatedAt     string  `json:"updatedAt"`
+	Id              int64   `json:"id"`
+	OrderNo         string  `json:"orderNo"`
+	Title           string  `json:"title"`
+	Description     string  `json:"description"`
+	BuildingId      int64   `json:"buildingId"`
+	BuildingName    string  `json:"buildingName"`
+	Room            string  `json:"room"`
+	Floor           int64   `json:"floor"`
+	FaultType       string  `json:"faultType"`
+	FaultTypeName   string  `json:"faultTypeName"`
+	Status          int64   `json:"status"`
+	PendingReason   string  `json:"pendingReason,optional"`
+	Rated           bool    `json:"rated,optional"`
+	Rating          int64   `json:"rating,optional"`
+	FeedbackComment string  `json:"feedbackComment,optional"`
+	StatusText      string  `json:"statusText"`
+	WorkerId        int64   `json:"workerId,optional"`
+	WorkerName      string  `json:"workerName,optional"`
+	WorkerPhone     string  `json:"workerPhone,optional"`
+	DispatchScore   float64 `json:"dispatchScore,optional"`
+	SkillScore      float64 `json:"skillScore,optional"`
+	DistanceScore   float64 `json:"distanceScore,optional"`
+	LoadScore       float64 `json:"loadScore,optional"`
+	ReporterId      int64   `json:"reporterId"`
+	ReporterName    string  `json:"reporterName,optional"`
+	Source          string  `json:"source"`
+	CreatedAt       string  `json:"createdAt"`
+	UpdatedAt       string  `json:"updatedAt"`
 }
 
 type OrderListRequest struct {
 	Status int64 `form:"status,optional"`
+	Page   int64 `form:"page,optional"`
+	Size   int64 `form:"size,optional"`
 }
 
 type OrderListResponse struct {
-	List []OrderItem `json:"list"`
+	Total int64       `json:"total"`
+	List  []OrderItem `json:"list"`
 }
 
 type ScheduleItem struct {
@@ -358,6 +367,106 @@ type SlaOverviewResponse struct {
 	AvgDispatchMinutes     float64     `json:"avgDispatchMinutes"`
 	AvgRepairMinutes       float64     `json:"avgRepairMinutes"`
 	OverdueOrders          []OrderItem `json:"overdueOrders"`
+}
+
+type DormFeedbackRequest struct {
+	Id      int64  `path:"id"`
+	Rating  int64  `json:"rating"`
+	Comment string `json:"comment,optional"`
+}
+
+type FeedbackRatingItem struct {
+	Rating int64 `json:"rating"`
+	Cnt    int64 `json:"cnt"`
+}
+
+type FeedbackRecentItem struct {
+	OrderNo      string `json:"orderNo"`
+	BuildingId   int64  `json:"buildingId"`
+	BuildingName string `json:"buildingName"`
+	Room         string `json:"room"`
+	WorkerName   string `json:"workerName,optional"`
+	Rating       int64  `json:"rating"`
+	Comment      string `json:"comment"`
+	CreatedAt    string `json:"createdAt"`
+}
+
+type AdminFeedbackStatsResponse struct {
+	Total     int64                `json:"total"`
+	AvgRating float64              `json:"avgRating"`
+	Ratings   []FeedbackRatingItem `json:"ratings"`
+	Recent    []FeedbackRecentItem `json:"recent"`
+}
+type LeaveItem struct {
+	Id         int64  `json:"id"`
+	WorkerId   int64  `json:"workerId"`
+	WorkerName string `json:"workerName,optional"`
+	StartDate  string `json:"startDate"`
+	EndDate    string `json:"endDate"`
+	Reason     string `json:"reason"`
+	Status     int64  `json:"status"`
+	StatusText string `json:"statusText"`
+	ReviewNote string `json:"reviewNote,optional"`
+	CreatedAt  string `json:"createdAt"`
+}
+
+type WorkerLeaveSubmitRequest struct {
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
+	Reason    string `json:"reason"`
+}
+
+type WorkerLeaveListRequest struct {
+	Status int64 `form:"status,optional"`
+	Page   int64 `form:"page,optional"`
+	Size   int64 `form:"size,optional"`
+}
+
+type AdminLeaveListRequest struct {
+	WorkerId int64 `form:"workerId,optional"`
+	Status   int64 `form:"status,optional"`
+	Page     int64 `form:"page,optional"`
+	Size     int64 `form:"size,optional"`
+}
+
+type LeaveListResponse struct {
+	Total int64       `json:"total"`
+	List  []LeaveItem `json:"list"`
+}
+
+type LeaveReviewRequest struct {
+	Id         int64  `path:"id"`
+	Status     int64  `json:"status"`
+	ReviewNote string `json:"reviewNote,optional"`
+}
+
+type LeaveIdRequest struct {
+	Id int64 `path:"id"`
+}
+type NotificationItem struct {
+	Id        int64  `json:"id"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	OrderId   int64  `json:"orderId,optional"`
+	IsRead    int64  `json:"isRead"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type NotificationListRequest struct {
+	Page       int64 `form:"page,optional"`
+	Size       int64 `form:"size,optional"`
+	UnreadOnly int64 `form:"unreadOnly,optional"`
+}
+
+type NotificationListResponse struct {
+	Total  int64              `json:"total"`
+	Unread int64              `json:"unread"`
+	List   []NotificationItem `json:"list"`
+}
+
+type NotificationIdRequest struct {
+	Id int64 `path:"id"`
 }
 type PingRequest struct {
 	Name string `path:"name"`

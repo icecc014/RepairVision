@@ -17,6 +17,7 @@
       <router-link class="nav-item" to="/dispatch-rules" active-class="active">派单规则配置</router-link>
       <router-link class="nav-item" to="/users" active-class="active">人员账号管理</router-link>
       <router-link class="nav-item" to="/schedules" active-class="active">工人排班</router-link>
+      <router-link class="nav-item" to="/leaves" active-class="active">请假审批</router-link>
       <router-link class="nav-item" to="/buildings" active-class="active">建筑信息管理</router-link>
       <router-link class="nav-item" to="/logs" active-class="active">操作日志</router-link>
       <router-link class="nav-item" to="/permissions" active-class="active">权限说明</router-link>
@@ -32,6 +33,7 @@
           <p class="page-sub">{{ subtitle }}</p>
         </div>
         <div class="user-box">
+          <NotificationBell />
           <el-tag type="primary" effect="dark" size="small">管理员</el-tag>
           <span class="user-name">{{ auth.user?.name }}</span>
           <button class="logout-btn" @click="logout">退出登录</button>
@@ -45,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationBell from './NotificationBell.vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 

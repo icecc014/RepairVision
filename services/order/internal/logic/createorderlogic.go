@@ -185,6 +185,13 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		Type: "order_changed", OrderId: orderID, OrderNo: orderNo,
 		BuildingId: buildingID, WorkerId: workerID, Status: status,
 	})
+	recipients := adminUserIDs(l.ctx, l.svcCtx)
+	if best != nil && best.workerID > 0 {
+		recipients = append(recipients, best.workerID)
+	}
+	notifyUsers(l.ctx, l.svcCtx, recipients, "dispatch",
+		"新工单 "+orderNo,
+		currentBuilding.Name+" "+room+"室 "+faultType.Name, orderID)
 	return &types.CreateOrderResponse{OrderId: orderID, OrderNo: orderNo}, nil
 }
 

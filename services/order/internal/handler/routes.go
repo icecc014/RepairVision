@@ -18,6 +18,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	})
 	server.AddRoutes([]rest.Route{
 		{Method: http.MethodGet, Path: "/api/fault-types", Handler: FaultTypesHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/notifications", Handler: NotificationListHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/notifications/:id/read", Handler: NotificationReadHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/notifications/read-all", Handler: NotificationReadAllHandler(serverCtx)},
 	}, jwtOpt)
 
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(3), []rest.Route{
@@ -25,12 +28,16 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodGet, Path: "/api/dorm/orders/:id", Handler: DormOrderDetailHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/dorm/orders", Handler: CreateOrderHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/dorm/orders/:id/cancel", Handler: CancelOrderHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/dorm/orders/:id/feedback", Handler: DormFeedbackHandler(serverCtx)},
 	}...), jwtOpt)
 
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(2), []rest.Route{
 		{Method: http.MethodGet, Path: "/api/worker/orders", Handler: WorkerOrdersHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/worker/map-data", Handler: WorkerMapDataHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/worker/schedules", Handler: WorkerSchedulesHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/worker/leaves", Handler: WorkerLeaveSubmitHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/worker/leaves", Handler: WorkerLeaveListHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/worker/leaves/:id/cancel", Handler: WorkerLeaveCancelHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/worker/batch-complete", Handler: WorkerBatchCompleteHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/worker/orders/:id/start", Handler: StartOrderHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/worker/orders/:id/complete", Handler: CompleteOrderHandler(serverCtx)},
@@ -42,7 +49,10 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodGet, Path: "/api/admin/worker-board", Handler: AdminWorkerBoardHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/schedules", Handler: AdminScheduleSaveHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/schedules/generate", Handler: AdminScheduleGenerateHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/leaves", Handler: AdminLeaveListHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/leaves/:id/review", Handler: AdminLeaveReviewHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/stats", Handler: AdminStatsHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/feedback-stats", Handler: AdminFeedbackStatsHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/sla-overview", Handler: AdminSlaOverviewHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/reassign", Handler: AdminOrderReassignHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/batch-dispatch", Handler: AdminBatchDispatchHandler(serverCtx)},

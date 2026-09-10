@@ -7,6 +7,7 @@ import DispatchRulesView from '../views/DispatchRulesView.vue'
 import UsersView from '../views/UsersView.vue'
 import SchedulesView from '../views/SchedulesView.vue'
 import DispatchBoardView from '../views/DispatchBoardView.vue'
+import LeavesView from '../views/LeavesView.vue'
 import BuildingsView from '../views/BuildingsView.vue'
 import LogsView from '../views/LogsView.vue'
 import StatsView from '../views/StatsView.vue'
@@ -24,6 +25,7 @@ const router = createRouter({
     { path: '/dispatch-rules', name: 'dispatch-rules', component: DispatchRulesView, meta: { requiresAuth: true } },
     { path: '/users', name: 'users', component: UsersView, meta: { requiresAuth: true } },
     { path: '/schedules', name: 'schedules', component: SchedulesView, meta: { requiresAuth: true } },
+    { path: '/leaves', name: 'leaves', component: LeavesView, meta: { requiresAuth: true } },
     { path: '/buildings', name: 'buildings', component: BuildingsView, meta: { requiresAuth: true } },
     { path: '/logs', name: 'logs', component: LogsView, meta: { requiresAuth: true } },
     { path: '/stats', name: 'stats', component: StatsView, meta: { requiresAuth: true } },

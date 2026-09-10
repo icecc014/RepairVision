@@ -32,6 +32,7 @@ func (l *CancelOrderLogic) CancelOrder(req *types.OrderIdRequest) (resp *types.E
 	if !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
+	prevOrder, _ := store.FindOrder(l.ctx, l.svcCtx.DB, req.Id)
 	affected, err := store.CancelOrder(l.ctx, l.svcCtx.DB, req.Id, identity.BuildingID)
 	if err != nil {
 		return nil, errs.Internal(err)
@@ -47,6 +48,12 @@ func (l *CancelOrderLogic) CancelOrder(req *types.OrderIdRequest) (resp *types.E
 			Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
 			BuildingId: order.BuildingID, Status: order.Status,
 		})
+		recipients := adminUserIDs(l.ctx, l.svcCtx)
+		if prevOrder != nil && prevOrder.WorkerID.Valid {
+			recipients = append(recipients, prevOrder.WorkerID.Int64)
+		}
+		notifyUsers(l.ctx, l.svcCtx, recipients, "cancel",
+			"工单已取消 "+order.OrderNo, order.Room+"室 工单已取消", order.ID)
 	}
 	return &types.EmptyResponse{}, nil
 }

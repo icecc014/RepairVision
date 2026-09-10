@@ -132,6 +132,9 @@ func (l *AdminOrderReassignLogic) AdminOrderReassign(req *types.AdminOrderReassi
 		return nil, errs.Internal(err)
 	}
 
+	recipients := append([]int64{order.ReporterID, req.WorkerId}, adminUserIDs(l.ctx, l.svcCtx)...)
+	notifyUsers(l.ctx, l.svcCtx, recipients, "dispatch",
+		"工单已改派 "+order.OrderNo, order.Room+"室 已改派给新工人", order.ID)
 	l.svcCtx.WS.PublishOrder(ws.OrderEvent{
 		Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
 		BuildingId: order.BuildingID, WorkerId: req.WorkerId, Status: store.StatusDispatched,

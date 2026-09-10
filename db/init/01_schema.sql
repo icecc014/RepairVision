@@ -94,6 +94,32 @@ CREATE TABLE operation_logs (
   KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+CREATE TABLE order_feedbacks (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT NOT NULL UNIQUE COMMENT '已完工工单',
+  building_id INT NOT NULL,
+  worker_id BIGINT DEFAULT NULL,
+  rating TINYINT NOT NULL DEFAULT 5 COMMENT '1-5星',
+  comment VARCHAR(500),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_worker (worker_id),
+  KEY idx_rating (rating)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE notifications (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL COMMENT '接收用户',
+  role TINYINT NOT NULL DEFAULT 0 COMMENT '接收角色 1管理员 2工人 3宿管',
+  type VARCHAR(30) NOT NULL COMMENT 'create/dispatch/start/complete/cancel/feedback',
+  title VARCHAR(100) NOT NULL,
+  content VARCHAR(255) NOT NULL,
+  order_id BIGINT DEFAULT NULL,
+  is_read TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_user_read (user_id, is_read, id),
+  KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE DATABASE IF NOT EXISTS worker_db CHARACTER SET utf8mb4;
 USE worker_db;
 
@@ -143,6 +169,21 @@ CREATE TABLE worker_schedules (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_worker_date (worker_id, work_date),
   KEY idx_date (work_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE worker_leave_requests (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  worker_id BIGINT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  reason VARCHAR(200) NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1 COMMENT '1待审批 2已通过 3已驳回 4已撤销',
+  reviewer_id BIGINT DEFAULT NULL,
+  review_note VARCHAR(200),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_worker_status (worker_id, status),
+  KEY idx_range (start_date, end_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE DATABASE IF NOT EXISTS map_db CHARACTER SET utf8mb4;
 USE map_db;

@@ -5,7 +5,10 @@
         <div class="rv-header-title">宿管工作台</div>
         <div class="rv-header-sub">{{ auth.user?.name }} · 本栋工单管理</div>
       </div>
-      <button class="rv-logout" @click="emit('logout')">退出</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <NotificationBell />
+        <button class="rv-logout" @click="emit('logout')">退出</button>
+      </div>
     </header>
 
     <main class="rv-content">
@@ -59,6 +62,8 @@
               <button v-if="item.workerName" class="rv-btn rv-btn-ghost" disabled style="opacity: 0.8">
                 {{ item.workerName }}
               </button>
+              <button v-if="item.status === 4 && !item.rated" class="rv-btn rv-btn-success" @click="openFeedback(item)">评价</button>
+              <span v-else-if="item.status === 4 && item.rating" class="rv-order-time">★ {{ item.rating }}</span>
               <button v-if="canCancel(item)" class="rv-btn rv-btn-danger" @click="cancelOrder(item)">
                 取消
               </button>
@@ -68,7 +73,14 @@
       </div>
     </main>
 
-    <button class="rv-fab" @click="openCreate">＋ 极简报修</button>
+      <button
+        v-if="!loading && orders.length < total"
+        class="rv-load-more"
+        :disabled="loadingMore"
+        @click="loadMore"
+      >
+        {{ loadingMore ? '加载中…' : '加载更多' }}
+      </button>    <button class="rv-fab" @click="openCreate">＋ 极简报修</button>
 
     <van-popup
       v-model:show="showCreate"
@@ -139,13 +151,29 @@
         </a>
       </div>
     </van-popup>
+    <van-popup v-model:show="feedbackVisible" position="bottom" round :style="{ maxHeight: '70vh' }">
+      <div v-if="feedbackTarget" style="padding: 18px 18px 24px">
+        <div style="font-size:17px;font-weight:800;margin-bottom:6px">服务评价</div>
+        <div style="color:#94a3b8;font-size:12px;margin-bottom:14px">{{ feedbackTarget.orderNo }} · {{ feedbackTarget.title }}</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <span class="rv-form-label" style="margin:0">维修质量</span>
+          <van-rate v-model="feedbackRating" :count="5" color="#f59e0b" void-icon="star" void-color="#e2e8f0" />
+        </div>
+        <div class="rv-form-label">评价内容（可选）</div>
+        <textarea v-model="feedbackComment" class="rv-form-field" rows="3" maxlength="500" placeholder="说说本次维修服务怎么样" />
+        <button class="rv-submit" :disabled="feedbackSubmitting" @click="submitFeedback">
+          {{ feedbackSubmitting ? '提交中…' : '提交评价' }}
+        </button>
+      </div>
+    </van-popup>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { FaultType, OrderItem } from '../api'
-import { apiCancelOrder, apiCreateOrder, apiDormOrders, apiFaultTypes } from '../api'
+import { apiCancelOrder, apiCreateOrder, apiDormFeedback, apiDormOrderPage, apiFaultTypes } from '../api'
+import NotificationBell from '../components/NotificationBell.vue'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -158,10 +186,19 @@ let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
 const faultTypes = ref<FaultType[]>([])
 const loading = ref(false)
+const total = ref(0)
+const page = ref(1)
+const pageSize = 20
+const loadingMore = ref(false)
 const submitting = ref(false)
 const showCreate = ref(false)
 const showDetail = ref(false)
 const detail = ref<OrderItem | null>(null)
+const feedbackVisible = ref(false)
+const feedbackTarget = ref<OrderItem | null>(null)
+const feedbackRating = ref(5)
+const feedbackComment = ref('')
+const feedbackSubmitting = ref(false)
 const filter = ref<FilterValue>('all')
 const createForm = reactive({ faultType: '', room: '', description: '' })
 
@@ -201,8 +238,11 @@ const visibleOrders = computed(() => {
 
 async function load() {
   loading.value = true
+  page.value = 1
   try {
-    orders.value = await apiDormOrders(0)
+    const res = await apiDormOrderPage(0, 1, pageSize)
+    orders.value = res.list
+    total.value = res.total
   } catch (err) {
     showToast((err as Error).message)
   } finally {
@@ -210,6 +250,49 @@ async function load() {
   }
 }
 
+async function loadMore() {
+  if (loadingMore.value || orders.value.length >= total.value) return
+  loadingMore.value = true
+  try {
+    const next = page.value + 1
+    const res = await apiDormOrderPage(0, next, pageSize)
+    const seen = new Set(orders.value.map((o) => o.id))
+    for (const item of res.list) {
+      if (!seen.has(item.id)) {
+        orders.value.push(item)
+        seen.add(item.id)
+      }
+    }
+    total.value = res.total
+    page.value = next
+  } catch (err) {
+    showToast((err as Error).message)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+function openFeedback(item: OrderItem) {
+  feedbackTarget.value = item
+  feedbackRating.value = 5
+  feedbackComment.value = ''
+  feedbackVisible.value = true
+}
+
+async function submitFeedback() {
+  if (!feedbackTarget.value) return
+  feedbackSubmitting.value = true
+  try {
+    await apiDormFeedback(feedbackTarget.value.id, feedbackRating.value, feedbackComment.value.trim())
+    showToast('评价成功，感谢反馈')
+    feedbackVisible.value = false
+    load()
+  } catch (err) {
+    showToast((err as Error).message)
+  } finally {
+    feedbackSubmitting.value = false
+  }
+}
 function openDetail(item: OrderItem) {
   detail.value = item
   showDetail.value = true
@@ -286,7 +369,10 @@ function connectWS() {
   if (!auth.token) return
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
   ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
-  ws.onmessage = () => scheduleRefresh()
+  ws.onmessage = () => {
+    scheduleRefresh()
+    window.dispatchEvent(new Event('rv-notify-refresh'))
+  }
   ws.onclose = () => {
     ws = null
     setTimeout(connectWS, 3000)
@@ -333,4 +419,17 @@ onUnmounted(() => {
   margin: 6px 2px 0;
   color: #2563eb;
   font-size: 12px;
+}
+
+.rv-load-more {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  margin: 12px 0 4px;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 700;
+  background: #eff6ff;
+  border: none;
+  border-radius: 12px;
 }

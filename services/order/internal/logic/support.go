@@ -132,9 +132,21 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 		}
 		items = append(items, item)
 	}
+	feedbackMap, err := store.ListFeedbackByOrderIDs(ctx, svcCtx.DB, orderIDList)
+	if err != nil {
+		return nil, err
+	}
+	for i := range items {
+		if f, ok := feedbackMap[items[i].Id]; ok {
+			items[i].Rated = true
+			items[i].Rating = f.Rating
+			if f.Comment.Valid {
+				items[i].FeedbackComment = f.Comment.String
+			}
+		}
+	}
 	return items, nil
 }
-
 func rpcBizError(err error) *errs.Error {
 	msg := err.Error()
 	if idx := strings.LastIndex(msg, "desc = "); idx >= 0 {
