@@ -13,7 +13,7 @@
             :key="f"
             class="floor-chip"
             :class="{ active: floor === f }"
-            @click="floor = f"
+            @click="switchFloor(f)"
           >
             {{ f }}F
           </button>
@@ -24,40 +24,73 @@
           <button class="zoom-btn wide" @click="resetView">复位</button>
         </div>
       </div>
-      <div class="plan-head">
-        {{ building.name }} · 第 {{ floor }} 层 · 每层 {{ building.roomsPerFloor }} 间 · 拖动平移 / 滚轮缩放
-      </div>
-      <div
-        class="plan-viewport"
-        @wheel.prevent="onWheel"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="onPointerUp"
-        @pointerleave="onPointerUp"
-      >
-        <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid slice">
-          <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
-          <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
-          <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
-          <g v-for="core in plan.cores" :key="core.index">
-            <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
-            <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
-            <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
-            <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
-          </g>
-          <g v-for="room in plan.rooms" :key="room.no">
-            <rect
-              :x="room.x" :y="room.z" :width="room.w" :height="room.d"
-              :fill="roomOrders(room).length ? '#fee2e2' : '#dbeafe'"
-              stroke="#1e3a8a" stroke-width="0.8"
-            />
-            <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#1e3a8a">
-              {{ room.no }}
-            </text>
-            <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" fill="#ef4444" />
-          </g>
-        </svg>
+
+      <div class="plan-body">
+        <div
+          class="plan-viewport"
+          @wheel.prevent="onWheel"
+          @pointerdown="onPointerDown"
+          @pointermove="onPointerMove"
+          @pointerup="onPointerUp"
+          @pointercancel="onPointerUp"
+          @pointerleave="onPointerUp"
+        >
+          <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet" @click="onSvgClick">
+            <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
+            <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
+            <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
+            <g v-for="core in plan.cores" :key="core.index">
+              <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
+              <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
+              <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
+              <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
+            </g>
+            <g v-for="room in plan.rooms" :key="room.no">
+              <rect
+                :x="room.x" :y="room.z" :width="room.w" :height="room.d"
+                :fill="roomOrders(room).length ? '#fee2e2' : '#dbeafe'"
+                stroke="#1e3a8a" stroke-width="0.8"
+              />
+              <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#1e3a8a">
+                {{ room.no }}
+              </text>
+              <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" fill="#ef4444" />
+            </g>
+          </svg>
+        </div>
+
+        <aside class="side-panel">
+          <template v-if="activeRoom">
+            <div class="side-head">
+              <div>
+                <span class="side-room">{{ activeRoom.no }}</span>
+                <span class="side-floor">{{ activeRoom.floor }} 层</span>
+              </div>
+              <button class="side-close" @click="activeRoom = null">✕</button>
+            </div>
+            <div v-for="o in activeRoom.orders" :key="o.id" class="side-item">
+              <div class="side-row">
+                <span class="side-type">{{ o.faultTypeName }}</span>
+                <el-tag size="small" :type="statusTag(o.status)">{{ o.statusText }}</el-tag>
+              </div>
+              <div class="side-label">可能原因</div>
+              <div class="side-text">{{ explain(o).cause }}</div>
+              <div class="side-label">故障描述</div>
+              <div class="side-text">{{ o.description || '无补充说明' }}</div>
+              <div class="side-label">处理建议</div>
+              <div class="side-text">{{ explain(o).advice }}</div>
+              <div class="side-label">报修信息</div>
+              <div class="side-text">{{ o.createdAt }} · {{ o.workerName || '待派单' }}</div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="side-empty">
+              <div class="side-empty-title">故障解释</div>
+              <p>点击左侧平面中的红色房间或红点，这里会显示该故障的可能原因、报修描述与处理建议。</p>
+              <p class="side-tip">平面默认显示整层全貌，可拖动平移、滚轮缩放，右上角「复位」恢复全貌。</p>
+            </div>
+          </template>
+        </aside>
       </div>
       <p class="hint">北区 01-04 · 中区 05-12 · 南区 13-16 · 每栋楼按同样标准层逐层映射</p>
     </div>
@@ -89,6 +122,7 @@ const floor = ref(1)
 const mountRef = ref<HTMLDivElement | null>(null)
 const webglError = ref(false)
 const errorText = ref('')
+const activeRoom = ref<{ no: string; floor: number; orders: OrderItem[] } | null>(null)
 
 const MIN_W = 24
 const MAX_W = PLAN_WIDTH * 1.4
@@ -113,6 +147,54 @@ function roomOrders(room: PlanRoom) {
     floor.value,
     room.no,
   )
+}
+
+function statusTag(status: number) {
+  if (status === 1 || status === 2) return 'warning'
+  if (status === 3) return 'primary'
+  if (status === 4) return 'success'
+  return 'info'
+}
+
+function explain(o: OrderItem): { cause: string; advice: string } {
+  switch (o.faultType) {
+    case 'electric':
+      return {
+        cause: '常见于线路接触不良、开关/插座损坏、灯具故障或负载跳闸。',
+        advice: '先断开该房间电源再检修，避免湿手操作；涉及总闸请联系电工。',
+      }
+    case 'water':
+      return {
+        cause: '常见于管道接头渗漏、阀门老化、下水堵塞或水压异常。',
+        advice: '先关闭角阀/进水阀并清理积水，避免渗漏扩大到楼下。',
+      }
+    default:
+      return {
+        cause: '设施损坏或需要现场排查的具体故障。',
+        advice: '按报修描述携带工具上门确认，必要时上报更换配件。',
+      }
+  }
+}
+
+function switchFloor(f: number) {
+  floor.value = f
+  activeRoom.value = null
+  resetView()
+}
+
+function onSvgClick(e: MouseEvent) {
+  if (moved) return
+  const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect()
+  const px = view.x + ((e.clientX - rect.left) / rect.width) * view.w
+  const py = view.y + ((e.clientY - rect.top) / rect.height) * view.h
+  for (const room of plan.value.rooms) {
+    if (px >= room.x && px <= room.x + room.w && py >= room.z && py <= room.z + room.h) {
+      const orders = roomOrders(room)
+      activeRoom.value = orders.length > 0 ? { no: room.no, floor: floor.value, orders } : null
+      return
+    }
+  }
+  activeRoom.value = null
 }
 
 function clampView() {
@@ -156,16 +238,18 @@ function onWheel(e: WheelEvent) {
 
 const pointers = new Map<number, { x: number; y: number }>()
 let dragStart: { x: number; y: number; vx: number; vy: number } | null = null
+let moved = false
 
 function onPointerDown(e: PointerEvent) {
-  (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  moved = false
   dragStart = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }
 }
 
 function onPointerMove(e: PointerEvent) {
   if (!pointers.has(e.pointerId) || !dragStart) return
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  if (Math.abs(e.clientX - dragStart.x) + Math.abs(e.clientY - dragStart.y) > 6) moved = true
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   const dx = ((e.clientX - dragStart.x) / rect.width) * view.w
   const dy = ((e.clientY - dragStart.y) / rect.height) * view.h
@@ -290,9 +374,22 @@ async function init3d() {
 .zoom-bar { display: flex; gap: 6px; }
 .zoom-btn { width: 34px; height: 30px; font-size: 15px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; cursor: pointer; }
 .zoom-btn.wide { width: auto; padding: 0 12px; font-size: 12px; }
-.plan-head { margin-bottom: 6px; font-weight: 700; }
-.plan-viewport { height: 460px; overflow: hidden; touch-action: none; cursor: grab; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+.plan-body { display: flex; gap: 12px; align-items: stretch; }
+.plan-viewport { flex: 1 1 auto; height: 520px; overflow: hidden; touch-action: none; cursor: grab; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
 .plan-svg { width: 100%; height: 100%; display: block; }
+.side-panel { flex: 0 0 320px; max-height: 520px; overflow: auto; padding: 12px 14px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
+.side-head { display: flex; align-items: center; justify-content: space-between; }
+.side-room { font-size: 18px; font-weight: 800; color: #1e3a8a; }
+.side-floor { margin-left: 6px; color: #64748b; font-size: 12px; }
+.side-close { width: 26px; height: 26px; color: #64748b; background: #eef2ff; border: none; border-radius: 50%; cursor: pointer; }
+.side-item { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #dbe3ef; }
+.side-row { display: flex; align-items: center; gap: 8px; }
+.side-type { padding: 2px 8px; color: #1d4ed8; font-size: 12px; background: #dbeafe; border-radius: 999px; }
+.side-label { margin-top: 8px; color: #64748b; font-size: 12px; font-weight: 700; }
+.side-text { margin-top: 2px; color: #334155; font-size: 13px; line-height: 1.55; white-space: pre-wrap; }
+.side-empty-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+.side-empty p { color: #64748b; font-size: 13px; line-height: 1.7; }
+.side-tip { margin-top: 10px; color: #94a3b8 !important; font-size: 12px !important; }
 .three-mount { width: 100%; height: 430px; }
 .error { color: #dc2626; }
 .hint { color: #94a3b8; text-align: center; font-size: 12px; }
