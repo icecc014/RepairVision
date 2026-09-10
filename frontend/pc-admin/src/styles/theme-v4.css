@@ -157,7 +157,7 @@ body::before {
 .el-dropdown-menu {
   border: var(--rv-glass-border) !important;
   border-radius: var(--rv-radius-card) !important;
-  background: var(--rv-glass-bg-strong) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
   backdrop-filter: var(--rv-glass-blur);
   -webkit-backdrop-filter: var(--rv-glass-blur);
   box-shadow: var(--rv-shadow-soft) !important;
@@ -369,4 +369,37 @@ body::before {
   background-size: 320px 100%;
   animation: rv-shimmer 1.4s ease infinite;
   border-radius: 10px;
+}
+
+/* ===== V4 补充：选项卡/胶囊悬停动效（含不可点击项） ===== */
+.el-tabs__item,
+.el-radio-button__inner,
+.el-check-tag,
+.tab,
+.chip,
+.floor-chip,
+.building-chip,
+.shift-cell,
+.nav-item,
+.pager .el-pager li,
+.mini-btn,
+.rv-filter-chip {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease,
+    background 0.25s ease, color 0.25s ease;
+}
+
+.el-tabs__item:hover,
+.el-radio-button__inner:hover,
+.el-check-tag:hover,
+.tab:hover,
+.chip:hover,
+.floor-chip:hover,
+.building-chip:hover,
+.shift-cell:hover,
+.nav-item:hover,
+.pager .el-pager li:hover,
+.mini-btn:hover,
+.rv-filter-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(46, 68, 112, 0.16);
 }
