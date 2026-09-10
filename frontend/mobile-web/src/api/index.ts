@@ -134,16 +134,16 @@ export interface MobileOrderPage {
   list: OrderItem[]
 }
 
-export async function apiDormOrderPage(status = 0, page = 1, size = 20): Promise<MobileOrderPage> {
+export async function apiDormOrderPage(status = 0, page = 1, size = 20, days = 0): Promise<MobileOrderPage> {
   const res = (await http.get('/dorm/orders', {
-    params: { status: status || undefined, page, size },
+    params: { status: status || undefined, page, size, days: days || undefined },
   })) as { total: number; list: OrderItem[] }
   return { total: res.total || 0, list: res.list || [] }
 }
 
-export async function apiWorkerOrderPage(status = 0, page = 1, size = 20): Promise<MobileOrderPage> {
+export async function apiWorkerOrderPage(status = 0, page = 1, size = 20, days = 0): Promise<MobileOrderPage> {
   const res = (await http.get('/worker/orders', {
-    params: { status: status || undefined, page, size },
+    params: { status: status || undefined, page, size, days: days || undefined },
   })) as { total: number; list: OrderItem[] }
   return { total: res.total || 0, list: res.list || [] }
 }

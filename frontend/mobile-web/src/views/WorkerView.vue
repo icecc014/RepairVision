@@ -50,6 +50,18 @@
         </button>
         <button class="rv-filter-chip" style="margin-left: auto" @click="load">↻ 刷新</button>
       </div>
+      <div class="rv-filters">
+        <span class="rv-days-label">时间</span>
+        <button
+          v-for="d in dayOptions"
+          :key="d.value"
+          class="rv-filter-chip"
+          :class="{ active: days === d.value }"
+          @click="setDays(d.value)"
+        >
+          {{ d.label }}
+        </button>
+      </div>
 
       <div v-if="visibleOrders.length === 0" class="rv-empty">
         <div class="rv-empty-icon">🔧</div>
@@ -129,6 +141,17 @@ const page = ref(1)
 const pageSize = 20
 const loadingMore = ref(false)
 const filter = ref<FilterValue>('all')
+const days = ref(3)
+const dayOptions = [
+  { value: 1, label: '1天' },
+  { value: 3, label: '3天' },
+  { value: 7, label: '7天' },
+  { value: 30, label: '1个月' },
+]
+function setDays(v: number) {
+  days.value = v
+  load()
+}
 
 const todoCount = computed(() => orders.value.filter((o) => o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
@@ -168,7 +191,7 @@ async function load() {
   loading.value = true
   page.value = 1
   try {
-    const res = await apiWorkerOrderPage(0, 1, pageSize)
+    const res = await apiWorkerOrderPage(0, 1, pageSize, days.value)
     orders.value = res.list
     total.value = res.total
   } catch (err) {
@@ -183,7 +206,7 @@ async function loadMore() {
   loadingMore.value = true
   try {
     const next = page.value + 1
-    const res = await apiWorkerOrderPage(0, next, pageSize)
+    const res = await apiWorkerOrderPage(0, next, pageSize, days.value)
     const seen = new Set(orders.value.map((o) => o.id))
     for (const item of res.list) {
       if (!seen.has(item.id)) {
@@ -302,6 +325,12 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #7fb2ff, #3478f6);
   border-color: transparent;
   box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
+}
+.rv-days-label {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--rv-text-light);
+  font-size: 12px;
 }
 .rv-load-more {
   display: block;

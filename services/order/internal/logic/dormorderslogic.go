@@ -33,13 +33,13 @@ func (l *DormOrdersLogic) DormOrders(req *types.OrderListRequest) (resp *types.O
 	if identity.BuildingID <= 0 {
 		return nil, errs.Forbidden("宿管账号未绑定楼栋")
 	}
-	total, err := store.CountOrdersByBuildingFilter(l.ctx, l.svcCtx.DB, identity.BuildingID, req.Status)
+	total, err := store.CountOrdersByBuildingFilter(l.ctx, l.svcCtx.DB, identity.BuildingID, req.Status, req.Days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
 	var orders []store.Order
 	if req.Page > 0 || req.Size > 0 {
-		orders, err = store.ListOrdersByBuildingPage(l.ctx, l.svcCtx.DB, identity.BuildingID, req.Status, req.Page, req.Size)
+		orders, err = store.ListOrdersByBuildingPage(l.ctx, l.svcCtx.DB, identity.BuildingID, req.Status, req.Page, req.Size, req.Days)
 	} else {
 		orders, err = store.ListOrdersByBuilding(l.ctx, l.svcCtx.DB, identity.BuildingID, req.Status)
 	}

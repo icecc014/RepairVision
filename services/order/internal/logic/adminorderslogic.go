@@ -29,13 +29,13 @@ func (l *AdminOrdersLogic) AdminOrders(req *types.AdminOrderListRequest) (resp *
 	if _, ok := auth.IdentityFromContext(l.ctx); !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
-	total, err := store.CountAllOrdersFilter(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId)
+	total, err := store.CountAllOrdersFilter(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId, req.Days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
 	var orders []store.Order
 	if req.Page > 0 || req.Size > 0 {
-		orders, err = store.ListAllOrdersPage(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId, req.Page, req.Size)
+		orders, err = store.ListAllOrdersPage(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId, req.Page, req.Size, req.Days)
 	} else {
 		orders, err = store.ListAllOrders(l.ctx, l.svcCtx.DB, req.Status, req.BuildingId)
 	}

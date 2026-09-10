@@ -30,6 +30,12 @@
           <el-option label="已取消" :value="5" />
         </el-select>
         <el-input v-model="query.buildingText" style="width: 170px" clearable placeholder="楼栋ID" />
+        <el-radio-group v-model="query.days" @change="onDaysChange">
+          <el-radio-button :value="1">1天</el-radio-button>
+          <el-radio-button :value="3">3天</el-radio-button>
+          <el-radio-button :value="7">7天</el-radio-button>
+          <el-radio-button :value="30">1个月</el-radio-button>
+        </el-radio-group>
         <el-button type="primary" @click="load">查询</el-button>
         <el-button @click="reset">重置</el-button>
         <el-button type="success" plain :disabled="todoCount === 0" :loading="batching" @click="runBatchDispatch">
@@ -165,7 +171,7 @@ const assignTarget = ref<OrderItem | null>(null)
 const assignWorkerId = ref<number | null>(null)
 const detailVisible = ref(false)
 const detailRow = ref<OrderItem | null>(null)
-const query = reactive({ status: 0, buildingText: '' })
+const query = reactive({ status: 0, buildingText: '', days: 3 })
 const auth = useAuthStore()
 let ws: WebSocket | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | null = null
@@ -198,7 +204,7 @@ async function load() {
   loading.value = true
   const buildingId = Number(query.buildingText || 0)
   try {
-    const res = await apiAdminOrders(0, buildingId > 0 ? buildingId : 0, page.value, pageSize)
+    const res = await apiAdminOrders(0, buildingId > 0 ? buildingId : 0, page.value, pageSize, query.days)
     orders.value = res.list
     total.value = res.total
   } catch (err) {
@@ -208,6 +214,10 @@ async function load() {
   }
 }
 
+function onDaysChange() {
+  page.value = 1
+  load()
+}
 function pageChange(p: number) {
   page.value = p
   load()

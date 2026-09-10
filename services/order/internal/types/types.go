@@ -98,6 +98,7 @@ type AdminOrderReassignRequest struct {
 }
 type AdminOrderListRequest struct {
 	Status     int64 `form:"status,optional"`
+	Days       int64 `form:"days,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
 	Page       int64 `form:"page,optional"`
 	Size       int64 `form:"size,optional"`
@@ -311,6 +312,7 @@ type OrderItem struct {
 
 type OrderListRequest struct {
 	Status int64 `form:"status,optional"`
+	Days   int64 `form:"days,optional"`
 	Page   int64 `form:"page,optional"`
 	Size   int64 `form:"size,optional"`
 }
@@ -359,6 +361,10 @@ type AdminWorkerBoardItem struct {
 type AdminWorkerBoardResponse struct {
 	List []AdminWorkerBoardItem `json:"list"`
 }
+type SlaOverviewRequest struct {
+	Days int64 `form:"days,optional"`
+}
+
 type SlaOverviewResponse struct {
 	PendingTimeoutHours    int64       `json:"pendingTimeoutHours"`
 	DispatchedTimeoutHours int64       `json:"dispatchedTimeoutHours"`

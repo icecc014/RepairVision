@@ -8,6 +8,15 @@
         </div>
       </div>
 
+      <div class="sla-toolbar">
+        <span class="sla-toolbar-title">超时与时长统计范围</span>
+        <el-radio-group v-model="days" size="small" @change="load">
+          <el-radio-button :value="1">1天</el-radio-button>
+          <el-radio-button :value="3">3天</el-radio-button>
+          <el-radio-button :value="7">7天</el-radio-button>
+          <el-radio-button :value="30">1个月</el-radio-button>
+        </el-radio-group>
+      </div>
       <div class="sla-grid">
         <div class="sla-card danger">
           <div class="sla-num">{{ sla.pendingOverdue }}</div>
@@ -128,6 +137,7 @@ const stats = ref<AdminStats | null>(null)
 const sla = ref<SlaOverview | null>(null)
 const feedback = ref<AdminFeedbackStats | null>(null)
 const animated = ref(false)
+const days = ref(3)
 
 async function load() {
   try {
@@ -136,7 +146,7 @@ async function load() {
     ElMessage.error((err as Error).message)
   }
   try {
-    sla.value = await apiAdminSlaOverview()
+    sla.value = await apiAdminSlaOverview(days.value)
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
@@ -216,6 +226,17 @@ onMounted(load)
 .sc4 { background: var(--rv-grad-6); }
 .sc5 { background: var(--rv-grad-8); }
 
+.sla-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.sla-toolbar-title {
+  color: var(--pc-sub);
+  font-size: 13px;
+  font-weight: 700;
+}
 .sla-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

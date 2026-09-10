@@ -48,13 +48,14 @@ export interface AdminOrderPage {
   list: OrderItem[]
 }
 
-export async function apiAdminOrders(status = 0, buildingId = 0, page = 0, size = 0): Promise<AdminOrderPage> {
+export async function apiAdminOrders(status = 0, buildingId = 0, page = 0, size = 0, days = 0): Promise<AdminOrderPage> {
   const res = (await http.get('/admin/orders', {
     params: {
       status: status || undefined,
       buildingId: buildingId || undefined,
       page: page || undefined,
       size: size || undefined,
+      days: days || undefined,
     },
   })) as { total: number; list: OrderItem[] }
   return { total: res.total || 0, list: res.list || [] }
@@ -322,8 +323,8 @@ export interface SlaOverview {
   overdueOrders: OrderItem[]
 }
 
-export function apiAdminSlaOverview(): Promise<SlaOverview> {
-  return http.get('/admin/sla-overview')
+export function apiAdminSlaOverview(days = 3): Promise<SlaOverview> {
+  return http.get('/admin/sla-overview', { params: { days } })
 }
 
 export interface FeedbackRatingCount {

@@ -39,6 +39,10 @@ type AdminWorkerBoardItem {
 type AdminWorkerBoardResponse {
 	List []AdminWorkerBoardItem `json:"list"`
 }
+type SlaOverviewRequest {
+    Days int64 `form:"days,optional"`
+}
+
 type SlaOverviewResponse {
 	PendingTimeoutHours    int64       `json:"pendingTimeoutHours"`
 	DispatchedTimeoutHours int64       `json:"dispatchedTimeoutHours"`
@@ -187,6 +191,7 @@ type FaultTypeListResponse {
 
 type OrderListRequest {
 	Status int64 `form:"status,optional"`
+    Days   int64 `form:"days,optional"`
 	Page   int64 `form:"page,optional"`
 	Size   int64 `form:"size,optional"`
 }
@@ -211,6 +216,7 @@ type AdminOrderReassignRequest {
 }
 type AdminOrderListRequest {
 	Status     int64 `form:"status,optional"`
+    Days       int64 `form:"days,optional"`
 	BuildingId int64 `form:"buildingId,optional"`
 	Page       int64 `form:"page,optional"`
 	Size       int64 `form:"size,optional"`
@@ -657,7 +663,7 @@ service order-api {
 	@handler AdminScheduleGenerateHandler
 	post /api/admin/schedules/generate (ScheduleGenerateRequest) returns (ScheduleListResponse)
 	@handler AdminSlaOverviewHandler
-	get /api/admin/sla-overview returns (SlaOverviewResponse)
+	get /api/admin/sla-overview (SlaOverviewRequest) returns (SlaOverviewResponse)
 
 	@handler AdminFeedbackStatsHandler
 	get /api/admin/feedback-stats returns (AdminFeedbackStatsResponse)

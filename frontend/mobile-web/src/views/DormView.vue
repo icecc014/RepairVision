@@ -39,6 +39,18 @@
         </button>
       </div>
 
+      <div class="rv-filters">
+        <span class="rv-days-label">时间</span>
+        <button
+          v-for="d in dayOptions"
+          :key="d.value"
+          class="rv-filter-chip"
+          :class="{ active: days === d.value }"
+          @click="setDays(d.value)"
+        >
+          {{ d.label }}
+        </button>
+      </div>
       <div v-if="visibleOrders.length === 0" class="rv-empty">
         <div class="rv-empty-icon">🗂️</div>
         <div class="rv-empty-text">当前筛选下暂无工单</div>
@@ -200,6 +212,17 @@ const feedbackRating = ref(5)
 const feedbackComment = ref('')
 const feedbackSubmitting = ref(false)
 const filter = ref<FilterValue>('all')
+const days = ref(3)
+const dayOptions = [
+  { value: 1, label: '1天' },
+  { value: 3, label: '3天' },
+  { value: 7, label: '7天' },
+  { value: 30, label: '1个月' },
+]
+function setDays(v: number) {
+  days.value = v
+  load()
+}
 const createForm = reactive({ faultType: '', room: '', description: '' })
 
 const previewFloor = computed(() => {
@@ -240,7 +263,7 @@ async function load() {
   loading.value = true
   page.value = 1
   try {
-    const res = await apiDormOrderPage(0, 1, pageSize)
+    const res = await apiDormOrderPage(0, 1, pageSize, days.value)
     orders.value = res.list
     total.value = res.total
   } catch (err) {
@@ -255,7 +278,7 @@ async function loadMore() {
   loadingMore.value = true
   try {
     const next = page.value + 1
-    const res = await apiDormOrderPage(0, next, pageSize)
+    const res = await apiDormOrderPage(0, next, pageSize, days.value)
     const seen = new Set(orders.value.map((o) => o.id))
     for (const item of res.list) {
       if (!seen.has(item.id)) {

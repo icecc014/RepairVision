@@ -25,7 +25,7 @@ func NewAdminSlaOverviewLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 	}
 }
 
-func (l *AdminSlaOverviewLogic) AdminSlaOverview() (resp *types.SlaOverviewResponse, err error) {
+func (l *AdminSlaOverviewLogic) AdminSlaOverview(req *types.SlaOverviewRequest) (resp *types.SlaOverviewResponse, err error) {
 	rules, err := store.ListDispatchRules(l.ctx, l.svcCtx.DB)
 	if err != nil {
 		return nil, errs.Internal(err)
@@ -45,23 +45,27 @@ func (l *AdminSlaOverviewLogic) AdminSlaOverview() (resp *types.SlaOverviewRespo
 		}
 	}
 
-	pendingOverdue, err := store.CountPendingOverdue(l.ctx, l.svcCtx.DB, pendingHours)
+	days := req.Days
+	if days <= 0 {
+		days = 3
+	}
+	pendingOverdue, err := store.CountPendingOverdue(l.ctx, l.svcCtx.DB, pendingHours, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	dispatchedOverdue, err := store.CountDispatchedOverdue(l.ctx, l.svcCtx.DB, dispatchedHours)
+	dispatchedOverdue, err := store.CountDispatchedOverdue(l.ctx, l.svcCtx.DB, dispatchedHours, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	avgDispatch, err := store.AvgDispatchMinutes(l.ctx, l.svcCtx.DB)
+	avgDispatch, err := store.AvgDispatchMinutes(l.ctx, l.svcCtx.DB, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	avgRepair, err := store.AvgRepairMinutes(l.ctx, l.svcCtx.DB)
+	avgRepair, err := store.AvgRepairMinutes(l.ctx, l.svcCtx.DB, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	overdue, err := store.ListSlaOverdueOrders(l.ctx, l.svcCtx.DB, pendingHours, dispatchedHours)
+	overdue, err := store.ListSlaOverdueOrders(l.ctx, l.svcCtx.DB, pendingHours, dispatchedHours, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
