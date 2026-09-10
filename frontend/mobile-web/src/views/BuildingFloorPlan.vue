@@ -57,6 +57,8 @@
               :fill="roomOrders(room)[0] ? '#fee2e2' : '#dbeafe'"
               stroke="#1e3a8a"
               stroke-width="0.8"
+              @pointerdown.stop
+              @click.stop="select(room)"
               style="cursor: pointer"
             />
             <text
@@ -75,6 +77,8 @@
               :cy="room.z + 5"
               r="3.4"
               fill="#ef4444"
+              @pointerdown.stop
+              @click.stop="select(room)"
               style="cursor: pointer"
             />
           </g>
@@ -285,7 +289,9 @@ let pinchStartDist = 0
 let pinchStartW = PLAN_WIDTH
 
 function onPointerDown(e: PointerEvent) {
+  if (pointers.size > 2) pointers.clear()
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  moved = false
   if (pointers.size === 1) {
     moved = false
     dragStart = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }

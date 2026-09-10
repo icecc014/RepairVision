@@ -55,6 +55,7 @@
             <span class="type-name">{{ g.name }}</span>
             <span class="type-count">{{ g.orders.length }} 单</span>
           </div>
+          <div class="type-explain">{{ explainType(g.type) }}</div>
           <button class="mini-btn success" :disabled="g.acting" @click="batchComplete(g.type)">
             {{ g.acting ? '提交中' : '按类型完工' }}
           </button>
@@ -196,6 +197,16 @@ const typeGroups = computed(() => {
   return groups
 })
 
+function explainType(type: string) {
+  switch (type) {
+    case 'electric':
+      return '可能原因：线路接触不良 / 开关插座损坏 / 灯具故障 / 负载跳闸；建议先断电再检修。'
+    case 'water':
+      return '可能原因：管道接头渗漏 / 阀门老化 / 下水堵塞 / 水压异常；建议先关闭角阀避免扩大。'
+    default:
+      return '可能原因：设施损坏或需现场排查；建议按报修描述携带工具确认。'
+  }
+}
 function select(b: WorkerMapBuilding) {
   selectedBuilding.value = b
 }
@@ -338,6 +349,16 @@ onUnmounted(() => {
 }
 .type-list {
   margin-top: 12px;
+}
+.type-row {
+  flex-wrap: wrap;
+}
+.type-explain {
+  flex-basis: 100%;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.5;
 }
 .type-row {
   display: flex;
