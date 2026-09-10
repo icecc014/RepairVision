@@ -270,8 +270,7 @@ onUnmounted(() => {
 
 <style scoped>
 .map-page {
-  min-height: calc(100vh - 110px);
-  padding-bottom: 30px;
+  padding-bottom: 16px;
 }
 .map-toolbar {
   display: flex;

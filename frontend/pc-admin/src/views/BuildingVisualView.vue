@@ -22,8 +22,8 @@
     <el-dialog
       v-model="dialogVisible"
       :title="selected ? `${selected.code} ${selected.name}` : ''"
-      width="92%"
-      top="5vh"
+      width="900px"
+      top="6vh"
     >
       <AdminBuildingVisual v-if="selected" :building="selected" :orders="orders" />
     </el-dialog>

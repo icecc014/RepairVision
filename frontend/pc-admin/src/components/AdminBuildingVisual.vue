@@ -6,42 +6,59 @@
     </div>
 
     <div v-if="mode === 'plan'" class="plan-tab">
-      <div class="floor-tabs">
-        <button
-          v-for="f in building.floors"
-          :key="f"
-          class="floor-chip"
-          :class="{ active: floor === f }"
-          @click="floor = f"
-        >
-          {{ f }}F
-        </button>
+      <div class="plan-top">
+        <div class="floor-tabs">
+          <button
+            v-for="f in building.floors"
+            :key="f"
+            class="floor-chip"
+            :class="{ active: floor === f }"
+            @click="floor = f"
+          >
+            {{ f }}F
+          </button>
+        </div>
+        <div class="zoom-bar">
+          <button class="zoom-btn" @click="zoomAt(0.8)">＋</button>
+          <button class="zoom-btn" @click="zoomAt(1.25)">－</button>
+          <button class="zoom-btn wide" @click="resetView">复位</button>
+        </div>
       </div>
       <div class="plan-head">
-        {{ building.name }} · 第 {{ floor }} 层 · 每层 {{ building.roomsPerFloor }} 间
+        {{ building.name }} · 第 {{ floor }} 层 · 每层 {{ building.roomsPerFloor }} 间 · 拖动平移 / 滚轮缩放
       </div>
-      <svg class="plan-svg" :viewBox="`0 0 ${PLAN_WIDTH} ${PLAN_DEPTH}`" preserveAspectRatio="xMidYMid meet">
-        <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
-        <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
-        <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
-        <g v-for="core in plan.cores" :key="core.index">
-          <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
-          <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯间</text>
-          <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
-          <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
-        </g>
-        <g v-for="room in plan.rooms" :key="room.no">
-          <rect
-            :x="room.x" :y="room.z" :width="room.w" :height="room.d"
-            :fill="roomOrders(room).length ? '#fee2e2' : '#dbeafe'"
-            stroke="#1e3a8a" stroke-width="0.8"
-          />
-          <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#1e3a8a">
-            {{ room.no }}
-          </text>
-          <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" fill="#ef4444" />
-        </g>
-      </svg>
+      <div
+        class="plan-viewport"
+        @wheel.prevent="onWheel"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
+        @pointerleave="onPointerUp"
+      >
+        <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet">
+          <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
+          <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
+          <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
+          <g v-for="core in plan.cores" :key="core.index">
+            <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
+            <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
+            <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
+            <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
+          </g>
+          <g v-for="room in plan.rooms" :key="room.no">
+            <rect
+              :x="room.x" :y="room.z" :width="room.w" :height="room.d"
+              :fill="roomOrders(room).length ? '#fee2e2' : '#dbeafe'"
+              stroke="#1e3a8a" stroke-width="0.8"
+            />
+            <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#1e3a8a">
+              {{ room.no }}
+            </text>
+            <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" fill="#ef4444" />
+          </g>
+        </svg>
+      </div>
       <p class="hint">北区 01-04 · 中区 05-12 · 南区 13-16 · 每栋楼按同样标准层逐层映射</p>
     </div>
 
@@ -54,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import type { AdminBuilding, OrderItem } from '../api'
 import {
   PLAN_DEPTH,
@@ -72,6 +89,11 @@ const floor = ref(1)
 const mountRef = ref<HTMLDivElement | null>(null)
 const webglError = ref(false)
 const errorText = ref('')
+
+const MIN_W = 24
+const MAX_W = PLAN_WIDTH * 1.4
+const view = reactive({ x: 0, y: 0, w: PLAN_WIDTH, h: PLAN_DEPTH })
+const viewBoxStr = computed(() => `${view.x} ${view.y} ${view.w} ${view.h}`)
 
 const plan = computed(() => {
   if (supportsCorridorLayout(props.building.roomsPerFloor)) {
@@ -91,6 +113,70 @@ function roomOrders(room: PlanRoom) {
     floor.value,
     room.no,
   )
+}
+
+function clampView() {
+  view.w = Math.min(Math.max(view.w, MIN_W), MAX_W)
+  view.h = (view.w * PLAN_DEPTH) / PLAN_WIDTH
+  const padX = view.w * 0.35
+  const padY = view.h * 0.35
+  view.x = Math.min(Math.max(view.x, -padX), PLAN_WIDTH - view.w + padX)
+  view.y = Math.min(Math.max(view.y, -padY), PLAN_DEPTH - view.h + padY)
+}
+
+function zoomAt(factor: number, cx = PLAN_WIDTH / 2, cy = PLAN_DEPTH / 2) {
+  const oldW = view.w
+  const nextW = Math.min(Math.max(oldW * factor, MIN_W), MAX_W)
+  const ratio = nextW / oldW
+  view.x = cx - (cx - view.x) * ratio
+  view.y = cy - (cy - view.y) * ratio
+  view.w = nextW
+  view.h = (nextW * PLAN_DEPTH) / PLAN_WIDTH
+  clampView()
+}
+
+function resetView() {
+  view.x = 0
+  view.y = 0
+  view.w = PLAN_WIDTH
+  view.h = PLAN_DEPTH
+}
+
+function svgPoint(e: PointerEvent | WheelEvent) {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const nx = (e.clientX - rect.left) / rect.width
+  const ny = (e.clientY - rect.top) / rect.height
+  return { x: view.x + nx * view.w, y: view.y + ny * view.h }
+}
+
+function onWheel(e: WheelEvent) {
+  const p = svgPoint(e)
+  zoomAt(e.deltaY > 0 ? 1.12 : 0.89, p.x, p.y)
+}
+
+const pointers = new Map<number, { x: number; y: number }>()
+let dragStart: { x: number; y: number; vx: number; vy: number } | null = null
+
+function onPointerDown(e: PointerEvent) {
+  (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  dragStart = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!pointers.has(e.pointerId) || !dragStart) return
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const dx = ((e.clientX - dragStart.x) / rect.width) * view.w
+  const dy = ((e.clientY - dragStart.y) / rect.height) * view.h
+  view.x = dragStart.vx - dx
+  view.y = dragStart.vy - dy
+  clampView()
+}
+
+function onPointerUp(e: PointerEvent) {
+  pointers.delete(e.pointerId)
+  if (pointers.size === 0) dragStart = null
 }
 
 async function switch3d() {
@@ -197,12 +283,17 @@ async function init3d() {
 .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
 .tab { padding: 8px 18px; border-radius: 999px; border: 1px solid #c7d2fe; background: #eef2ff; cursor: pointer; }
 .tab.active { background: #2563eb; color: #fff; }
-.floor-tabs { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.plan-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.floor-tabs { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
 .floor-chip { padding: 5px 12px; font-size: 12px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; cursor: pointer; }
 .floor-chip.active { color: #fff; background: #2563eb; }
+.zoom-bar { display: flex; gap: 6px; }
+.zoom-btn { width: 34px; height: 30px; font-size: 15px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; cursor: pointer; }
+.zoom-btn.wide { width: auto; padding: 0 12px; font-size: 12px; }
 .plan-head { margin-bottom: 6px; font-weight: 700; }
-.plan-svg { width: 100%; height: auto; background: #fff; border-radius: 10px; }
+.plan-viewport { height: 460px; overflow: hidden; touch-action: none; cursor: grab; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+.plan-svg { width: 100%; height: 100%; display: block; }
 .three-mount { width: 100%; height: 430px; }
 .error { color: #dc2626; }
-.hint { color: #94a3b8; text-align: center; }
+.hint { color: #94a3b8; text-align: center; font-size: 12px; }
 </style>

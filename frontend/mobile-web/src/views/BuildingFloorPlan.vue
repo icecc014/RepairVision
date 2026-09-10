@@ -235,6 +235,6 @@ function onPointerUp(e: PointerEvent) {
 .legend-line { display: flex; gap: 12px; margin: 6px 0; color: #64748b; font-size: 11px; flex-wrap: wrap; }
 .red { display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
 .blue { display: inline-block; width: 8px; height: 8px; background: #dbeafe; border: 1px solid #1e3a8a; border-radius: 2px; }
-.plan-viewport { height: 300px; overflow: hidden; touch-action: none; cursor: grab; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
+.plan-viewport { height: calc(82vh - 190px); min-height: 240px; overflow: hidden; touch-action: none; cursor: grab; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
 .plan-svg { width: 100%; height: 100%; display: block; }
 </style>
