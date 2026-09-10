@@ -36,7 +36,7 @@
         @pointercancel="onPointerUp"
         @pointerleave="onPointerUp"
       >
-        <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid slice">
+        <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet" @click="onSvgClick">
           <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
           <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
           <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
@@ -57,7 +57,6 @@
               :fill="roomOrders(room)[0] ? '#fee2e2' : '#dbeafe'"
               stroke="#1e3a8a"
               stroke-width="0.8"
-              @click="select(room)"
               style="cursor: pointer"
             />
             <text
@@ -76,7 +75,6 @@
               :cy="room.z + 5"
               r="3.4"
               fill="#ef4444"
-              @click="select(room)"
               style="cursor: pointer"
             />
           </g>
@@ -228,6 +226,19 @@ async function act(o: OrderItem, action: 'start' | 'complete') {
   }
 }
 
+function onSvgClick(e: MouseEvent) {
+  if (moved) return
+  const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect()
+  const px = view.x + ((e.clientX - rect.left) / rect.width) * view.w
+  const py = view.y + ((e.clientY - rect.top) / rect.height) * view.h
+  for (const room of plan.value.rooms) {
+    if (px >= room.x && px <= room.x + room.w && py >= room.z && py <= room.z + room.h) {
+      select(room)
+      return
+    }
+  }
+  activeFault.value = null
+}
 function clampView() {
   view.w = Math.min(Math.max(view.w, MIN_W), MAX_W)
   view.h = (view.w * PLAN_DEPTH) / PLAN_WIDTH
@@ -269,13 +280,14 @@ function onWheel(e: WheelEvent) {
 
 const pointers = new Map<number, { x: number; y: number }>()
 let dragStart: { x: number; y: number; vx: number; vy: number } | null = null
+let moved = false
 let pinchStartDist = 0
 let pinchStartW = PLAN_WIDTH
 
 function onPointerDown(e: PointerEvent) {
-  (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
   if (pointers.size === 1) {
+    moved = false
     dragStart = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }
   } else if (pointers.size === 2) {
     const [a, b] = [...pointers.values()]
@@ -290,6 +302,7 @@ function onPointerMove(e: PointerEvent) {
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   if (pointers.size === 1 && dragStart) {
+    if (Math.abs(e.clientX - dragStart.x) + Math.abs(e.clientY - dragStart.y) > 6) moved = true
     const dx = ((e.clientX - dragStart.x) / rect.width) * view.w
     const dy = ((e.clientY - dragStart.y) / rect.height) * view.h
     view.x = dragStart.vx - dx
@@ -325,11 +338,12 @@ function onPointerUp(e: PointerEvent) {
 .red { display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
 .blue { display: inline-block; width: 8px; height: 8px; background: #dbeafe; border: 1px solid #1e3a8a; border-radius: 2px; }
 .plan-stage { position: relative; }
-.plan-viewport { height: calc(82vh - 210px); min-height: 260px; overflow: hidden; touch-action: none; cursor: grab; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
+.plan-viewport { height: min(58vh, 430px); min-height: 240px; overflow: hidden; touch-action: none; cursor: grab; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
 .plan-svg { width: 100%; height: 100%; display: block; }
 .fault-card {
   position: absolute; top: 6px; right: 6px; width: min(72%, 300px);
   max-height: calc(100% - 12px); overflow: auto;
+  z-index: 6;
   padding: 10px 12px; color: #e2e8f0; background: rgba(15, 37, 87, 0.95);
   border: 1px solid #3b5ca8; border-radius: 12px; box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
 }
