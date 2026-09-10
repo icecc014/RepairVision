@@ -62,31 +62,31 @@
       </section></div>
 
       <div class="grid-2">
-        <section class="panel">
+        <section ref="trendRef" data-reveal="trend" class="panel">
           <div class="panel-title">近 7 日工单趋势</div>
           <div class="bar-row" v-for="d in stats.recent" :key="d.date">
             <span class="bar-label">{{ d.date.slice(5) }}</span>
             <div class="bar-track">
-              <div class="bar-fill" :style="{ width: barWidth(d.count) }"></div>
+              <div class="bar-fill" :style="{ width: animated.trend ? barWidth(d.count) : '0%' }"></div>
             </div>
             <span class="bar-num">{{ d.count }}</span>
           </div>
         </section>
 
-        <section class="panel">
+        <section ref="buildingRef" data-reveal="building" class="panel">
           <div class="panel-title">楼栋工单分布</div>
           <div v-if="stats.buildings.length === 0" class="no-data">暂无数据</div>
           <div class="bar-row" v-for="b in stats.buildings" :key="b.buildingId">
             <span class="bar-label">{{ b.buildingName || '楼栋#' + b.buildingId }}</span>
             <div class="bar-track">
-              <div class="bar-fill blue" :style="{ width: buildingBarWidth(b.count) }"></div>
+              <div class="bar-fill blue" :style="{ width: animated.building ? buildingBarWidth(b.count) : '0%' }"></div>
             </div>
             <span class="bar-num">{{ b.count }}</span>
           </div>
         </section>
       </div>
 
-      <section class="panel">
+      <section ref="faultRef" data-reveal="fault" class="panel">
         <div class="panel-title">维修类型分布</div>
         <el-table :data="stats.faults" border stripe size="default">
           <el-table-column prop="faultTypeName" label="类型" />
@@ -95,7 +95,7 @@
           <el-table-column label="占比" min-width="260">
             <template #default="{ row }">
               <div class="mini-bar">
-                <div class="mini-fill" :style="{ width: faultWidth(row.count) }"></div>
+                <div class="mini-fill" :style="{ width: animated.fault ? faultWidth(row.count) : '0%' }"></div>
               </div>
             </template>
           </el-table-column>
@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { AdminFeedbackStats, AdminStats, SlaOverview } from '../api'
 import { apiAdminFeedbackStats, apiAdminSlaOverview, apiAdminStats } from '../api'
@@ -136,7 +136,12 @@ import AdminShell from '../components/AdminShell.vue'
 const stats = ref<AdminStats | null>(null)
 const sla = ref<SlaOverview | null>(null)
 const feedback = ref<AdminFeedbackStats | null>(null)
-const animated = ref(false)
+const animated = reactive({ trend: false, building: false, fault: false })
+const trendRef = ref<HTMLElement | null>(null)
+const buildingRef = ref<HTMLElement | null>(null)
+const faultRef = ref<HTMLElement | null>(null)
+let barObserver: IntersectionObserver | null = null
+let barsRevealed = false
 const days = ref(3)
 
 async function load() {
@@ -156,8 +161,45 @@ async function load() {
     ElMessage.error((err as Error).message)
   }
   await nextTick()
-  animated.value = true
+  if (!barsRevealed) {
+    barsRevealed = true
+    revealBars()
+  }
 }
+
+// 进度条出场动画：首次可见时从 0 涨到目标值（滚动到该区块时触发）
+function revealBars() {
+  animated.trend = false
+  animated.building = false
+  animated.fault = false
+  const targets: ['trend' | 'building' | 'fault', HTMLElement | null][] = [
+    ['trend', trendRef.value],
+    ['building', buildingRef.value],
+    ['fault', faultRef.value],
+  ]
+  if (typeof IntersectionObserver === 'undefined') {
+    animated.trend = true
+    animated.building = true
+    animated.fault = true
+    return
+  }
+  barObserver?.disconnect()
+  barObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        const el = entry.target as HTMLElement
+        const key = el.dataset.reveal as 'trend' | 'building' | 'fault' | undefined
+        if (key) animated[key] = true
+        barObserver?.unobserve(entry.target)
+      }
+    },
+    { threshold: 0.15 },
+  )
+  for (const [, el] of targets) if (el) barObserver.observe(el)
+}
+
+onUnmounted(() => barObserver?.disconnect())
 
 function maxCount() {
   return Math.max(...(stats.value?.recent.map((d) => d.count) || [1]), 1)

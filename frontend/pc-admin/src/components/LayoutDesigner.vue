@@ -14,7 +14,7 @@
           :key="t.code"
           class="tool-btn"
           :class="{ active: brush === t.code }"
-          @click="brush = t.code"
+          @click="selectBrush(t.code)"
         >
           <i class="chip" :style="{ background: t.color }" />
           <span>{{ t.label }}</span>
@@ -35,22 +35,21 @@
       </aside>
 
       <section class="canvas-area">
-        <div class="hint-line">
-          点击或按住拖动即可绘制；房间号按「楼层 × 100 + 顺序」自动生成（如 4 层第 1 间 = 401）。
+        <div class="hint-line" :class="{ warn: !brush }">
+          {{ brush ? '已选择「' + brushLabel + '」：点击网格放置，按住拖动可连续绘制' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 空白），再点击网格开始绘制' }}
         </div>
         <div
           class="grid"
+          :class="{ 'no-brush': !brush }"
           :style="{ gridTemplateColumns: `repeat(${cols}, 1fr)` }"
-          @pointerup="painting = false"
-          @pointerleave="painting = false"
         >
           <button
             v-for="(cell, i) in flatCells"
             :key="i"
             class="cell"
             :class="[`c${cell.code}`, { snapshot: cell.snapshot }]"
-            @pointerdown.prevent="paint(i)"
-            @pointerenter="paint(i)"
+            @pointerdown.prevent="startPaint(i)"
+            @pointerenter="dragPaint(i)"
           >
             <span v-if="cell.code === '1'" class="cell-no">{{ cell.no }}</span>
             <span v-else-if="cell.code === '3'" class="cell-tag">楼梯</span>
@@ -79,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminBuilding } from '../api'
 import { apiUpdateBuilding } from '../api'
@@ -104,7 +103,7 @@ const emit = defineEmits<{
 const grid = ref<LayoutGrid>(defaultLayout())
 const cols = ref(defaultLayout().cols)
 const rows = ref(defaultLayout().rows)
-const brush = ref<CellCode>('1')
+const brush = ref<CellCode | null>(null)
 const painting = ref(false)
 const saving = ref(false)
 
@@ -117,7 +116,7 @@ watch(
     grid.value = { version: base.version, cols: base.cols, rows: base.rows, cells: [...base.cells] }
     cols.value = base.cols
     rows.value = base.rows
-    brush.value = '1'
+    brush.value = null
   },
   { immediate: true },
 )
@@ -153,14 +152,43 @@ function typeCount(code: CellCode) {
   return total
 }
 
-function paint(index: number) {
-  painting.value = true
+const brushLabel = computed(() => CELL_TYPES.find((t) => t.code === brush.value)?.label || '')
+
+// 选择/取消绘制工具：默认不选，必须先点工具才允许放置
+function selectBrush(code: CellCode) {
+  brush.value = brush.value === code ? null : code
+  painting.value = false
+}
+
+function applyCell(index: number) {
+  if (!brush.value) return
   const r = Math.floor(index / grid.value.cols)
   const c = index % grid.value.cols
   const line = (grid.value.cells[r] || '').padEnd(grid.value.cols, '0')
-  const next = line.slice(0, c) + brush.value + line.slice(c + 1)
-  grid.value.cells[r] = next
+  grid.value.cells[r] = line.slice(0, c) + brush.value + line.slice(c + 1)
 }
+
+// 只能通过“按下鼠标”开始绘制；单纯滑过网格不会放置任何内容
+function startPaint(index: number) {
+  if (!brush.value) {
+    ElMessage.warning('请先在左侧选择绘制工具，再点击网格放置')
+    return
+  }
+  painting.value = true
+  applyCell(index)
+}
+
+function dragPaint(index: number) {
+  if (!painting.value) return
+  applyCell(index)
+}
+
+function endPaint() {
+  painting.value = false
+}
+
+onMounted(() => window.addEventListener('pointerup', endPaint))
+onUnmounted(() => window.removeEventListener('pointerup', endPaint))
 
 function applySize() {
   const c = Math.max(4, Math.min(16, Number(cols.value) || 6))
@@ -368,6 +396,15 @@ async function save() {
 .cell.c4 {
   background: linear-gradient(135deg, #eaf2fd, #dde8f8);
   border: 1px dashed #9aa9c6;
+}
+
+.grid.no-brush .cell {
+  cursor: default;
+}
+
+.hint-line.warn {
+  color: #b96b1c;
+  font-weight: 600;
 }
 
 .cell:hover {

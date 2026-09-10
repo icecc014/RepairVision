@@ -48,7 +48,8 @@
         <el-table-column label="在途/最大并发" width="150" align="center">
           <template #default="{ row }">
             <el-progress
-              :percentage="Math.min(100, Math.round((row.activeOrders / Math.max(row.maxConcurrent, 1)) * 100))"
+              :percentage="revealed ? Math.min(100, Math.round((row.activeOrders / Math.max(row.maxConcurrent, 1)) * 100)) : 0"
+              :duration="0.9"
               :stroke-width="10"
               style="width: 110px"
             />
@@ -63,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { WorkerBoardItem } from '../api'
 import { apiAdminWorkerBoard } from '../api'
@@ -71,6 +72,7 @@ import AdminShell from '../components/AdminShell.vue'
 
 const list = ref<WorkerBoardItem[]>([])
 const loading = ref(false)
+const revealed = ref(false)
 
 const availableCount = computed(() => list.value.filter((w) => w.available).length)
 const activeSum = computed(() => list.value.reduce((sum, w) => sum + w.activeOrders, 0))
@@ -78,6 +80,7 @@ const doneSum = computed(() => list.value.reduce((sum, w) => sum + w.todayComple
 
 async function load() {
   loading.value = true
+  revealed.value = false
   try {
     list.value = await apiAdminWorkerBoard()
   } catch (err) {
@@ -85,6 +88,9 @@ async function load() {
   } finally {
     loading.value = false
   }
+  // 数据到齐后再让进度条从 0 涨到目标值
+  await nextTick()
+  revealed.value = true
 }
 
 function shiftText(shift: string) {
