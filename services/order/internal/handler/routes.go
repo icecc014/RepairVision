@@ -18,6 +18,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	})
 	server.AddRoutes([]rest.Route{
 		{Method: http.MethodGet, Path: "/api/fault-types", Handler: FaultTypesHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/notifications", Handler: NotificationListHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/notifications/:id/read", Handler: NotificationReadHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/notifications/read-all", Handler: NotificationReadAllHandler(serverCtx)},
 	}, jwtOpt)
 
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(3), []rest.Route{

@@ -13,6 +13,7 @@ import (
 	"order/internal/store"
 	"order/internal/svc"
 	"order/internal/types"
+	"order/internal/ws"
 )
 
 type DormFeedbackLogic struct {
@@ -66,5 +67,17 @@ func (l *DormFeedbackLogic) DormFeedback(req *types.DormFeedbackRequest) (resp *
 	if err := store.InsertFeedback(l.ctx, l.svcCtx.DB, order.ID, order.BuildingID, workerID, req.Rating, comment); err != nil {
 		return nil, errs.Internal(err)
 	}
+	recipients := adminUserIDs(l.ctx, l.svcCtx)
+	workerEventID := int64(0)
+	if order.WorkerID.Valid {
+		recipients = append(recipients, order.WorkerID.Int64)
+		workerEventID = order.WorkerID.Int64
+	}
+	notifyUsers(l.ctx, l.svcCtx, recipients, "feedback",
+		"收到服务评价 "+order.OrderNo, order.Room+"室 收到新的服务评价", order.ID)
+	l.svcCtx.WS.PublishOrder(ws.OrderEvent{
+		Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
+		BuildingId: order.BuildingID, WorkerId: workerEventID, Status: order.Status,
+	})
 	return &types.EmptyResponse{}, nil
 }

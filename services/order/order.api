@@ -77,6 +77,31 @@ type AdminFeedbackStatsResponse {
 	Ratings   []FeedbackRatingItem `json:"ratings"`
 	Recent    []FeedbackRecentItem `json:"recent"`
 }
+type NotificationItem {
+	Id        int64  `json:"id"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	OrderId   int64  `json:"orderId,optional"`
+	IsRead    int64  `json:"isRead"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type NotificationListRequest {
+	Page       int64 `form:"page,optional"`
+	Size       int64 `form:"size,optional"`
+	UnreadOnly int64 `form:"unreadOnly,optional"`
+}
+
+type NotificationListResponse {
+	Total  int64              `json:"total"`
+	Unread int64              `json:"unread"`
+	List   []NotificationItem `json:"list"`
+}
+
+type NotificationIdRequest {
+	Id int64 `path:"id"`
+}
 type PingRequest {
 	Name string `path:"name"`
 }
@@ -458,6 +483,14 @@ service order-api {
 	@handler LoginHandler
 	post /api/login (LoginRequest) returns (LoginResponse)
 
+	@handler NotificationListHandler
+	get /api/notifications (NotificationListRequest) returns (NotificationListResponse)
+
+	@handler NotificationReadHandler
+	post /api/notifications/:id/read (NotificationIdRequest) returns (EmptyResponse)
+
+	@handler NotificationReadAllHandler
+	post /api/notifications/read-all returns (EmptyResponse)
 	@handler FaultTypesHandler
 	get /api/fault-types returns (FaultTypeListResponse)
 

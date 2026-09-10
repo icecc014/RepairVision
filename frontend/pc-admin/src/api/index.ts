@@ -352,3 +352,31 @@ export interface AdminFeedbackStats {
 export function apiAdminFeedbackStats(): Promise<AdminFeedbackStats> {
   return http.get('/admin/feedback-stats')
 }
+
+export interface NotificationItem {
+  id: number
+  type: string
+  title: string
+  content: string
+  orderId?: number
+  isRead: number
+  createdAt: string
+}
+
+export interface NotificationPage {
+  total: number
+  unread: number
+  list: NotificationItem[]
+}
+
+export function apiNotifications(page = 1, size = 20, unreadOnly = false): Promise<NotificationPage> {
+  return http.get('/notifications', { params: { page, size, unreadOnly: unreadOnly ? 1 : undefined } })
+}
+
+export function apiNotificationRead(id: number): Promise<unknown> {
+  return http.post(`/notifications/${id}/read`)
+}
+
+export function apiNotificationReadAll(): Promise<unknown> {
+  return http.post('/notifications/read-all')
+}

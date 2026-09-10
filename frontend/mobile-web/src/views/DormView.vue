@@ -5,7 +5,10 @@
         <div class="rv-header-title">宿管工作台</div>
         <div class="rv-header-sub">{{ auth.user?.name }} · 本栋工单管理</div>
       </div>
-      <button class="rv-logout" @click="emit('logout')">退出</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <NotificationBell />
+        <button class="rv-logout" @click="emit('logout')">退出</button>
+      </div>
     </header>
 
     <main class="rv-content">
@@ -170,6 +173,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { FaultType, OrderItem } from '../api'
 import { apiCancelOrder, apiCreateOrder, apiDormFeedback, apiDormOrderPage, apiFaultTypes } from '../api'
+import NotificationBell from '../components/NotificationBell.vue'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -365,7 +369,10 @@ function connectWS() {
   if (!auth.token) return
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
   ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
-  ws.onmessage = () => scheduleRefresh()
+  ws.onmessage = () => {
+    scheduleRefresh()
+    window.dispatchEvent(new Event('rv-notify-refresh'))
+  }
   ws.onclose = () => {
     ws = null
     setTimeout(connectWS, 3000)

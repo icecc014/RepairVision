@@ -5,7 +5,10 @@
         <div class="rv-header-title">维修工工作台</div>
         <div class="rv-header-sub">{{ auth.user?.name }} · 我的工单</div>
       </div>
-      <button class="rv-logout" @click="emit('logout')">退出</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <NotificationBell />
+        <button class="rv-logout" @click="emit('logout')">退出</button>
+      </div>
     </header>
 
     <div class="mode-tabs">
@@ -104,6 +107,7 @@ import type { OrderItem } from '../api'
 import { apiCompleteOrder, apiStartOrder, apiWorkerOrderPage } from '../api'
 import MapView from './MapView.vue'
 import WorkerSchedule from './WorkerSchedule.vue'
+import NotificationBell from '../components/NotificationBell.vue'
 import { useAuthStore } from '../stores/auth'
 
 const emit = defineEmits<{ (e: 'logout'): void }>()
@@ -238,7 +242,10 @@ function connectWS() {
   if (!auth.token) return
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
   ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
-  ws.onmessage = () => scheduleRefresh()
+  ws.onmessage = () => {
+    scheduleRefresh()
+    window.dispatchEvent(new Event('rv-notify-refresh'))
+  }
   ws.onclose = () => {
     ws = null
     setTimeout(connectWS, 3000)

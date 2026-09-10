@@ -151,3 +151,31 @@ export async function apiWorkerOrderPage(status = 0, page = 1, size = 20): Promi
 export function apiDormFeedback(id: number, rating: number, comment: string): Promise<unknown> {
   return http.post(`/dorm/orders/${id}/feedback`, { rating, comment })
 }
+
+export interface NotificationItem {
+  id: number
+  type: string
+  title: string
+  content: string
+  orderId?: number
+  isRead: number
+  createdAt: string
+}
+
+export interface NotificationPage {
+  total: number
+  unread: number
+  list: NotificationItem[]
+}
+
+export function apiNotifications(page = 1, size = 20, unreadOnly = false): Promise<NotificationPage> {
+  return http.get('/notifications', { params: { page, size, unreadOnly: unreadOnly ? 1 : undefined } })
+}
+
+export function apiNotificationRead(id: number): Promise<unknown> {
+  return http.post(`/notifications/${id}/read`)
+}
+
+export function apiNotificationReadAll(): Promise<unknown> {
+  return http.post('/notifications/read-all')
+}

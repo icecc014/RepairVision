@@ -32,6 +32,7 @@
           <p class="page-sub">{{ subtitle }}</p>
         </div>
         <div class="user-box">
+          <NotificationBell />
           <el-tag type="primary" effect="dark" size="small">管理员</el-tag>
           <span class="user-name">{{ auth.user?.name }}</span>
           <button class="logout-btn" @click="logout">退出登录</button>
@@ -45,6 +46,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationBell from './NotificationBell.vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 

@@ -47,6 +47,9 @@ func (l *CompleteOrderLogic) CompleteOrder(req *types.OrderIdRequest) (resp *typ
 			Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
 			BuildingId: order.BuildingID, WorkerId: identity.UID, Status: order.Status,
 		})
+		recipients := append([]int64{order.ReporterID}, adminUserIDs(l.ctx, l.svcCtx)...)
+		notifyUsers(l.ctx, l.svcCtx, recipients, "complete",
+			"工单已完成 "+order.OrderNo, order.Room+"室维修已完成", order.ID)
 	}
 	return &types.EmptyResponse{}, nil
 }

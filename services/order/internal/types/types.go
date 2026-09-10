@@ -397,6 +397,31 @@ type AdminFeedbackStatsResponse struct {
 	Ratings   []FeedbackRatingItem `json:"ratings"`
 	Recent    []FeedbackRecentItem `json:"recent"`
 }
+type NotificationItem struct {
+	Id        int64  `json:"id"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	OrderId   int64  `json:"orderId,optional"`
+	IsRead    int64  `json:"isRead"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type NotificationListRequest struct {
+	Page       int64 `form:"page,optional"`
+	Size       int64 `form:"size,optional"`
+	UnreadOnly int64 `form:"unreadOnly,optional"`
+}
+
+type NotificationListResponse struct {
+	Total  int64              `json:"total"`
+	Unread int64              `json:"unread"`
+	List   []NotificationItem `json:"list"`
+}
+
+type NotificationIdRequest struct {
+	Id int64 `path:"id"`
+}
 type PingRequest struct {
 	Name string `path:"name"`
 }

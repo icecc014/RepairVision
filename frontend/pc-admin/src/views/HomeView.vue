@@ -284,7 +284,10 @@ function connectWS() {
   if (!auth.token) return
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
   ws = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
-  ws.onmessage = () => scheduleRefresh()
+  ws.onmessage = () => {
+    scheduleRefresh()
+    window.dispatchEvent(new Event('rv-notify-refresh'))
+  }
   ws.onclose = () => {
     ws = null
     setTimeout(connectWS, 3000)

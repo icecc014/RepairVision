@@ -48,5 +48,9 @@ func (l *WorkerBatchCompleteLogic) WorkerBatchComplete(req *types.BatchCompleteR
 			WorkerId: identity.UID, Status: store.StatusCompleted,
 		})
 	}
+	if len(ids) > 0 {
+		notifyUsers(l.ctx, l.svcCtx, adminUserIDs(l.ctx, l.svcCtx), "complete",
+			"批量完工已完成", "有一批工单已批量完工", 0)
+	}
 	return &types.BatchCompleteResponse{Count: int64(len(ids))}, nil
 }
