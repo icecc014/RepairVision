@@ -173,7 +173,7 @@ async function initScene() {
     const width = mountRef.value.clientWidth || 390
     const height = 320
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x0b1e45)
+    scene.background = new THREE.Color(0xe9eefb)
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000)
     const render = new THREE.WebGLRenderer({ antialias: true })
     renderer = render
@@ -201,12 +201,12 @@ async function initScene() {
 
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(boxW * 3.2, boxD * 3.2),
-      new THREE.MeshLambertMaterial({ color: '#12264e', side: THREE.DoubleSide }),
+      new THREE.MeshLambertMaterial({ color: '#dfe7f8', side: THREE.DoubleSide }),
     )
     ground.rotation.x = -Math.PI / 2
     ground.position.y = -0.35
     scene.add(ground)
-    const grid = new THREE.GridHelper(Math.max(boxW, boxD) * 2.8, 14, 0x2f6be0, 0x1d3f8f)
+    const grid = new THREE.GridHelper(Math.max(boxW, boxD) * 2.8, 14, 0xc8d8f2, 0xe3ebf9)
     grid.position.y = -0.3
     scene.add(grid)
 
@@ -239,7 +239,7 @@ async function initScene() {
 
       const slab = new THREE.Mesh(
         new THREE.BoxGeometry(boxW, slabH, boxD),
-        new THREE.MeshLambertMaterial({ color: '#1e3a8a' }),
+        new THREE.MeshLambertMaterial({ color: '#c8d8f2' }),
       )
       slab.position.y = yBase + slabH / 2
       group.add(slab)
@@ -296,7 +296,7 @@ async function initScene() {
         if (matched.length > 0) {
           const marker = new THREE.Mesh(
             new THREE.SphereGeometry(0.55, 18, 18),
-            new THREE.MeshBasicMaterial({ color: 0xef4444 }),
+            new THREE.MeshBasicMaterial({ color: 0xe0648a }),
           )
           marker.position.set(cx, yBase + slabH + roomH + 0.75, cz)
           marker.userData = { roomNum, floorNo, count: matched.length }
@@ -332,7 +332,7 @@ async function initScene() {
         const stairX = ((16 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
         const stair = new THREE.Mesh(
           new THREE.BoxGeometry(stairW * 0.96, floorH * 0.96, coreD * 0.96),
-          new THREE.MeshLambertMaterial({ color: '#94a3b8', transparent: true, opacity: 0.75 }),
+          new THREE.MeshLambertMaterial({ color: '#cbd6ea', transparent: true, opacity: 0.85 }),
         )
         stair.position.set(stairX, yBase + slabH + floorH / 2, coreCz)
         group.add(stair)
@@ -343,7 +343,7 @@ async function initScene() {
         const publicCx = ((32 + (PLAN_WIDTH - 32) / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
         const publicArea = new THREE.Mesh(
           new THREE.PlaneGeometry(publicW * 0.95, coreD * 0.95),
-          new THREE.MeshLambertMaterial({ color: '#dbeafe' }),
+          new THREE.MeshLambertMaterial({ color: '#e8f0fc' }),
         )
         publicArea.rotation.x = -Math.PI / 2
         publicArea.position.set(publicCx, yBase + slabH + 0.06, coreCz)

@@ -37,14 +37,40 @@
         @pointerleave="onPointerUp"
       >
         <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet" @click="onSvgClick">
-          <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
-          <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
+          <defs>
+            <linearGradient id="gPlanBg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#eef3fc" />
+              <stop offset="100%" stop-color="#e6ecfa" />
+            </linearGradient>
+            <linearGradient id="gRoom" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#dcebff" />
+              <stop offset="100%" stop-color="#c7dcf7" />
+            </linearGradient>
+            <linearGradient id="gRoomFault" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fde3ea" />
+              <stop offset="100%" stop-color="#f8c9d6" />
+            </linearGradient>
+            <linearGradient id="gCorridor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f3f7fd" />
+              <stop offset="100%" stop-color="#e9f0fa" />
+            </linearGradient>
+            <linearGradient id="gStair" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e6ecf7" />
+              <stop offset="100%" stop-color="#d3dcec" />
+            </linearGradient>
+            <linearGradient id="gPublic" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#eaf2fd" />
+              <stop offset="100%" stop-color="#dde8f8" />
+            </linearGradient>
+          </defs>
+          <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="url(#gPlanBg)" stroke="#7d8db3" stroke-width="1.6" rx="1.5" />
+          <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="url(#gCorridor)" stroke="#a9b8d4" stroke-width="0.6" stroke-dasharray="3 2" />
           <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
 
           <g v-for="core in plan.cores" :key="core.index">
-            <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
+            <rect x="0" :y="core.z" width="32" :height="core.d" fill="url(#gStair)" stroke="#7d8db3" stroke-width="0.7" />
             <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
-            <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
+            <rect x="32" :y="core.z" width="68" :height="core.d" fill="url(#gPublic)" stroke="#9aa9c6" stroke-width="0.7" stroke-dasharray="2 1.6" />
             <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
           </g>
 
@@ -54,8 +80,8 @@
               :y="room.z"
               :width="room.w"
               :height="room.d"
-              :fill="roomOrders(room)[0] ? '#fee2e2' : '#dbeafe'"
-              stroke="#1e3a8a"
+              :fill="roomOrders(room)[0] ? 'url(#gRoomFault)' : 'url(#gRoom)'"
+              stroke="#5f7bb5"
               stroke-width="0.8"
               @pointerdown.stop
               @click.stop="select(room)"
@@ -67,7 +93,7 @@
               text-anchor="middle"
               font-size="4.6"
               font-weight="bold"
-              fill="#1e3a8a"
+              fill="#3d5687"
             >
               {{ room.no }}
             </text>
@@ -76,7 +102,7 @@
               :cx="room.x + room.w - 5"
               :cy="room.z + 5"
               r="3.4"
-              fill="#ef4444"
+              class="fault-dot" fill="#e0648a"
               @pointerdown.stop
               @click.stop="select(room)"
               style="cursor: pointer"
@@ -359,6 +385,16 @@ function onPointerUp(e: PointerEvent) {
 .plan-stage { position: relative; }
 .plan-viewport { height: calc(82vh - 200px); min-height: 260px; overflow: hidden; touch-action: none; cursor: grab; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
 .plan-svg { width: 100%; height: 100%; display: block; }
+.fault-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rv-dot-pulse 2.2s ease-out infinite;
+}
+@keyframes rv-dot-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  60% { opacity: 0.75; transform: scale(1.55); }
+  100% { opacity: 1; transform: scale(1); }
+}
 .fault-card {
   position: absolute; top: 6px; right: 6px; width: min(72%, 300px);
   max-height: calc(100% - 12px); overflow: auto;
@@ -367,21 +403,21 @@ function onPointerUp(e: PointerEvent) {
   border: 1px solid #3b5ca8; border-radius: 12px; box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
 }
 .fault-head { display: flex; align-items: center; justify-content: space-between; }
-.fault-room { color: #fff; font-size: 16px; font-weight: 800; }
-.fault-floor { margin-left: 6px; color: #93c5fd; font-size: 12px; }
-.fault-close { width: 24px; height: 24px; color: #cbd5e1; background: rgba(255,255,255,0.12); border: none; border-radius: 50%; cursor: pointer; }
-.fault-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.18); }
+.fault-room { color: var(--rv-primary-deep); font-size: 16px; font-weight: 800; }
+.fault-floor { margin-left: 6px; color: var(--rv-text-light); font-size: 12px; }
+.fault-close { width: 24px; height: 24px; color: var(--rv-text-sub); background: rgba(120,145,190,0.14); border: none; border-radius: 50%; cursor: pointer; }
+.fault-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(120,145,190,0.24); }
 .fault-row { display: flex; align-items: center; gap: 8px; }
-.fault-type { padding: 2px 8px; color: #bfdbfe; font-size: 12px; background: rgba(59,130,246,0.25); border-radius: 999px; }
+.fault-type { padding: 2px 8px; color: #2462d9; font-size: 12px; background: var(--rv-grad-1); border-radius: 999px; }
 .fault-status { font-size: 12px; font-weight: 700; }
 .fs1, .fs2 { color: #fbbf24; }
 .fs3 { color: #60a5fa; }
 .fs4 { color: #4ade80; }
 .fs5 { color: #94a3b8; }
-.fault-label { margin-top: 7px; color: #93c5fd; font-size: 11px; }
-.fault-text { margin-top: 2px; color: #e2e8f0; font-size: 12px; line-height: 1.5; }
-.fault-meta { margin-top: 6px; color: #94a3b8; font-size: 11px; }
+.fault-label { margin-top: 7px; color: var(--rv-primary-deep); font-size: 11px; }
+.fault-text { margin-top: 2px; color: var(--rv-text); font-size: 12px; line-height: 1.5; }
+.fault-meta { margin-top: 6px; color: var(--rv-text-light); font-size: 11px; }
 .fault-actions { margin-top: 8px; display: flex; gap: 8px; }
-.fault-btn { padding: 5px 14px; color: #fff; font-size: 12px; background: #2563eb; border: none; border-radius: 999px; cursor: pointer; }
-.fault-btn.done { background: #16a34a; }
+.fault-btn { padding: 5px 14px; color: #fff; font-size: 12px; background: linear-gradient(135deg,#7fb2ff,#3478f6); border: none; border-radius: 999px; cursor: pointer; }
+.fault-btn.done { background: linear-gradient(135deg,#7fe6c8,#22b573); }
 </style>

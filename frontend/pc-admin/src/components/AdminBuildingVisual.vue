@@ -36,25 +36,33 @@
           @pointerleave="onPointerUp"
         >
           <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet" @click="onSvgClick">
-            <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
-            <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
+          <defs>
+            <linearGradient id="pgBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#eef3fc" /><stop offset="100%" stop-color="#e6ecfa" /></linearGradient>
+            <linearGradient id="pgRoom" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#dcebff" /><stop offset="100%" stop-color="#c7dcf7" /></linearGradient>
+            <linearGradient id="pgRoomFault" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde3ea" /><stop offset="100%" stop-color="#f8c9d6" /></linearGradient>
+            <linearGradient id="pgCorridor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f3f7fd" /><stop offset="100%" stop-color="#e9f0fa" /></linearGradient>
+            <linearGradient id="pgStair" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e6ecf7" /><stop offset="100%" stop-color="#d3dcec" /></linearGradient>
+            <linearGradient id="pgPublic" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#eaf2fd" /><stop offset="100%" stop-color="#dde8f8" /></linearGradient>
+          </defs>
+            <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="url(#pgBg)" stroke="#7d8db3" stroke-width="1.6" rx="1.5" />
+            <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="url(#pgCorridor)" stroke="#a9b8d4" stroke-width="0.6" stroke-dasharray="3 2" />
             <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
             <g v-for="core in plan.cores" :key="core.index">
-              <rect x="0" :y="core.z" width="32" :height="core.d" fill="#e2e8f0" stroke="#475569" stroke-width="0.7" />
+              <rect x="0" :y="core.z" width="32" :height="core.d" fill="url(#pgStair)" stroke="#7d8db3" stroke-width="0.7" />
               <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
-              <rect x="32" :y="core.z" width="68" :height="core.d" fill="#e8eef7" stroke="#64748b" stroke-width="0.7" stroke-dasharray="2 1.6" />
+              <rect x="32" :y="core.z" width="68" :height="core.d" fill="url(#pgPublic)" stroke="#9aa9c6" stroke-width="0.7" stroke-dasharray="2 1.6" />
               <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
             </g>
             <g v-for="room in plan.rooms" :key="room.no">
               <rect
                 :x="room.x" :y="room.z" :width="room.w" :height="room.d"
-                :fill="roomOrders(room).length ? '#fee2e2' : '#dbeafe'"
-                stroke="#1e3a8a" stroke-width="0.8"
+                :fill="roomOrders(room).length ? 'url(#pgRoomFault)' : 'url(#pgRoom)'"
+                stroke="#5f7bb5" stroke-width="0.8"
               />
-              <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#1e3a8a">
+              <text :x="room.x + room.w / 2" :y="room.z + room.d / 2 + 1.4" text-anchor="middle" font-size="4.6" font-weight="bold" fill="#3d5687">
                 {{ room.no }}
               </text>
-              <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" fill="#ef4444" />
+              <circle v-if="roomOrders(room).length" :cx="room.x + room.w - 5" :cy="room.z + 5" r="3.4" class="fault-dot" fill="#e0648a" />
             </g>
           </svg>
         </div>
@@ -292,7 +300,7 @@ async function init3d() {
     const width = el.clientWidth || 700
     const height = 430
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x0b1e45)
+    scene.background = new THREE.Color(0xe9eefb)
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 4000)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(width, height)
@@ -313,7 +321,7 @@ async function init3d() {
     controls.target.set(0, floorH * 1.6, 0)
     controls.update()
 
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(boxW * 3, boxD * 2), new THREE.MeshLambertMaterial({ color: '#12264e', side: THREE.DoubleSide }))
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(boxW * 3, boxD * 2), new THREE.MeshLambertMaterial({ color: '#dfe7f8', side: THREE.DoubleSide }))
     ground.rotation.x = -Math.PI / 2
     ground.position.y = -1.2
     scene.add(ground)
@@ -321,7 +329,7 @@ async function init3d() {
     const totalFloors = Math.max(props.building.floors, 1)
     for (let f = 0; f < totalFloors; f++) {
       const yBase = f * (floorH + 1)
-      const slab = new THREE.Mesh(new THREE.BoxGeometry(boxW + 6, 0.9, boxD + 6), new THREE.MeshLambertMaterial({ color: '#1e3a8a' }))
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(boxW + 6, 0.9, boxD + 6), new THREE.MeshLambertMaterial({ color: '#c8d8f2' }))
       slab.position.y = yBase + 0.45
       scene.add(slab)
       const p = supportsCorridorLayout(props.building.roomsPerFloor)
@@ -333,7 +341,7 @@ async function init3d() {
         const d = (room.d / PLAN_DEPTH) * boxD * 0.92
         const x = ((room.x + room.w / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
         const z = ((room.z + room.d / 2 - PLAN_DEPTH / 2) / PLAN_DEPTH) * boxD
-        const mat = new THREE.MeshLambertMaterial({ color: f % 2 === 0 ? '#60a5fa' : '#34d399', transparent: true, opacity: 0.85 })
+        const mat = new THREE.MeshLambertMaterial({ color: f % 2 === 0 ? '#bcd7fb' : '#c3e9da', transparent: true, opacity: 0.85 })
         const tile = new THREE.Mesh(new THREE.BoxGeometry(w, 1, d), mat)
         tile.position.set(x, yBase + 1, z)
         scene.add(tile)
@@ -342,7 +350,7 @@ async function init3d() {
       if (p.corridor.w > 0) {
         const cw = (p.corridor.w / PLAN_WIDTH) * boxW
         const cd = (p.corridor.d / PLAN_DEPTH) * boxD
-        const corridor = new THREE.Mesh(new THREE.BoxGeometry(cw, 0.7, cd), new THREE.MeshLambertMaterial({ color: '#cbd5e1' }))
+        const corridor = new THREE.Mesh(new THREE.BoxGeometry(cw, 0.7, cd), new THREE.MeshLambertMaterial({ color: '#e6edf9' }))
         corridor.position.set(0, yBase + 0.8, 0)
         scene.add(corridor)
       }
@@ -353,7 +361,7 @@ async function init3d() {
         const cz = ((core.z + core.d / 2 - PLAN_DEPTH / 2) / PLAN_DEPTH) * boxD
         const stair = new THREE.Mesh(
           new THREE.BoxGeometry(cw, floorH * 0.9, cd),
-          new THREE.MeshLambertMaterial({ color: '#94a3b8', transparent: true, opacity: 0.8 }),
+          new THREE.MeshLambertMaterial({ color: '#cbd6ea', transparent: true, opacity: 0.85 }),
         )
         stair.position.set(((16 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW, yBase + floorH * 0.45, cz)
         scene.add(stair)
@@ -387,9 +395,19 @@ async function init3d() {
 .zoom-btn { width: 34px; height: 30px; font-size: 15px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; cursor: pointer; }
 .zoom-btn.wide { width: auto; padding: 0 12px; font-size: 12px; }
 .plan-body { display: flex; gap: 12px; align-items: stretch; }
-.plan-viewport { flex: 1 1 auto; height: 520px; overflow: hidden; touch-action: none; cursor: grab; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
+.plan-viewport { flex: 1 1 auto; height: 520px; overflow: hidden; touch-action: none; cursor: grab; background: #eef3fc; border: 1px solid #e2e8f0; border-radius: 10px; }
 .plan-svg { width: 100%; height: 100%; display: block; }
-.side-panel { flex: 0 0 320px; max-height: 520px; overflow: auto; padding: 12px 14px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
+.fault-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rv-dot-pulse 2.2s ease-out infinite;
+}
+@keyframes rv-dot-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  60% { opacity: 0.75; transform: scale(1.55); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.side-panel { flex: 0 0 320px; max-height: 520px; overflow: auto; padding: 14px 16px; color: var(--pc-text); background: rgba(255,255,255,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.72); border-radius: 16px; box-shadow: 0 12px 30px rgba(46,68,112,0.1); }
 .side-head { display: flex; align-items: center; justify-content: space-between; }
 .side-room { font-size: 18px; font-weight: 800; color: #1e3a8a; }
 .side-floor { margin-left: 6px; color: #64748b; font-size: 12px; }

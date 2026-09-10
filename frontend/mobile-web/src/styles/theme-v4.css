@@ -238,3 +238,44 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== V4.4 动效与微交互 ===== */
+.rv-order-list > *,
+.schedule-list > *,
+.leave-list > * {
+  animation: rv-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rv-order-list > *:nth-child(2),
+.schedule-list > *:nth-child(2),
+.leave-list > *:nth-child(2) { animation-delay: 0.04s; }
+.rv-order-list > *:nth-child(3),
+.schedule-list > *:nth-child(3),
+.leave-list > *:nth-child(3) { animation-delay: 0.08s; }
+.rv-order-list > *:nth-child(4),
+.schedule-list > *:nth-child(4),
+.leave-list > *:nth-child(4) { animation-delay: 0.12s; }
+.rv-order-list > *:nth-child(5),
+.schedule-list > *:nth-child(5),
+.leave-list > *:nth-child(5) { animation-delay: 0.16s; }
+.rv-order-list > *:nth-child(6),
+.schedule-list > *:nth-child(6),
+.leave-list > *:nth-child(6) { animation-delay: 0.2s; }
+
+.rv-btn:active:not(:disabled),
+.rv-fab:active,
+.rv-submit:active:not(:disabled),
+.mini-btn:active,
+.mode-tab:active {
+  transform: scale(0.97);
+}
+
+.rv-skeleton,
+.van-skeleton__item {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 25%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0.4) 75%);
+  background-size: 280px 100%;
+  animation: rv-shimmer 1.4s ease infinite;
+}
+@keyframes rv-shimmer {
+  0% { background-position: -280px 0; }
+  100% { background-position: 280px 0; }
+}

@@ -330,3 +330,43 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== V4.4 动效与微交互 ===== */
+.el-table__body tr {
+  animation: rv-fade-up 0.35s var(--rv-ease) both;
+}
+.el-table__body tr:nth-child(2) { animation-delay: 0.03s; }
+.el-table__body tr:nth-child(3) { animation-delay: 0.06s; }
+.el-table__body tr:nth-child(4) { animation-delay: 0.09s; }
+.el-table__body tr:nth-child(5) { animation-delay: 0.12s; }
+.el-table__body tr:nth-child(6) { animation-delay: 0.15s; }
+.el-table__body tr:nth-child(7) { animation-delay: 0.18s; }
+.el-table__body tr:nth-child(8) { animation-delay: 0.21s; }
+
+.stat-grid > *,
+.board-grid > *,
+.status-grid > *,
+.sla-grid > * {
+  animation: rv-fade-up 0.42s var(--rv-ease) both;
+}
+.stat-grid > *:nth-child(2),
+.status-grid > *:nth-child(2),
+.sla-grid > *:nth-child(2) { animation-delay: 0.05s; }
+.stat-grid > *:nth-child(3),
+.status-grid > *:nth-child(3),
+.sla-grid > *:nth-child(3) { animation-delay: 0.1s; }
+.stat-grid > *:nth-child(4),
+.status-grid > *:nth-child(4),
+.sla-grid > *:nth-child(4) { animation-delay: 0.15s; }
+.status-grid > *:nth-child(5) { animation-delay: 0.2s; }
+
+.el-button:active:not(.is-disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+.el-skeleton .el-skeleton__item {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.35) 25%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.35) 75%);
+  background-size: 320px 100%;
+  animation: rv-shimmer 1.4s ease infinite;
+  border-radius: 10px;
+}
