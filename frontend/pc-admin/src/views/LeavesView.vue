@@ -121,10 +121,12 @@ onMounted(load)
 <style scoped>
 .panel {
   padding: 18px 20px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(46, 68, 112, 0.08);
 }
 .toolbar {
   display: flex;
@@ -134,11 +136,11 @@ onMounted(load)
 }
 .review-hint {
   margin-bottom: 12px;
-  color: #475569;
+  color: #5a6a85;
   font-weight: 600;
 }
 .muted {
-  color: #cbd5e1;
+  color: #c2cbdc;
 }
 .empty {
   padding: 24px 0;

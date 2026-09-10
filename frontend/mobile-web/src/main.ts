@@ -4,6 +4,7 @@ import Vant from 'vant'
 import VueKonva from 'vue-konva'
 import 'vant/lib/index.css'
 import './styles/base.css'
+import './styles/theme-v4.css'
 import App from './App.vue'
 import router from './router'
 

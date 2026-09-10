@@ -1,0 +1,372 @@
+/* ===========================================================
+   RepairVision V4 主题（PC 管理端）
+   柔和渐变 · 玻璃拟态 · 亲和友好
+   参考：css/颜色.html、css/样式.html、css/样式推荐.md
+   =========================================================== */
+
+:root {
+  /* 16 色柔和渐变板（取自 颜色.html） */
+  --rv-grad-1: linear-gradient(135deg, rgba(200, 230, 255, 0.75), rgba(180, 210, 245, 0.65));
+  --rv-grad-2: linear-gradient(135deg, rgba(226, 210, 250, 0.72), rgba(204, 185, 240, 0.62));
+  --rv-grad-3: linear-gradient(135deg, rgba(248, 214, 222, 0.74), rgba(238, 192, 204, 0.64));
+  --rv-grad-4: linear-gradient(135deg, rgba(255, 226, 204, 0.75), rgba(252, 208, 174, 0.65));
+  --rv-grad-5: linear-gradient(135deg, rgba(254, 244, 210, 0.76), rgba(250, 232, 184, 0.66));
+  --rv-grad-6: linear-gradient(135deg, rgba(210, 245, 236, 0.73), rgba(184, 232, 218, 0.63));
+  --rv-grad-7: linear-gradient(135deg, rgba(224, 238, 228, 0.72), rgba(200, 222, 206, 0.62));
+  --rv-grad-8: linear-gradient(135deg, rgba(242, 234, 226, 0.74), rgba(226, 212, 198, 0.64));
+  --rv-grad-9: linear-gradient(135deg, rgba(214, 236, 252, 0.71), rgba(190, 218, 240, 0.61));
+  --rv-grad-10: linear-gradient(135deg, rgba(230, 224, 242, 0.70), rgba(210, 200, 228, 0.60));
+  --rv-grad-11: linear-gradient(135deg, rgba(244, 222, 226, 0.73), rgba(228, 200, 206, 0.63));
+  --rv-grad-12: linear-gradient(135deg, rgba(255, 234, 218, 0.72), rgba(246, 214, 188, 0.62));
+  --rv-grad-13: linear-gradient(135deg, rgba(253, 248, 226, 0.75), rgba(245, 234, 200, 0.65));
+  --rv-grad-14: linear-gradient(135deg, rgba(218, 238, 236, 0.71), rgba(194, 218, 214, 0.61));
+  --rv-grad-15: linear-gradient(135deg, rgba(232, 238, 224, 0.70), rgba(210, 220, 194, 0.60));
+  --rv-grad-16: linear-gradient(135deg, rgba(240, 232, 224, 0.73), rgba(222, 208, 194, 0.63));
+
+  /* 语义色 */
+  --pc-primary: #3478f6;
+  --pc-primary-deep: #2462d9;
+  --pc-success: #22b573;
+  --pc-warning: #f0a24b;
+  --pc-danger: #e0648a;
+  --pc-text: #2b3445;
+  --pc-sub: #5a6a85;
+  --pc-light: #8a97ad;
+  --pc-line: rgba(120, 145, 190, 0.18);
+
+  --pc-btn-primary: linear-gradient(135deg, #7fb2ff, #3478f6);
+  --pc-btn-success: linear-gradient(135deg, #7fe6c8, #22b573);
+  --pc-btn-warning: linear-gradient(135deg, #ffd8a3, #f0a24b);
+  --pc-btn-danger: linear-gradient(135deg, #ffb9cd, #e0648a);
+  --pc-page-bg: linear-gradient(120deg, #e0edfa, #e9e3f8, #f8e6ec);
+
+  /* 玻璃拟态 */
+  --rv-glass-bg: rgba(255, 255, 255, 0.55);
+  --rv-glass-bg-strong: rgba(255, 255, 255, 0.72);
+  --rv-glass-border: 1px solid rgba(255, 255, 255, 0.65);
+  --rv-glass-blur: blur(14px);
+  --rv-shadow-soft: 0 10px 30px rgba(46, 68, 112, 0.08);
+  --rv-shadow-hover: 0 16px 38px rgba(46, 68, 112, 0.14);
+  --rv-radius-card: 18px;
+  --rv-radius-control: 12px;
+  --rv-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Element Plus 主题覆盖 */
+  --el-color-primary: #3478f6;
+  --el-color-primary-light-3: #6aa1f8;
+  --el-color-primary-light-5: #94bcfb;
+  --el-color-primary-light-7: #bed6fd;
+  --el-color-primary-light-8: #d6e4fe;
+  --el-color-primary-light-9: #eaf2ff;
+  --el-color-primary-dark-2: #2462d9;
+  --el-color-success: #22b573;
+  --el-color-warning: #f0a24b;
+  --el-color-danger: #e0648a;
+  --el-color-info: #8a97ad;
+  --el-border-radius-base: 12px;
+  --el-border-radius-small: 10px;
+  --el-text-color-primary: #2b3445;
+  --el-text-color-regular: #5a6a85;
+  --el-border-color-lighter: rgba(120, 145, 190, 0.18);
+  --el-fill-color-blank: rgba(255, 255, 255, 0.55);
+}
+
+body {
+  color: var(--pc-text);
+  background: var(--pc-page-bg);
+  background-attachment: fixed;
+}
+
+/* 背景柔光斑 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20% -10% auto -10%;
+  height: 60vh;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 55% at 12% 18%, rgba(180, 210, 245, 0.55), transparent 70%),
+    radial-gradient(34% 50% at 82% 12%, rgba(226, 210, 250, 0.5), transparent 72%),
+    radial-gradient(30% 45% at 55% 0%, rgba(248, 214, 222, 0.42), transparent 70%);
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* 通用玻璃卡片 / 工具类 */
+.rv-glass {
+  background: var(--rv-glass-bg);
+  backdrop-filter: var(--rv-glass-blur);
+  -webkit-backdrop-filter: var(--rv-glass-blur);
+  border: var(--rv-glass-border);
+  border-radius: var(--rv-radius-card);
+  box-shadow: var(--rv-shadow-soft);
+}
+
+.rv-hover-lift {
+  transition: transform 0.3s var(--rv-ease), box-shadow 0.3s var(--rv-ease), background 0.3s var(--rv-ease);
+}
+
+.rv-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--rv-shadow-hover);
+  background: var(--rv-glass-bg-strong);
+}
+
+.rv-gradient-text {
+  background: linear-gradient(100deg, #3478f6, #22b573 55%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 面板（项目内 .panel 统一玻璃化） */
+.panel {
+  background: var(--rv-glass-bg) !important;
+  backdrop-filter: var(--rv-glass-blur);
+  -webkit-backdrop-filter: var(--rv-glass-blur);
+  border: var(--rv-glass-border) !important;
+  border-radius: var(--rv-radius-card) !important;
+  box-shadow: var(--rv-shadow-soft) !important;
+}
+
+/* 统计卡（项目内 .stat-card / .board-card 等） */
+.stat-card,
+.board-card {
+  border: var(--rv-glass-border);
+  border-radius: var(--rv-radius-card);
+  box-shadow: var(--rv-shadow-soft);
+  transition: transform 0.3s var(--rv-ease), box-shadow 0.3s var(--rv-ease);
+}
+
+.stat-card:hover,
+.board-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--rv-shadow-hover);
+}
+
+/* Element Plus：卡片 / 对话框 / 抽屉 / 弹层 */
+.el-card,
+.el-dialog,
+.el-drawer,
+.el-message-box,
+.el-popover.el-popper,
+.el-dropdown-menu {
+  border: var(--rv-glass-border) !important;
+  border-radius: var(--rv-radius-card) !important;
+  background: var(--rv-glass-bg-strong) !important;
+  backdrop-filter: var(--rv-glass-blur);
+  -webkit-backdrop-filter: var(--rv-glass-blur);
+  box-shadow: var(--rv-shadow-soft) !important;
+}
+
+.el-dialog__header,
+.el-drawer__header {
+  margin-right: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--pc-line);
+}
+
+/* Element Plus：按钮 */
+.el-button {
+  border-radius: 10px;
+  transition: transform 0.2s var(--rv-ease), box-shadow 0.2s var(--rv-ease), opacity 0.2s ease;
+}
+
+.el-button:not(.is-text):not(.is-link):hover {
+  transform: translateY(-1px);
+}
+
+.el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
+  background: var(--pc-btn-primary);
+  border: none;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
+}
+
+.el-button--success:not(.is-plain):not(.is-text):not(.is-link) {
+  background: var(--pc-btn-success);
+  border: none;
+  box-shadow: 0 8px 18px rgba(34, 181, 115, 0.24);
+}
+
+.el-button--warning:not(.is-plain):not(.is-text):not(.is-link) {
+  background: var(--pc-btn-warning);
+  border: none;
+  box-shadow: 0 8px 18px rgba(240, 162, 75, 0.24);
+}
+
+.el-button--danger:not(.is-plain):not(.is-text):not(.is-link) {
+  background: var(--pc-btn-danger);
+  border: none;
+  box-shadow: 0 8px 18px rgba(224, 100, 138, 0.24);
+}
+
+/* Element Plus：表格 */
+.el-table {
+  --el-table-border-color: var(--pc-line);
+  --el-table-header-bg-color: rgba(255, 255, 255, 0.6);
+  --el-table-row-hover-bg-color: rgba(214, 236, 252, 0.45);
+  --el-table-tr-bg-color: transparent;
+  --el-table-bg-color: transparent;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.el-table th.el-table__cell {
+  color: var(--pc-sub);
+  font-weight: 700;
+}
+
+.el-table tr:nth-child(even) td.el-table__cell {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Element Plus：输入 / 选择 */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: var(--rv-radius-control) !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 0 0 1px rgba(120, 145, 190, 0.18) inset !important;
+  transition: box-shadow 0.25s var(--rv-ease), background 0.25s var(--rv-ease);
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+  background: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 0 1px rgba(52, 120, 246, 0.55) inset, 0 0 0 4px rgba(52, 120, 246, 0.12) !important;
+}
+
+/* Element Plus：标签 */
+.el-tag {
+  border: none;
+  border-radius: 999px;
+}
+
+.el-tag--primary {
+  color: #2462d9;
+  background: var(--rv-grad-1);
+}
+
+.el-tag--success {
+  color: #17865a;
+  background: var(--rv-grad-6);
+}
+
+.el-tag--warning {
+  color: #b96b1c;
+  background: var(--rv-grad-4);
+}
+
+.el-tag--danger {
+  color: #b34568;
+  background: var(--rv-grad-3);
+}
+
+.el-tag--info {
+  color: #5a6a85;
+  background: var(--rv-grad-8);
+}
+
+/* 分页 / 进度 */
+.el-pagination.is-background .el-pager li {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: var(--pc-btn-primary);
+  box-shadow: 0 6px 14px rgba(52, 120, 246, 0.28);
+}
+
+.el-progress-bar__outer {
+  background: rgba(180, 210, 245, 0.28);
+}
+
+/* 动效 */
+@keyframes rv-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rv-shimmer {
+  0% {
+    background-position: -320px 0;
+  }
+  100% {
+    background-position: 320px 0;
+  }
+}
+
+@keyframes rv-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(224, 100, 138, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(224, 100, 138, 0);
+  }
+}
+
+.rv-fade-up {
+  animation: rv-fade-up 0.42s var(--rv-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== V4.4 动效与微交互 ===== */
+.el-table__body tr {
+  animation: rv-fade-up 0.35s var(--rv-ease) both;
+}
+.el-table__body tr:nth-child(2) { animation-delay: 0.03s; }
+.el-table__body tr:nth-child(3) { animation-delay: 0.06s; }
+.el-table__body tr:nth-child(4) { animation-delay: 0.09s; }
+.el-table__body tr:nth-child(5) { animation-delay: 0.12s; }
+.el-table__body tr:nth-child(6) { animation-delay: 0.15s; }
+.el-table__body tr:nth-child(7) { animation-delay: 0.18s; }
+.el-table__body tr:nth-child(8) { animation-delay: 0.21s; }
+
+.stat-grid > *,
+.board-grid > *,
+.status-grid > *,
+.sla-grid > * {
+  animation: rv-fade-up 0.42s var(--rv-ease) both;
+}
+.stat-grid > *:nth-child(2),
+.status-grid > *:nth-child(2),
+.sla-grid > *:nth-child(2) { animation-delay: 0.05s; }
+.stat-grid > *:nth-child(3),
+.status-grid > *:nth-child(3),
+.sla-grid > *:nth-child(3) { animation-delay: 0.1s; }
+.stat-grid > *:nth-child(4),
+.status-grid > *:nth-child(4),
+.sla-grid > *:nth-child(4) { animation-delay: 0.15s; }
+.status-grid > *:nth-child(5) { animation-delay: 0.2s; }
+
+.el-button:active:not(.is-disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+.el-skeleton .el-skeleton__item {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.35) 25%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.35) 75%);
+  background-size: 320px 100%;
+  animation: rv-shimmer 1.4s ease infinite;
+  border-radius: 10px;
+}

@@ -292,45 +292,59 @@ onUnmounted(() => {
 .map-title {
   font-size: 16px;
   font-weight: 800;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .mini-btn {
   padding: 6px 13px;
-  color: #2563eb;
+  color: var(--rv-primary-deep);
   font-size: 13px;
   font-weight: 600;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(120, 145, 190, 0.22);
   border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
 }
 .mini-btn.primary {
   color: #fff;
-  background: #2563eb;
-  border-color: #2563eb;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
 }
 .mini-btn.success {
   color: #fff;
-  background: #16a34a;
-  border-color: #16a34a;
+  background: linear-gradient(135deg, #7fe6c8, #22b573);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(34, 181, 115, 0.26);
 }
 .canvas-card {
   padding: 6px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(46, 68, 112, 0.1);
 }
 .map-hint {
   margin: 0 8px 8px;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
   text-align: center;
 }
 .detail-card {
   margin: 14px;
   padding: 16px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(46, 68, 112, 0.1);
 }
 .detail-head {
   display: flex;
@@ -341,10 +355,11 @@ onUnmounted(() => {
 .detail-name {
   font-size: 16px;
   font-weight: 800;
+  color: var(--rv-text);
 }
 .detail-sub {
   margin-top: 4px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 12px;
 }
 .type-list {
@@ -356,7 +371,7 @@ onUnmounted(() => {
 .type-explain {
   flex-basis: 100%;
   margin-top: 4px;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -365,7 +380,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid rgba(120, 145, 190, 0.16);
 }
 .type-info {
   display: flex;
@@ -375,19 +390,42 @@ onUnmounted(() => {
 .type-dot {
   width: 8px;
   height: 8px;
-  background: #f59e0b;
+  background: linear-gradient(135deg, #ffd8a3, #f0a24b);
   border-radius: 50%;
 }
 .type-name {
   font-weight: 600;
+  color: var(--rv-text);
 }
 .type-count {
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
 .rv-empty.small {
   padding: 20px;
   margin-top: 12px;
+}
+.building-chips {
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px;
+  overflow-x: auto;
+}
+.building-chip {
+  flex: 0 0 auto;
+  padding: 7px 13px;
+  color: var(--rv-text-sub);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.building-chip.active {
+  color: #fff;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.26);
 }
 </style>
 .building-chips {

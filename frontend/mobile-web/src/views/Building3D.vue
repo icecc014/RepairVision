@@ -173,7 +173,7 @@ async function initScene() {
     const width = mountRef.value.clientWidth || 390
     const height = 320
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x0b1e45)
+    scene.background = new THREE.Color(0xe9eefb)
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000)
     const render = new THREE.WebGLRenderer({ antialias: true })
     renderer = render
@@ -201,12 +201,12 @@ async function initScene() {
 
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(boxW * 3.2, boxD * 3.2),
-      new THREE.MeshLambertMaterial({ color: '#12264e', side: THREE.DoubleSide }),
+      new THREE.MeshLambertMaterial({ color: '#dfe7f8', side: THREE.DoubleSide }),
     )
     ground.rotation.x = -Math.PI / 2
     ground.position.y = -0.35
     scene.add(ground)
-    const grid = new THREE.GridHelper(Math.max(boxW, boxD) * 2.8, 14, 0x2f6be0, 0x1d3f8f)
+    const grid = new THREE.GridHelper(Math.max(boxW, boxD) * 2.8, 14, 0xc8d8f2, 0xe3ebf9)
     grid.position.y = -0.3
     scene.add(grid)
 
@@ -239,7 +239,7 @@ async function initScene() {
 
       const slab = new THREE.Mesh(
         new THREE.BoxGeometry(boxW, slabH, boxD),
-        new THREE.MeshLambertMaterial({ color: '#1e3a8a' }),
+        new THREE.MeshLambertMaterial({ color: '#c8d8f2' }),
       )
       slab.position.y = yBase + slabH / 2
       group.add(slab)
@@ -296,7 +296,7 @@ async function initScene() {
         if (matched.length > 0) {
           const marker = new THREE.Mesh(
             new THREE.SphereGeometry(0.55, 18, 18),
-            new THREE.MeshBasicMaterial({ color: 0xef4444 }),
+            new THREE.MeshBasicMaterial({ color: 0xe0648a }),
           )
           marker.position.set(cx, yBase + slabH + roomH + 0.75, cz)
           marker.userData = { roomNum, floorNo, count: matched.length }
@@ -332,7 +332,7 @@ async function initScene() {
         const stairX = ((16 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
         const stair = new THREE.Mesh(
           new THREE.BoxGeometry(stairW * 0.96, floorH * 0.96, coreD * 0.96),
-          new THREE.MeshLambertMaterial({ color: '#94a3b8', transparent: true, opacity: 0.75 }),
+          new THREE.MeshLambertMaterial({ color: '#cbd6ea', transparent: true, opacity: 0.85 }),
         )
         stair.position.set(stairX, yBase + slabH + floorH / 2, coreCz)
         group.add(stair)
@@ -343,7 +343,7 @@ async function initScene() {
         const publicCx = ((32 + (PLAN_WIDTH - 32) / 2 - PLAN_WIDTH / 2) / PLAN_WIDTH) * boxW
         const publicArea = new THREE.Mesh(
           new THREE.PlaneGeometry(publicW * 0.95, coreD * 0.95),
-          new THREE.MeshLambertMaterial({ color: '#dbeafe' }),
+          new THREE.MeshLambertMaterial({ color: '#e8f0fc' }),
         )
         publicArea.rotation.x = -Math.PI / 2
         publicArea.position.set(publicCx, yBase + slabH + 0.06, coreCz)
@@ -554,17 +554,21 @@ defineExpose({ disposeScene })
 .title {
   font-size: 17px;
   font-weight: 800;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .head-meta {
-  color: #64748b;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
 .close {
   margin-left: auto;
   width: 28px;
   height: 28px;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--rv-text-sub);
+  background: rgba(255, 255, 255, 0.6);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -578,17 +582,21 @@ defineExpose({ disposeScene })
 .chip {
   flex: 0 0 auto;
   padding: 6px 14px;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
   border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s ease, box-shadow 0.25s ease;
 }
 .chip.active {
   color: #fff;
-  background: #2563eb;
-  border-color: #2563eb;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
 }
 .three-mount {
   width: 100%;
@@ -603,21 +611,22 @@ defineExpose({ disposeScene })
 .floor-chip {
   flex: 0 0 auto;
   padding: 6px 12px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
+  border-radius: 10px;
   cursor: pointer;
 }
 .floor-chip.active {
   color: #fff;
-  background: #1d4ed8;
-  border-color: #1d4ed8;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 6px 14px rgba(52, 120, 246, 0.26);
 }
 .fallback {
   padding: 20px;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
 }
 .legend {
@@ -625,18 +634,19 @@ defineExpose({ disposeScene })
   align-items: center;
   gap: 6px;
   padding: 10px 18px 0;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
 }
 .dot.fault {
   width: 10px;
   height: 10px;
-  background: #ef4444;
+  background: linear-gradient(135deg, #ffb9cd, #e0648a);
   border-radius: 50%;
+  animation: rv-dot-pulse 2.2s ease-out infinite;
 }
 .tip {
   margin: 4px 0 12px;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
   text-align: center;
 }

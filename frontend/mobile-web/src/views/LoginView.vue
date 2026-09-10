@@ -79,15 +79,15 @@ async function onSubmit() {
 .login-page {
   min-height: 100vh;
   padding-bottom: 30px;
-  background: #eef2f7;
+  background: linear-gradient(160deg, #e0edfa 0%, #e9e3f8 52%, #f8e6ec 100%);
+  background-attachment: fixed;
 }
 
 .hero {
-  padding: 72px 30px 90px;
-  color: #fff;
+  padding: 64px 26px 72px;
+  color: var(--rv-text);
   text-align: center;
-  background: linear-gradient(150deg, #2563eb 0%, #1e40af 68%, #172d78 100%);
-  border-radius: 0 0 36px 36px;
+  animation: rv-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .brand-mark {
@@ -97,12 +97,12 @@ async function onSubmit() {
   width: 64px;
   height: 64px;
   margin-bottom: 16px;
-  color: #2563eb;
+  color: #fff;
   font-size: 30px;
   font-weight: 800;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  background: linear-gradient(135deg, #7fb2ff, #3478f6 60%, #9b8cf0);
+  border-radius: 20px;
+  box-shadow: 0 14px 30px rgba(52, 120, 246, 0.32);
 }
 
 .brand-name {
@@ -110,30 +110,38 @@ async function onSubmit() {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.5px;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .slogan {
   margin: 10px 0 0;
+  color: var(--rv-text-sub);
   font-size: 15px;
   font-weight: 600;
-  opacity: 0.95;
 }
 
 .subline {
   margin: 6px 0 0;
+  color: var(--rv-text-light);
   font-size: 12px;
-  opacity: 0.72;
 }
 
 .login-card {
   position: relative;
   z-index: 2;
   width: calc(100% - 36px);
-  margin: -46px auto 0;
+  margin: -34px auto 0;
   padding: 26px 22px 22px;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 22px;
+  box-shadow: 0 18px 42px rgba(46, 68, 112, 0.12);
+  animation: rv-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .field-group {
@@ -143,7 +151,7 @@ async function onSubmit() {
 .field-label {
   display: block;
   margin-bottom: 8px;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
   font-weight: 600;
 }
@@ -152,18 +160,19 @@ async function onSubmit() {
   display: block;
   width: 100%;
   padding: 13px 14px;
-  color: #1e293b;
+  color: var(--rv-text);
   font-size: 15px;
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1.5px solid rgba(120, 145, 190, 0.2);
+  border-radius: 13px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
 
 .field-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(52, 120, 246, 0.55);
+  box-shadow: 0 0 0 4px rgba(52, 120, 246, 0.14);
 }
 
 .login-btn {
@@ -175,11 +184,16 @@ async function onSubmit() {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 2px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
   border: none;
-  border-radius: 13px;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+  border-radius: 14px;
+  box-shadow: 0 12px 24px rgba(52, 120, 246, 0.3);
   cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+}
+
+.login-btn:active:not(:disabled) {
+  transform: scale(0.985);
 }
 
 .login-btn:disabled {
@@ -189,14 +203,14 @@ async function onSubmit() {
 .demo-box {
   margin-top: 22px;
   padding: 14px;
-  background: #f8fafc;
-  border: 1px dashed #dbe3ef;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px dashed rgba(120, 145, 190, 0.35);
+  border-radius: 14px;
 }
 
 .demo-title {
   margin-bottom: 8px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 12px;
   font-weight: 600;
 }
@@ -206,7 +220,7 @@ async function onSubmit() {
   align-items: center;
   gap: 8px;
   margin: 6px 0;
-  color: #475569;
+  color: var(--rv-text-sub);
   font-size: 13px;
 }
 
@@ -223,16 +237,16 @@ async function onSubmit() {
 }
 
 .dot.dorm {
-  background: #16a34a;
+  background: linear-gradient(135deg, #7fe6c8, #22b573);
 }
 
 .dot.worker {
-  background: #2563eb;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
 }
 
 .page-footer {
   margin-top: 28px;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 12px;
   text-align: center;
 }

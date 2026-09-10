@@ -1,0 +1,281 @@
+/* ===========================================================
+   RepairVision V4 主题（H5 宿管 / 工人）
+   柔和渐变 · 玻璃拟态 · 亲和友好
+   =========================================================== */
+
+:root {
+  --rv-grad-1: linear-gradient(135deg, rgba(200, 230, 255, 0.75), rgba(180, 210, 245, 0.65));
+  --rv-grad-2: linear-gradient(135deg, rgba(226, 210, 250, 0.72), rgba(204, 185, 240, 0.62));
+  --rv-grad-3: linear-gradient(135deg, rgba(248, 214, 222, 0.74), rgba(238, 192, 204, 0.64));
+  --rv-grad-4: linear-gradient(135deg, rgba(255, 226, 204, 0.75), rgba(252, 208, 174, 0.65));
+  --rv-grad-5: linear-gradient(135deg, rgba(254, 244, 210, 0.76), rgba(250, 232, 184, 0.66));
+  --rv-grad-6: linear-gradient(135deg, rgba(210, 245, 236, 0.73), rgba(184, 232, 218, 0.63));
+  --rv-grad-7: linear-gradient(135deg, rgba(224, 238, 228, 0.72), rgba(200, 222, 206, 0.62));
+  --rv-grad-8: linear-gradient(135deg, rgba(242, 234, 226, 0.74), rgba(226, 212, 198, 0.64));
+  --rv-grad-9: linear-gradient(135deg, rgba(214, 236, 252, 0.71), rgba(190, 218, 240, 0.61));
+  --rv-grad-10: linear-gradient(135deg, rgba(230, 224, 242, 0.70), rgba(210, 200, 228, 0.60));
+  --rv-grad-11: linear-gradient(135deg, rgba(244, 222, 226, 0.73), rgba(228, 200, 206, 0.63));
+  --rv-grad-12: linear-gradient(135deg, rgba(255, 234, 218, 0.72), rgba(246, 214, 188, 0.62));
+  --rv-grad-13: linear-gradient(135deg, rgba(253, 248, 226, 0.75), rgba(245, 234, 200, 0.65));
+  --rv-grad-14: linear-gradient(135deg, rgba(218, 238, 236, 0.71), rgba(194, 218, 214, 0.61));
+  --rv-grad-15: linear-gradient(135deg, rgba(232, 238, 224, 0.70), rgba(210, 220, 194, 0.60));
+  --rv-grad-16: linear-gradient(135deg, rgba(240, 232, 224, 0.73), rgba(222, 208, 194, 0.63));
+
+  --rv-primary: #3478f6;
+  --rv-primary-deep: #2462d9;
+  --rv-success: #22b573;
+  --rv-warning: #f0a24b;
+  --rv-danger: #e0648a;
+  --rv-cancel: #8a97ad;
+  --rv-bg: transparent;
+  --rv-card: rgba(255, 255, 255, 0.62);
+  --rv-text: #2b3445;
+  --rv-text-sub: #5a6a85;
+  --rv-text-light: #8a97ad;
+  --rv-radius: 18px;
+  --rv-shadow: 0 10px 28px rgba(46, 68, 112, 0.1);
+  --rv-glass-border: 1px solid rgba(255, 255, 255, 0.65);
+  --rv-page-bg: linear-gradient(160deg, #e0edfa 0%, #e9e3f8 52%, #f8e6ec 100%);
+
+  /* Vant 主题覆盖 */
+  --van-primary-color: #3478f6;
+  --van-success-color: #22b573;
+  --van-warning-color: #f0a24b;
+  --van-danger-color: #e0648a;
+  --van-text-color: #2b3445;
+  --van-background: transparent;
+  --van-background-2: rgba(255, 255, 255, 0.62);
+  --van-border-color: rgba(120, 145, 190, 0.2);
+  --van-radius-lg: 18px;
+  --van-radius-md: 12px;
+}
+
+body {
+  color: var(--rv-text);
+  background: var(--rv-page-bg);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: -15% -10% auto -10%;
+  height: 46vh;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 55% at 15% 20%, rgba(180, 210, 245, 0.5), transparent 70%),
+    radial-gradient(36% 50% at 85% 15%, rgba(226, 210, 250, 0.45), transparent 72%),
+    radial-gradient(32% 45% at 50% 0%, rgba(248, 214, 222, 0.38), transparent 70%);
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* 顶部渐变（柔和版） */
+.rv-header {
+  background: linear-gradient(135deg, #6aa4ff 0%, #9b8cf0 58%, #f3a8c0 100%);
+  box-shadow: 0 12px 30px rgba(104, 128, 200, 0.28);
+}
+
+/* 卡片玻璃化 */
+.rv-card,
+.rv-order-card,
+.rv-stat,
+.rv-empty,
+.schedule-card,
+.leave-card,
+.leave-form,
+.detail-card,
+.canvas-card,
+.panel {
+  background: var(--rv-card) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: var(--rv-glass-border);
+  box-shadow: var(--rv-shadow);
+}
+
+.rv-order-card,
+.schedule-card,
+.leave-card {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rv-order-card:active,
+.schedule-card:active,
+.leave-card:active {
+  transform: scale(0.992);
+}
+
+/* 统计卡渐变分色 */
+.rv-stat:nth-child(1) {
+  background: var(--rv-grad-1) !important;
+}
+.rv-stat:nth-child(2) {
+  background: var(--rv-grad-6) !important;
+}
+.rv-stat:nth-child(3) {
+  background: var(--rv-grad-12) !important;
+}
+
+/* 按钮渐变 */
+.rv-btn-primary,
+.rv-fab,
+.rv-submit {
+  background: linear-gradient(135deg, #7fb2ff, #3478f6) !important;
+  box-shadow: 0 10px 22px rgba(52, 120, 246, 0.3);
+}
+
+.rv-btn-success {
+  background: linear-gradient(135deg, #7fe6c8, #22b573) !important;
+  box-shadow: 0 8px 18px rgba(34, 181, 115, 0.26);
+}
+
+.rv-btn-danger,
+.leave-cancel {
+  color: #b34568 !important;
+  background: var(--rv-grad-3) !important;
+}
+
+.rv-btn-ghost {
+  color: var(--rv-primary-deep) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(120, 145, 190, 0.22);
+}
+
+/* 筛选胶囊 */
+.rv-filter-chip {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
+}
+
+.rv-filter-chip.active {
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
+}
+
+/* 表单控件 */
+.rv-form-field {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(120, 145, 190, 0.2);
+  transition: box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease;
+}
+
+.rv-form-field:focus {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(52, 120, 246, 0.55);
+  box-shadow: 0 0 0 4px rgba(52, 120, 246, 0.14);
+}
+
+/* 状态色 */
+.s1,
+.s2 {
+  color: #b96b1c;
+}
+.s3 {
+  color: var(--rv-primary);
+}
+.s4 {
+  color: #17865a;
+}
+.s5 {
+  color: var(--rv-cancel);
+}
+
+/* 弹层 */
+.van-popup {
+  background: rgba(255, 255, 255, 0.86) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.van-toast {
+  border-radius: 14px;
+}
+
+/* 通知 / 消息 */
+.nc-item.unread {
+  border-color: rgba(52, 120, 246, 0.35);
+  background: rgba(234, 242, 255, 0.85);
+}
+
+/* 故障红点脉冲 */
+@keyframes rv-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(224, 100, 138, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(224, 100, 138, 0);
+  }
+}
+
+/* 动效 */
+@keyframes rv-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rv-fade-up {
+  animation: rv-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== V4.4 动效与微交互 ===== */
+.rv-order-list > *,
+.schedule-list > *,
+.leave-list > * {
+  animation: rv-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rv-order-list > *:nth-child(2),
+.schedule-list > *:nth-child(2),
+.leave-list > *:nth-child(2) { animation-delay: 0.04s; }
+.rv-order-list > *:nth-child(3),
+.schedule-list > *:nth-child(3),
+.leave-list > *:nth-child(3) { animation-delay: 0.08s; }
+.rv-order-list > *:nth-child(4),
+.schedule-list > *:nth-child(4),
+.leave-list > *:nth-child(4) { animation-delay: 0.12s; }
+.rv-order-list > *:nth-child(5),
+.schedule-list > *:nth-child(5),
+.leave-list > *:nth-child(5) { animation-delay: 0.16s; }
+.rv-order-list > *:nth-child(6),
+.schedule-list > *:nth-child(6),
+.leave-list > *:nth-child(6) { animation-delay: 0.2s; }
+
+.rv-btn:active:not(:disabled),
+.rv-fab:active,
+.rv-submit:active:not(:disabled),
+.mini-btn:active,
+.mode-tab:active {
+  transform: scale(0.97);
+}
+
+.rv-skeleton,
+.van-skeleton__item {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 25%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0.4) 75%);
+  background-size: 280px 100%;
+  animation: rv-shimmer 1.4s ease infinite;
+}
+@keyframes rv-shimmer {
+  0% { background-position: -280px 0; }
+  100% { background-position: 280px 0; }
+}

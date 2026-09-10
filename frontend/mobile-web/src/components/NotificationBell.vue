@@ -96,12 +96,11 @@ onUnmounted(() => {
   position: relative;
   padding: 6px 10px;
   font-size: 18px;
-  background: #f1f5f9;
-  border: none;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
   cursor: pointer;
 }
-
 .rv-bell-badge {
   position: absolute;
   top: -4px;
@@ -113,91 +112,85 @@ onUnmounted(() => {
   font-weight: 700;
   line-height: 18px;
   text-align: center;
-  background: #ef4444;
+  background: linear-gradient(135deg, #ffb9cd, #e0648a);
   border-radius: 999px;
+  animation: rv-dot-pulse 2.2s ease-out infinite;
 }
-
 .nc-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 12px;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid rgba(120, 145, 190, 0.18);
 }
-
 .nc-title {
   font-size: 17px;
   font-weight: 800;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-
 .nc-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .nc-read-all {
   padding: 4px 10px;
-  color: #2563eb;
+  color: var(--rv-primary-deep);
   font-size: 12px;
-  background: #eff6ff;
-  border: none;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(120, 145, 190, 0.22);
   border-radius: 999px;
 }
-
 .nc-close {
   width: 26px;
   height: 26px;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--rv-text-sub);
+  background: rgba(255, 255, 255, 0.6);
   border: none;
   border-radius: 50%;
 }
-
 .nc-list {
   padding: 8px 12px 24px;
 }
-
 .nc-item {
   padding: 12px;
   margin-bottom: 8px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(46, 68, 112, 0.07);
 }
-
 .nc-item.unread {
-  border-color: #bfdbfe;
-  background: #f8fbff;
+  border-color: rgba(52, 120, 246, 0.35);
+  background: rgba(234, 242, 255, 0.9);
 }
-
 .nc-item-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-
 .nc-item-title {
   font-size: 14px;
   font-weight: 700;
+  color: var(--rv-text);
 }
-
 .nc-item-time {
-  color: #94a3b8;
+  color: var(--rv-text-light);
   font-size: 11px;
 }
-
 .nc-item-content {
   margin-top: 6px;
-  color: #64748b;
+  color: var(--rv-text-sub);
   font-size: 13px;
   line-height: 1.5;
 }
-
 .nc-empty {
   padding: 60px 0;
-  color: #94a3b8;
+  color: var(--rv-text-light);
   text-align: center;
 }
 </style>
