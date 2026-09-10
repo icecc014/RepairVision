@@ -236,10 +236,12 @@ onMounted(() => {
 <style scoped>
 .panel {
   padding: 18px 20px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(46, 68, 112, 0.08);
 }
 .toolbar {
   display: flex;
@@ -248,63 +250,71 @@ onMounted(() => {
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
+.week-title {
+  font-weight: 800;
+  color: #2b3445;
+  margin-right: 8px;
+}
 .coverage-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 .coverage-tip {
-  color: #94a3b8;
+  color: #8a97ad;
   font-size: 12px;
-}
-.week-title {
-  font-weight: 800;
-  color: #1e293b;
-  margin-right: 8px;
 }
 .worker-name {
   font-weight: 700;
-  color: #1e293b;
+  color: #2b3445;
 }
 .worker-sub {
-  color: #94a3b8;
+  color: #8a97ad;
   font-size: 12px;
 }
 .shift-cell {
   min-width: 68px;
   padding: 5px 10px;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.shift-cell:hover {
+  transform: translateY(-1px);
 }
 .shift-day {
-  color: #1d4ed8;
-  background: #dbeafe;
+  color: #2462d9;
+  background: var(--rv-grad-1);
 }
-.shift-morning,
+.shift-morning {
+  color: #b96b1c;
+  background: var(--rv-grad-4);
+}
 .shift-afternoon {
-  color: #7c3aed;
-  background: #ede9fe;
+  color: #6a4bc0;
+  background: var(--rv-grad-2);
 }
 .shift-off {
-  color: #64748b;
-  background: #e2e8f0;
+  color: #5a6a85;
+  background: var(--rv-grad-8);
 }
 .shift-empty {
-  color: #94a3b8;
-  background: #f1f5f9;
+  color: #8a97ad;
+  background: rgba(255, 255, 255, 0.45);
 }
 .hint {
   margin-top: 12px;
-  color: #94a3b8;
+  color: #8a97ad;
   font-size: 12px;
 }
 .edit-hint {
   margin-bottom: 12px;
-  color: #475569;
+  color: #5a6a85;
   font-size: 14px;
   font-weight: 600;
 }

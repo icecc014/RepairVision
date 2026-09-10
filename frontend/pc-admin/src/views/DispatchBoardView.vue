@@ -120,27 +120,38 @@ onMounted(load)
 }
 .board-card {
   padding: 20px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(46, 68, 112, 0.08);
+  animation: rv-fade-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.board-card:nth-child(1) { background: var(--rv-grad-1); }
+.board-card:nth-child(2) { background: var(--rv-grad-6); }
+.board-card:nth-child(3) { background: var(--rv-grad-4); }
+.board-card:nth-child(4) { background: var(--rv-grad-10); }
+.board-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 38px rgba(46, 68, 112, 0.14);
 }
 .board-num {
   font-size: 30px;
   font-weight: 800;
-  color: #1e293b;
+  color: #2b3445;
 }
 .board-label {
   margin-top: 8px;
-  color: #64748b;
+  color: #5a6a85;
   font-size: 13px;
 }
 .panel {
   padding: 18px 20px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(46, 68, 112, 0.08);
 }
 .toolbar {
   display: flex;
@@ -149,15 +160,16 @@ onMounted(load)
   margin-bottom: 14px;
 }
 .panel-title {
-  color: #334155;
+  color: #2b3445;
   font-size: 15px;
   font-weight: 800;
 }
 .worker-name {
   font-weight: 700;
+  color: #2b3445;
 }
 .worker-sub {
-  color: #94a3b8;
+  color: #8a97ad;
   font-size: 12px;
 }
 .status-dot {
@@ -168,14 +180,16 @@ onMounted(load)
   border-radius: 50%;
 }
 .status-dot.ok {
-  background: #22c55e;
+  background: linear-gradient(135deg, #7fe6c8, #22b573);
+  box-shadow: 0 0 0 3px rgba(34, 181, 115, 0.16);
 }
 .status-dot.no {
-  background: #f43f5e;
+  background: linear-gradient(135deg, #ffb9cd, #e0648a);
+  box-shadow: 0 0 0 3px rgba(224, 100, 138, 0.16);
 }
 .load-text {
   margin-top: 5px;
-  color: #94a3b8;
+  color: #8a97ad;
   font-size: 12px;
 }
 .empty {
