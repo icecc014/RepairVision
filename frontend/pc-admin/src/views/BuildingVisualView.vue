@@ -46,7 +46,8 @@ const dialogVisible = ref(false)
 async function load() {
   try {
     buildings.value = await apiAdminBuildings()
-    orders.value = await apiAdminOrders(0, 0)
+    const orderPage = await apiAdminOrders(0, 0, 1, 200)
+    orders.value = orderPage.list
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
