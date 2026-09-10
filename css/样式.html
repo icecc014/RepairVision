@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全部玻璃拟态CSS特效合集测试页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(120deg, #e0edfa, #e9e3f8, #f8e6ec);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin: 48px 0 16px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .demo-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 24px;
+            align-items: flex-start;
+        }
+
+        .demo-col {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        /* ====================== 第1组组件 ====================== */
+        /* 1.通用玻璃卡片基础样式 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .glass-card:hover {
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.09);
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        /* 2.输入框样式（玻璃拟态，聚焦有光晕） */
+        .glass-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.35);
+            backdrop-filter: blur(8px);
+            outline: none;
+            font-size:15px;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: rgba(180,210,245,0.6);
+            box-shadow: 0 0 0 3px rgba(180,210,245,0.15);
+            background: rgba(255,255,255,0.55);
+        }
+
+        /* 3.开关 Toggle 样式（自定义单选开关） */
+        .toggle-wrap {
+            display:inline-flex;
+            align-items:center;
+            gap:10px;
+        }
+        .toggle {
+            position: relative;
+            width: 52px;
+            height:28px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.12);
+            backdrop-filter: blur(6px);
+            transition:0.3s ease;
+            cursor:pointer;
+        }
+        .toggle::after {
+            content:"";
+            position:absolute;
+            top:3px;
+            left:3px;
+            width:22px;
+            height:22px;
+            border-radius:50%;
+            background:#fff;
+            box-shadow:0 2px 6px rgba(0,0,0,0.12);
+            transition:0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .toggle.active {
+            background: linear-gradient(135deg, rgba(200,230,255,0.75), rgba(180,210,245,0.65));
+        }
+        .toggle.active::after {
+            left:27px;
+        }
+
+        /* 4.提示标签 Badge 徽标 */
+        .badge {
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            font-size:12px;
+            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,0.4);
+            border:1px solid rgba(255,255,255,0.5);
+            color:#333;
+        }
+        .badge-primary {
+            background: linear-gradient(135deg, rgba(200,230,255,0.6), rgba(180,210,245,0.5));
+        }
+        .badge-pink {
+            background: linear-gradient(135deg, rgba(248,214,222,0.6), rgba(238,192,204,0.5));
+        }
+
+        /* 5.分割线（柔和半透分割，不用生硬黑线） */
+        .divider {
+            height:1px;
+            width:100%;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+            margin:20px 0;
+        }
+
+        /* 6.滚动条美化（页面内长内容，统一风格） */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height:8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.22);
+        }
+
+        /* 7.下拉菜单容器 */
+        .dropdown {
+            position:relative;
+            display: inline-block;
+        }
+        .dropdown-menu {
+            position:absolute;
+            top:calc(100% + 8px);
+            left:0;
+            min-width:180px;
+            padding:10px;
+            border-radius:14px;
+            background:rgba(255,255,255,0.5);
+            backdrop-filter: blur(12px);
+            border:1px solid rgba(255,255,255,0.55);
+            box-shadow:0 10px 30px rgba(0,0,0,0.08);
+            opacity:0;
+            visibility:hidden;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .dropdown-menu.show {
+            opacity:1;
+            visibility:visible;
+            transform: translateY(0);
+        }
+        .dropdown-item {
+            padding:10px 12px;
+            border-radius:10px;
+            cursor:pointer;
+            transition:0.25s ease;
+        }
+        .dropdown-item:hover {
+            background:rgba(255,255,255,0.55);
+        }
+
+        /* 8.文字渐变（标题装饰文字） */
+        .gradient-text {
+            background: linear-gradient(135deg, #628ec7, #a88fdd);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* 9.弹窗遮罩层 */
+        .modal-mask {
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.22);
+            backdrop-filter: blur(4px);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            opacity:0;
+            visibility:hidden;
+            transition:0.3s ease;
+            z-index: 99;
+        }
+        .modal-mask.show {
+            opacity:1;
+            visibility:visible;
+        }
+        .modal-box {
+            width:90%;
+            max-width:480px;
+            padding:24px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.55);
+            backdrop-filter: blur(16px);
+            border:1px solid rgba(255,255,255,0.6);
+            box-shadow:0 12px 40px rgba(0,0,0,0.1);
+            transform: scale(0.96);
+            transition:0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .modal-mask.show .modal-box {
+            transform: scale(1);
+        }
+
+        /* ====================== 第2组组件 ====================== */
+        /* 1.顶部导航栏（毛玻璃吸顶） */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+            border-radius:16px;
+        }
+        .nav-link {
+            padding: 8px 14px;
+            border-radius: 10px;
+            color: #444;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.6);
+            transform: translateY(-1px);
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(200,230,255,0.6), rgba(180,210,245,0.5));
+            color: #2c4260;
+        }
+
+        /* 2.幽灵/描边按钮（次要操作） */
+        .ghost-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.12);
+            background: transparent;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .ghost-btn:hover {
+            background: rgba(255,255,255,0.5);
+            border-color: rgba(0,0,0,0.18);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
+        }
+
+        /* 3.工具提示 Tooltip（悬浮气泡，柔和） */
+        .tooltip-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip-box {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            white-space: nowrap;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+        }
+        .tooltip-wrap:hover .tooltip-box {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 4.进度条（柔和渐变，带动画填充） */
+        .progress {
+            width: 100%;
+            height: 10px;
+            border-radius: 99px;
+            background: rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, rgba(200,230,255,0.8), rgba(180,210,245,0.7));
+            transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
+            width:65%;
+        }
+
+        /* 5.骨架屏（加载占位，柔和闪烁） */
+        .skeleton {
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.05) 25%, rgba(255,255,255,0.4) 50%, rgba(0,0,0,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s ease infinite;
+        }
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+
+        /* 6.单选/复选按钮（自定义、毛玻璃态） */
+        .radio {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .radio-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.15);
+            position: relative;
+            transition: all 0.25s ease;
+        }
+        .radio input {
+            display: none;
+        }
+        .radio input:checked + .radio-dot {
+            border-color: #7aa2e8;
+        }
+        .radio input:checked + .radio-dot::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8fb4ef, #a88fdd);
+        }
+
+        /* 7.浮动操作按钮 FAB（右下角悬浮） */
+        .fab {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            color: #2c4260;
+            cursor: pointer;
+            background: linear-gradient(135deg, rgba(200,230,255,0.85), rgba(180,210,245,0.8));
+            box-shadow: 0 10px 24px rgba(180,210,245,0.4);
+            transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .fab:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 14px 32px rgba(180,210,245,0.5);
+        }
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* 8.分页器（柔和当前页高亮） */
+        .pagination {
+            display: flex;
+            gap: 8px;
+        }
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .page-btn:hover {
+            background: rgba(255,255,255,0.6);
+            transform: translateY(-2px);
+        }
+        .page-btn.current {
+            background: linear-gradient(135deg, rgba(200,230,255,0.7), rgba(180,210,245,0.6));
+            color: #2c4260;
+            box-shadow: 0 4px 12px rgba(180,210,245,0.3);
+        }
+
+        /* 9.分组标签 Tags（多选态柔和切换） */
+        .tag {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.4);
+            transition: all 0.25s ease;
+        }
+        .tag:hover {
+            background: rgba(255,255,255,0.6);
+            transform: translateY(-1px);
+        }
+        .tag.selected {
+            background: linear-gradient(135deg, rgba(248,214,222,0.6), rgba(238,192,204,0.5));
+            border-color: rgba(238,192,204,0.4);
+        }
+
+        /* 10.空状态占位（图标+文字居中，柔和） */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 48px 20px;
+            color: #999;
+            text-align: center;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(6px);
+        }
+        .empty-icon {
+            font-size: 48px;
+            opacity: 0.5;
+        }
+
+        /* ====================== 第3组组件 ====================== */
+        /* 1.面包屑导航 Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            color: #666;
+        }
+        .breadcrumb a {
+            color: #555;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+        .breadcrumb a:hover {
+            color: #333;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .breadcrumb .separator {
+            opacity: 0.4;
+        }
+        .breadcrumb .current {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 2.步骤指示器 Steps */
+        .steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 20px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            position: relative;
+        }
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.08);
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .step.active .step-circle {
+            background: linear-gradient(135deg, rgba(200,230,255,0.85), rgba(180,210,245,0.8));
+            color: #2c4260;
+            box-shadow: 0 6px 16px rgba(180,210,245,0.35);
+        }
+        .step.done .step-circle {
+            background: linear-gradient(135deg, rgba(210,245,236,0.85), rgba(184,232,218,0.8));
+            color: #256e5a;
+        }
+        .step-line {
+            flex: 1;
+            height: 4px;
+            border-radius: 99px;
+            background: rgba(0, 0, 0, 0.08);
+            margin: 0 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .step-line::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, rgba(200,230,255,0.85), rgba(180,210,245,0.8));
+            transition: width 0.5s ease;
+        }
+
+        /* 3.数据统计卡片 Stat Card */
+        .stat-card {
+            padding: 20px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.09);
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .stat-trend {
+            font-size: 13px;
+            color: #256e5a;
+            background: rgba(184,232,218,0.4);
+            padding: 4px 8px;
+            border-radius: 99px;
+            display: inline-block;
+        }
+        .stat-trend.down {
+            color: #8a3b3b;
+            background: rgba(238,192,204,0.4);
+        }
+
+        /* 4.列表项 List Item */
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateX(4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+        }
+        .list-item .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(200,230,255,0.8), rgba(180,210,245,0.7));
+            flex-shrink: 0;
+        }
+        .list-item .content {
+            flex: 1;
+            min-width: 0;
+        }
+        .list-item .title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        .list-item .desc {
+            font-size: 13px;
+            color: #777;
+        }
+
+        /* 5.可展开面板 Accordion */
+        .accordion-item {
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 18px;
+            cursor: pointer;
+            transition: background 0.25s ease;
+        }
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-item.open .accordion-icon {
+            transform: rotate(180deg);
+        }
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .accordion-item.open .accordion-body {
+            max-height: 200px;
+        }
+        .accordion-content {
+            padding: 0 18px 16px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* 6.消息提示 Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            color: #333;
+            font-size: 14px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            border-left: 4px solid rgba(184,232,218,0.9);
+        }
+        .toast.error {
+            border-left: 4px solid rgba(238,192,204,0.9);
+        }
+        .toast.info {
+            border-left: 4px solid rgba(200,230,255,0.9);
+        }
+
+        /* 7.空输入状态 Empty Input */
+        .empty-input-state {
+            padding: 28px;
+            border-radius: 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(8px);
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            color: #888;
+        }
+        .empty-input-state p {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        /* 8.标签页内容卡片 Tab Content Card */
+        .tab-content-card {
+            padding: 24px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            animation: fadeUp 0.4s ease;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 9.小型数据标签 Pill */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            color: #444;
+        }
+        .pill-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(180,210,245,0.9);
+        }
+        .pill.active .pill-dot {
+            background: rgba(184,232,218,0.9);
+        }
+
+        /* 10.悬浮预览气泡 Preview Card */
+        .preview-trigger {
+            position: relative;
+            display: inline-block;
+        }
+        .preview-card {
+            position: absolute;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 50;
+            min-width: 200px;
+        }
+        .preview-trigger:hover .preview-card {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* ====================== 第4组组件 ====================== */
+        /* 1.玻璃拟态徽章 Glow Badge */
+        .glow-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(200,230,255,0.7), rgba(180,210,245,0.6));
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: #2c4260;
+            font-size: 13px;
+            box-shadow: 0 0 0 4px rgba(180,210,245,0.15);
+            transition: all 0.3s ease;
+        }
+        .glow-badge:hover {
+            box-shadow: 0 0 0 8px rgba(180,210,245,0.25);
+            transform: translateY(-2px);
+        }
+
+        /* 2.磁吸感按钮 Magnetic Button */
+        .magnetic-btn {
+            position: relative;
+            padding: 14px 28px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, rgba(200,230,255,0.85), rgba(180,210,245,0.8));
+            color: #2c4260;
+            font-weight: 500;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+            box-shadow: 0 10px 24px rgba(180,210,245,0.35);
+        }
+        .magnetic-btn::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        .magnetic-btn:hover::before {
+            transform: translateX(100%);
+        }
+        .magnetic-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 16px 34px rgba(180,210,245,0.45);
+        }
+        .magnetic-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* 3.发光输入框 Glow Input */
+        .glow-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            outline: none;
+            font-size: 15px;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+        }
+        .glow-input:focus {
+            border-color: rgba(180,210,245,0.8);
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 4px rgba(180,210,245,0.25), inset 0 0 0 1px rgba(255,255,255,0.5);
+        }
+
+        /* 4.卡片组堆叠效果 Stack Card */
+        .stack-card {
+            position: relative;
+            padding: 24px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            transition: all 0.4s ease;
+        }
+        .stack-card::before,
+        .stack-card::after {
+            content: "";
+            position: absolute;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            z-index: -1;
+            transition: all 0.4s ease;
+        }
+        .stack-card::before {
+            inset: 6px;
+        }
+        .stack-card::after {
+            inset: 12px;
+        }
+        .stack-card:hover {
+            transform: translateY(-6px);
+        }
+        .stack-card:hover::before {
+            transform: translate(4px, -4px);
+        }
+        .stack-card:hover::after {
+            transform: translate(8px, -8px);
+        }
+
+        /* 5.进度环形图 Ring Progress */
+        .ring-progress {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(
+                rgba(180,210,245,0.9) 0deg,
+                rgba(180,210,245,0.9) var(--progress, 270deg),
+                rgba(0, 0, 0, 0.06) var(--progress, 270deg),
+                rgba(0, 0, 0, 0.06) 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background 1s ease;
+        }
+        .ring-progress::before {
+            content: "";
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            position: absolute;
+        }
+        .ring-progress .value {
+            position: relative;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            z-index: 1;
+        }
+
+        /* 6.浮动标签输入框 Floating Label Input */
+        .float-input-wrap {
+            position: relative;
+        }
+        .float-input {
+            width: 100%;
+            padding: 18px 14px 8px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            outline: none;
+            font-size: 15px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        .float-label {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+            color: #888;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            background: transparent;
+            padding: 0 4px;
+        }
+        .float-input:focus + .float-label,
+        .float-input:not(:placeholder-shown) + .float-label {
+            top: 4px;
+            font-size: 12px;
+            color: #5577aa;
+        }
+        .float-input:focus {
+            border-color: rgba(180,210,245,0.8);
+            box-shadow: 0 0 0 4px rgba(180,210,245,0.2);
+        }
+
+        /* 7.图片/内容遮罩预览 Mask Reveal */
+        .mask-reveal {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            width:100%;
+            height:180px;
+            background:linear-gradient(135deg,#cfe2f8,#e3dcf5);
+        }
+        .mask-reveal .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.35));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .mask-reveal:hover .overlay {
+            opacity: 1;
+        }
+        .mask-reveal .caption {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 18px;
+            color: #fff;
+            transform: translateY(10px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        .mask-reveal:hover .caption {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* 8.脉冲光环 Pulse Ring */
+        .pulse-ring {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(200,230,255,0.9), rgba(180,210,245,0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2c4260;
+        }
+        .pulse-ring::before,
+        .pulse-ring::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(180,210,245,0.6);
+            animation: pulse 2.4s ease-out infinite;
+        }
+        .pulse-ring::after {
+            animation-delay: 1.2s;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        /* 9.文字渐变描边 Gradient Stroke Text */
+        .stroke-text {
+            font-size: 40px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7aa2e8, #a88fdd, #d4a5c7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.4);
+        }
+
+        /* 10.软开关 Soft Switch */
+        .soft-switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .soft-switch::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .soft-switch.active {
+            background: linear-gradient(135deg, rgba(200,230,255,0.9), rgba(180,210,245,0.8));
+        }
+        .soft-switch.active::after {
+            left: 29px;
+        }
+
+        /* ====================== 第5组组件 ====================== */
+        /* 1.玻璃拟态面板 Glass Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+        }
+
+        /* 2.双层卡片 Double Layer Card */
+        .double-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            z-index: 1;
+        }
+        .double-card::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border-radius: 16px;
+            border: 1px dashed rgba(0, 0, 0, 0.08);
+            z-index: -1;
+        }
+
+        /* 3.顶部渐变标题栏 Gradient Header Bar */
+        .gradient-header {
+            padding: 20px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(200,230,255,0.75), rgba(226,210,250,0.65));
+            color: #333;
+        }
+        .gradient-header h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+        .gradient-header p {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        /* 4.圆角标签页容器 Rounded Tabs Container */
+        .rounded-tabs {
+            display: inline-flex;
+            padding: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .rounded-tabs .tab {
+            padding: 10px 20px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+        .rounded-tabs .tab:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .rounded-tabs .tab.active {
+            background: linear-gradient(135deg, rgba(200,230,255,0.8), rgba(180,210,245,0.7));
+            color: #2c4260;
+            box-shadow: 0 4px 12px rgba(180,210,245,0.3);
+        }
+
+        /* 5.列表分割项 Divided List Item */
+        .divided-list-item {
+            display:flex;
+            align-items:center;
+            padding:16px;
+            border-bottom:1px solid rgba(0,0,0,0.06);
+            background:rgba(255,255,255,0.35);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>玻璃拟态CSS全部特效测试页面</h1>
+
+        <!-- ========== 第1组组件测试 ========== -->
+        <h2 class="section-title">第1组基础玻璃组件</h2>
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="glass-card">
+                    <h3>1.玻璃卡片 glass-card</h3>
+                    <p>hover上浮、毛玻璃卡片，基础容器组件</p>
+                    <div class="divider"></div>
+                    <p>2.分割线 divider 半透明柔和分割</p>
+                </div>
+            </div>
+            <div class="demo-col">
+                <p>3.玻璃输入框 glass-input</p>
+                <input class="glass-input" placeholder="点击输入，看聚焦光晕">
+                <br><br>
+                <div class="toggle-wrap">
+                    <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    <span>4.开关 Toggle</span>
+                </div>
+                <br><br>
+                <span class="badge badge-primary">5.徽标Badge 主色</span>
+                <span class="badge badge-pink">徽标Badge 粉色</span>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <h3 class="gradient-text">6.渐变文字 gradient-text</h3>
+                <div class="dropdown">
+                    <button class="ghost-btn" onclick="this.nextElementSibling.classList.toggle('show')">7.下拉菜单（点击展开）</button>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">菜单选项1</div>
+                        <div class="dropdown-item">菜单选项2</div>
+                        <div class="dropdown-item">菜单选项3</div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-col">
+                <p>8.弹窗演示，下面JS控制弹窗开关</p>
+                <button class="ghost-btn" onclick="document.querySelector('.modal-mask').classList.add('show')">打开弹窗</button>
+            </div>
+        </div>
+
+        <!-- 弹窗DOM -->
+        <div class="modal-mask" onclick="if(event.target === this) this.classList.remove('show')">
+            <div class="modal-box">
+                <h3>9.弹窗modal</h3>
+                <p>毛玻璃弹窗，点击空白关闭</p>
+                <button class="ghost-btn" onclick="document.querySelector('.modal-mask').classList.remove('show')">关闭</button>
+            </div>
+        </div>
+
+
+        <!-- ========== 第2组组件测试 ========== -->
+        <h2 class="section-title">第2组导航、按钮、表单、分页组件</h2>
+        <div class="navbar">
+            <a class="nav-link active" href="#">1.导航链接 active</a>
+            <a class="nav-link" href="#">导航链接</a>
+            <a class="nav-link" href="#">导航链接</a>
+        </div>
+        <br>
+        <div class="demo-row">
+            <div class="demo-col">
+                <button class="ghost-btn">2.幽灵描边按钮 ghost-btn</button>
+                <br><br>
+                <div class="tooltip-wrap">
+                    <button class="ghost-btn">3.Tooltip悬浮提示(鼠标放上来)</button>
+                    <div class="tooltip-box">这是tooltip提示气泡</div>
+                </div>
+                <br><br>
+                <p>4.进度条 progress</p>
+                <div class="progress">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+            <div class="demo-col">
+                <p>5.骨架屏 skeleton（加载占位闪烁）</p>
+                <div class="skeleton" style="height:40px;width:100%"></div>
+                <br>
+                <label class="radio">
+                    <input type="checkbox" checked>
+                    <span class="radio-dot"></span>
+                    6.自定义单选框 radio
+                </label>
+                <br><br>
+                <div class="pagination">
+                    <div class="page-btn">←</div>
+                    <div class="page-btn current">1</div>
+                    <div class="page-btn">2</div>
+                    <div class="page-btn">3</div>
+                    <div class="page-btn">→</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <span class="tag selected">7.标签tag选中态</span>
+                <span class="tag">普通标签</span>
+            </div>
+            <div class="demo-col">
+                <div class="empty-state">
+                    <div class="empty-icon">☁</div>
+                    <p>8.空状态 empty-state</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右下角悬浮按钮 -->
+        <button class="fab">+</button>
+
+
+        <!-- ========== 第3组组件测试 ========== -->
+        <h2 class="section-title">第3组面包屑、步骤卡、列表、折叠面板</h2>
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="breadcrumb">
+                    <a href="#">首页</a>
+                    <span class="separator">/</span>
+                    <a href="#">分类</a>
+                    <span class="separator">/</span>
+                    <span class="current">1.面包屑当前页</span>
+                </div>
+                <br>
+                <div class="steps">
+                    <div class="step done">
+                        <div class="step-circle">✓</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-circle">2</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle">3</div>
+                    </div>
+                </div>
+                <p style="margin-top:8px">2.步骤指示器 Steps</p>
+            </div>
+            <div class="demo-col">
+                <div class="stat-card">
+                    <div class="stat-label">3.统计卡片 stat-card 访问量</div>
+                    <div class="stat-value">12,840</div>
+                    <span class="stat-trend">↑ +12.5%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="list-item">
+                    <div class="avatar"></div>
+                    <div class="content">
+                        <div class="title">4.列表项 list-item</div>
+                        <div class="desc">hover会右移，毛玻璃列表</div>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-col">
+                <div class="accordion-item open">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>5.可折叠面板 Accordion（点击展开/收起）</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="accordion-content">
+                            折叠面板内部内容，点击标题开关。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="empty-input-state">
+                    <p>6.空输入占位 empty-input-state</p>
+                </div>
+            </div>
+            <div class="demo-col">
+                <div class="tab-content-card">
+                    <p>7.Tab内容卡片 tab-content-card</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <span class="pill active"><span class="pill-dot"></span> 8.Pill小型状态标签在线</span>
+            </div>
+            <div class="demo-col">
+                <div class="preview-trigger">
+                    <button class="ghost-btn">9.悬浮预览卡片preview（鼠标悬浮）</button>
+                    <div class="preview-card">
+                        <strong>预览卡片</strong>
+                        <p>预览详情内容，毛玻璃悬浮气泡</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ========== 第4组组件测试 ========== -->
+        <h2 class="section-title">第4组发光按钮、堆叠卡片、环形进度、脉冲动画</h2>
+        <div class="demo-row">
+            <div class="demo-col">
+                <span class="glow-badge">1.发光徽章 glow-badge</span>
+                <br><br>
+                <button class="magnetic-btn">2.磁吸流光按钮 magnetic-btn</button>
+                <br><br>
+                <input class="glow-input" placeholder="3.发光输入框 glow-input">
+            </div>
+            <div class="demo-col">
+                <div class="stack-card">
+                    <h3>4.堆叠卡片 stack-card</h3>
+                    <p>hover多层上浮效果</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="ring-progress">
+                    <div class="value">75%</div>
+                </div>
+                <p>5.环形进度 ring-progress</p>
+            </div>
+            <div class="demo-col">
+                <div class="float-input-wrap">
+                    <input class="float-input" placeholder=" " id="float1">
+                    <label class="float-label" for="float1">6.浮动标签输入框</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="mask-reveal">
+                    <div class="overlay"></div>
+                    <div class="caption">7.遮罩浮现 Mask Reveal，hover显示文字</div>
+                </div>
+            </div>
+            <div class="demo-col">
+                <div class="pulse-ring"></div>
+                <p>8.脉冲光环 pulse-ring 持续向外扩散动画</p>
+                <br>
+                <div class="soft-switch active" onclick="this.classList.toggle('active')"></div>
+                <p>10.软开关 soft-switch</p>
+            </div>
+        </div>
+        <div style="margin:20px 0;">
+            <div class="stroke-text">9.渐变描边文字</div>
+        </div>
+
+
+        <!-- ========== 第5组组件测试 ========== -->
+        <h2 class="section-title">第5组玻璃面板、双层卡片、标签栏</h2>
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="glass-panel">
+                    <h3>1.玻璃面板 glass-panel</h3>
+                    <p>大圆角毛玻璃容器</p>
+                </div>
+            </div>
+            <div class="demo-col">
+                <div class="double-card">
+                    <h3>2.双层卡片 double-card</h3>
+                    <p>内层虚线边框嵌套卡片</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="demo-col">
+                <div class="gradient-header">
+                    <h2>3.渐变标题栏 gradient-header</h2>
+                    <p>顶部渐变毛玻璃标题块</p>
+                </div>
+            </div>
+            <div class="demo-col">
+                <div class="rounded-tabs">
+                    <div class="tab active">4.标签A</div>
+                    <div class="tab">标签B</div>
+                    <div class="tab">标签C</div>
+                </div>
+                <p>圆角胶囊标签页 rounded-tabs</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3>5.分割列表项 divided-list-item</h3>
+            <div class="divided-list-item">列表条目1</div>
+            <div class="divided-list-item">列表条目2</div>
+            <div class="divided-list-item">列表条目3</div>
+        </div>
+
+    </div>
+
+    <script>
+        // 简单JS交互，开关、折叠、弹窗
+        // Toast消息示例
+        function showToast(msg, type="info"){
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(()=>t.classList.add('show'), 10);
+            setTimeout(()=>{
+                t.classList.remove('show');
+                setTimeout(()=>t.remove(),300);
+            }, 2200)
+        }
+        showToast("Toast消息提示测试！", "success");
+    </script>
+</body>
+</html>
