@@ -2,8 +2,8 @@
   <el-dialog append-to-body
     :model-value="modelValue"
     :title="`楼层布局设计 · ${building?.name || ''}`"
-    width="980px"
-    top="5vh"
+    width="1240px"
+    top="3vh"
     @update:model-value="(v: boolean) => emit('update:modelValue', v)"
   >
     <div class="designer">
@@ -267,7 +267,7 @@ async function save() {
 <style scoped>
 .designer {
   display: grid;
-  grid-template-columns: 210px 1fr;
+  grid-template-columns: 230px 1fr;
   gap: 18px;
 }
 
@@ -352,12 +352,12 @@ async function save() {
 
 .grid {
   display: grid;
-  gap: 3px;
-  padding: 10px;
+  gap: 4px;
+  padding: 12px;
   background: linear-gradient(135deg, #eef3fc, #e6ecfa);
   border: 1px solid #c8d5ea;
   border-radius: 14px;
-  max-height: 52vh;
+  max-height: 72vh;
   overflow: auto;
   touch-action: none;
 }
@@ -366,7 +366,7 @@ async function save() {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 34px;
+  min-height: 46px;
   color: #3d5687;
   font-size: 12px;
   font-weight: 700;
