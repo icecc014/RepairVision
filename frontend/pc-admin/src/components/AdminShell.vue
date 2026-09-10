@@ -73,8 +73,12 @@ function logout() {
   display: flex;
   flex-direction: column;
   padding: 20px 14px;
-  color: #cbd5e1;
-  background: linear-gradient(180deg, #102a6b 0%, #0f2557 55%, #0b1d47 100%);
+  color: var(--pc-sub);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 6px 0 26px rgba(46, 68, 112, 0.06);
 }
 
 .side-brand {
@@ -82,7 +86,7 @@ function logout() {
   align-items: center;
   gap: 10px;
   padding: 4px 8px 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: 1px solid rgba(120, 145, 190, 0.18);
 }
 
 .side-logo {
@@ -91,28 +95,29 @@ function logout() {
   justify-content: center;
   width: 38px;
   height: 38px;
-  color: #2563eb;
+  color: #fff;
   font-size: 19px;
   font-weight: 800;
-  background: #fff;
-  border-radius: 11px;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
 }
 
 .side-name {
-  color: #fff;
+  color: var(--pc-text);
   font-size: 15px;
   font-weight: 700;
 }
 
 .side-sub {
   margin-top: 2px;
-  color: #8ea3cf;
+  color: var(--pc-light);
   font-size: 11px;
 }
 
 .nav-label {
   margin: 22px 10px 8px;
-  color: #6b82b8;
+  color: var(--pc-light);
   font-size: 11px;
   letter-spacing: 1px;
 }
@@ -124,43 +129,50 @@ function logout() {
   gap: 10px;
   width: 100%;
   padding: 11px 14px;
-  margin: 2px 0;
-  color: #b8c7e8;
+  margin: 3px 0;
+  color: var(--pc-sub);
   font-size: 14px;
   text-align: left;
   text-decoration: none;
   background: transparent;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s ease, transform 0.25s ease;
+}
+
+.nav-item:hover {
+  color: var(--pc-primary-deep);
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateX(2px);
 }
 
 .nav-item.active {
   color: #fff;
   font-weight: 700;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.45), rgba(37, 99, 235, 0.08));
-  box-shadow: inset 3px 0 0 #60a5fa;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  box-shadow: 0 10px 20px rgba(52, 120, 246, 0.28);
 }
 
 .nav-item.disabled {
-  color: #6479ad;
+  color: #a9b4c8;
   cursor: not-allowed;
 }
 
 .nav-item em {
   margin-left: auto;
   padding: 1px 7px;
-  color: #93b4ff;
+  color: var(--pc-primary-deep);
   font-size: 10px;
   font-style: normal;
-  background: rgba(37, 99, 235, 0.22);
+  background: rgba(52, 120, 246, 0.12);
   border-radius: 999px;
 }
 
 .side-footer {
   margin-top: auto;
   padding: 16px 8px 6px;
-  color: #5d74aa;
+  color: var(--pc-light);
   font-size: 11px;
 }
 
@@ -171,24 +183,32 @@ function logout() {
 }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 28px 16px;
-  background: #fff;
-  border-bottom: 1px solid #eef2f7;
+  padding: 20px 28px 16px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .page-title {
   margin: 0;
   font-size: 21px;
   font-weight: 800;
-  color: #1e293b;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .page-sub {
   margin: 5px 0 0;
-  color: #94a3b8;
+  color: var(--pc-light);
   font-size: 13px;
 }
 
@@ -199,21 +219,27 @@ function logout() {
 }
 
 .user-name {
-  color: #475569;
+  color: var(--pc-sub);
   font-weight: 600;
 }
 
 .logout-btn {
   padding: 7px 14px;
-  color: #dc2626;
+  color: #b34568;
   font-size: 13px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
+  background: var(--rv-grad-3);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
   cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.logout-btn:hover {
+  transform: translateY(-1px);
 }
 
 .content {
   padding: 22px 28px 36px;
+  animation: rv-fade-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 </style>

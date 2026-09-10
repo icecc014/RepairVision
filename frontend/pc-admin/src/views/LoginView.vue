@@ -93,16 +93,37 @@ async function onSubmit() {
   display: grid;
   grid-template-columns: minmax(380px, 1.05fr) minmax(420px, 0.95fr);
   min-height: 100vh;
-  background: #fff;
+  background: linear-gradient(120deg, #e0edfa, #e9e3f8, #f8e6ec);
+  background-attachment: fixed;
+  position: relative;
+}
+
+.login-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(36% 46% at 14% 18%, rgba(180, 210, 245, 0.5), transparent 70%),
+    radial-gradient(32% 42% at 86% 16%, rgba(226, 210, 250, 0.48), transparent 72%),
+    radial-gradient(28% 38% at 52% 6%, rgba(248, 214, 222, 0.4), transparent 70%);
 }
 
 .brand-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 60px 9%;
-  color: #fff;
-  background: radial-gradient(1200px 600px at 20% 10%, #2f62e8 0%, #1d4ed8 45%, #102a6b 100%);
+  margin: 34px;
+  padding: 56px 9%;
+  color: var(--pc-text);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 28px;
+  box-shadow: 0 18px 44px rgba(46, 68, 112, 0.1);
+  animation: rv-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .brand-logo {
@@ -112,12 +133,12 @@ async function onSubmit() {
   width: 70px;
   height: 70px;
   margin-bottom: 24px;
-  color: #2563eb;
+  color: #fff;
   font-size: 34px;
   font-weight: 800;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #7fb2ff, #3478f6 60%, #9b8cf0);
+  border-radius: 22px;
+  box-shadow: 0 14px 30px rgba(52, 120, 246, 0.32);
 }
 
 .brand-panel h1 {
@@ -125,11 +146,15 @@ async function onSubmit() {
   font-size: 34px;
   font-weight: 800;
   letter-spacing: 0.5px;
+  background: linear-gradient(100deg, #3478f6, #22b573 60%, #a06ae8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .brand-slogan {
   margin: 10px 0 36px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--pc-sub);
   font-size: 15px;
 }
 
@@ -137,50 +162,54 @@ async function onSubmit() {
   margin: 0;
   padding: 0;
   list-style: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--pc-sub);
   font-size: 14px;
   line-height: 2.2;
 }
 
 .feature-list li::before {
   content: '✓ ';
+  color: #22b573;
   font-weight: 700;
 }
 
 .brand-footer {
   margin-top: 50px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--pc-light);
   font-size: 12px;
 }
 
 .form-panel {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 30px;
-  background: #f8fafc;
 }
 
 .form-card {
   width: 100%;
   max-width: 420px;
   padding: 40px 38px;
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 18px;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  box-shadow: 0 20px 48px rgba(46, 68, 112, 0.12);
+  animation: rv-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .form-title {
   margin: 0;
-  color: #1e293b;
+  color: var(--pc-text);
   font-size: 24px;
   font-weight: 800;
 }
 
 .form-subtitle {
   margin: 8px 0 26px;
-  color: #94a3b8;
+  color: var(--pc-light);
   font-size: 13px;
 }
 
@@ -193,6 +222,8 @@ async function onSubmit() {
 
 .demo-alert {
   margin-top: 22px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
 }
 
 @media (max-width: 860px) {
