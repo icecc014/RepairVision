@@ -36,7 +36,7 @@
         @pointercancel="onPointerUp"
         @pointerleave="onPointerUp"
       >
-        <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet">
+        <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid slice">
           <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.6" rx="1.5" />
           <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="#eef2f7" stroke="#94a3b8" stroke-width="0.6" stroke-dasharray="3 2" />
           <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>

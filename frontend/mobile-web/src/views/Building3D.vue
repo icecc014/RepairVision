@@ -22,7 +22,8 @@
       v-if="mode === 'plan' && building"
       :building="building"
       :orders="orders"
-      @select-room="onPlanSelect"
+      @select-room="onPlanSelect"
+      @refresh="emit('refresh')"
     />
 
     <template v-if="mode === '3d'">
@@ -458,7 +459,7 @@ async function initScene() {
     animateFn(0)
 
     // store methods
-    ;(window as any).__building3d = {
+    const helper3d = {
       applyFloorFilter,
       updateTransparent() {
         glassMats.forEach((m: any) => {
@@ -475,9 +476,10 @@ async function initScene() {
         })
       },
     }
-    (window as any).__building3d = helper3d
+    ;(window as any).__building3d = helper3d
     helper3d.updateLabels()
-    helper3d.updateTransparent()  } catch (err) {
+    helper3d.updateTransparent()
+  } catch (err) {
     console.error('3D init failed:', err)
     loadError.value = (err as Error)?.message || String(err)
     webglError.value = true
