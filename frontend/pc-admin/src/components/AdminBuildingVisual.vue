@@ -184,11 +184,9 @@ function switchFloor(f: number) {
 
 function onSvgClick(e: MouseEvent) {
   if (moved) return
-  const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect()
-  const px = view.x + ((e.clientX - rect.left) / rect.width) * view.w
-  const py = view.y + ((e.clientY - rect.top) / rect.height) * view.h
+  const p = svgPoint(e)
   for (const room of plan.value.rooms) {
-    if (px >= room.x && px <= room.x + room.w && py >= room.z && py <= room.z + room.h) {
+    if (p.x >= room.x && p.x <= room.x + room.w && p.y >= room.z && p.y <= room.z + room.d) {
       const orders = roomOrders(room)
       activeRoom.value = orders.length > 0 ? { no: room.no, floor: floor.value, orders } : null
       return
@@ -225,10 +223,24 @@ function resetView() {
 }
 
 function svgPoint(e: PointerEvent | WheelEvent) {
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  const nx = (e.clientX - rect.left) / rect.width
-  const ny = (e.clientY - rect.top) / rect.height
-  return { x: view.x + nx * view.w, y: view.y + ny * view.h }
+  const el = e.currentTarget as HTMLElement
+  const rect = el.getBoundingClientRect()
+  const boxAspect = rect.width / Math.max(rect.height, 1)
+  const viewAspect = view.w / Math.max(view.h, 1)
+  let scale = 1
+  let offsetX = 0
+  let offsetY = 0
+  if (viewAspect > boxAspect) {
+    scale = rect.width / view.w
+    offsetY = (rect.height - view.h * scale) / 2
+  } else {
+    scale = rect.height / view.h
+    offsetX = (rect.width - view.w * scale) / 2
+  }
+  return {
+    x: view.x + (e.clientX - rect.left - offsetX) / scale,
+    y: view.y + (e.clientY - rect.top - offsetY) / scale,
+  }
 }
 
 function onWheel(e: WheelEvent) {
