@@ -146,6 +146,7 @@ export interface AdminBuilding {
   floors: number
   floorHeight: number
   roomsPerFloor: number
+  layoutJson?: string
 }
 
 export async function apiAdminUsers(params: { role?: number; status?: number; keyword?: string }): Promise<AdminUser[]> {

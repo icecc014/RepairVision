@@ -100,6 +100,7 @@ export interface WorkerMapBuilding {
   floors: number
   floorHeight: number
   roomsPerFloor: number
+  layoutJson?: string
 }
 
 export interface WorkerMapData {

@@ -42,6 +42,7 @@ func (l *AdminBuildingCreateLogic) AdminBuildingCreate(req *types.AdminBuildingC
 		Floors:        req.Floors,
 		FloorHeight:   req.FloorHeight,
 		RoomsPerFloor: req.RoomsPerFloor,
+		LayoutJson:    req.LayoutJson,
 	}}); err != nil {
 		return nil, rpcBizError(err)
 	}

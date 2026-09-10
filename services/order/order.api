@@ -405,6 +405,7 @@ type AdminBuildingItem {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type AdminBuildingListResponse {
@@ -421,6 +422,7 @@ type AdminBuildingCreateRequest {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight,optional"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type AdminBuildingUpdateRequest {
@@ -434,6 +436,7 @@ type AdminBuildingUpdateRequest {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight,optional"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type AdminBuildingIdRequest {
@@ -533,6 +536,7 @@ type WorkerMapBuilding {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type WorkerMapDataResponse {

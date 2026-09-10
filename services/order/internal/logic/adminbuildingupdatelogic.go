@@ -43,6 +43,7 @@ func (l *AdminBuildingUpdateLogic) AdminBuildingUpdate(req *types.AdminBuildingU
 		Floors:        req.Floors,
 		FloorHeight:   req.FloorHeight,
 		RoomsPerFloor: req.RoomsPerFloor,
+		LayoutJson:    req.LayoutJson,
 	}}); err != nil {
 		return nil, rpcBizError(err)
 	}

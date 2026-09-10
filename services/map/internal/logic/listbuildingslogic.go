@@ -41,6 +41,7 @@ func (l *ListBuildingsLogic) ListBuildings(in *_map.ListBuildingsRequest) (*_map
 			Floors:        b.Floors,
 			FloorHeight:   b.FloorHeight,
 			RoomsPerFloor: b.RoomsPerFloor,
+			LayoutJson:    b.LayoutJson,
 		})
 	}
 	return resp, nil

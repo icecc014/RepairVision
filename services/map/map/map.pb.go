@@ -121,6 +121,7 @@ type Building struct {
 	Floors        int64                  `protobuf:"varint,8,opt,name=floors,proto3" json:"floors,omitempty"`
 	FloorHeight   float64                `protobuf:"fixed64,9,opt,name=floor_height,json=floorHeight,proto3" json:"floor_height,omitempty"`
 	RoomsPerFloor int64                  `protobuf:"varint,10,opt,name=rooms_per_floor,json=roomsPerFloor,proto3" json:"rooms_per_floor,omitempty"`
+	LayoutJson    string                 `protobuf:"bytes,11,opt,name=layout_json,json=layoutJson,proto3" json:"layout_json,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -223,6 +224,13 @@ func (x *Building) GetRoomsPerFloor() int64 {
 		return x.RoomsPerFloor
 	}
 	return 0
+}
+
+func (x *Building) GetLayoutJson() string {
+	if x != nil {
+		return x.LayoutJson
+	}
+	return ""
 }
 
 type ListBuildingsRequest struct {
@@ -557,7 +565,7 @@ const file_map_proto_rawDesc = "" +
 	"\aRequest\x12\x12\n" +
 	"\x04ping\x18\x01 \x01(\tR\x04ping\"\x1e\n" +
 	"\bResponse\x12\x12\n" +
-	"\x04pong\x18\x01 \x01(\tR\x04pong\"\xfd\x01\n" +
+	"\x04pong\x18\x01 \x01(\tR\x04pong\"\x9e\x02\n" +
 	"\bBuilding\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x12\n" +
@@ -569,7 +577,9 @@ const file_map_proto_rawDesc = "" +
 	"\x06floors\x18\b \x01(\x03R\x06floors\x12!\n" +
 	"\ffloor_height\x18\t \x01(\x01R\vfloorHeight\x12&\n" +
 	"\x0frooms_per_floor\x18\n" +
-	" \x01(\x03R\rroomsPerFloor\"\x16\n" +
+	" \x01(\x03R\rroomsPerFloor\x12\x1f\n" +
+	"\vlayout_json\x18\v \x01(\tR\n" +
+	"layoutJson\"\x16\n" +
 	"\x14ListBuildingsRequest\"D\n" +
 	"\x15ListBuildingsResponse\x12+\n" +
 	"\tbuildings\x18\x01 \x03(\v2\r.map.BuildingR\tbuildings\"@\n" +

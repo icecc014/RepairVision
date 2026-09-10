@@ -17,6 +17,7 @@ func buildingToPb(b store.Building) *_map.Building {
 		Floors:        b.Floors,
 		FloorHeight:   b.FloorHeight,
 		RoomsPerFloor: b.RoomsPerFloor,
+		LayoutJson:    b.LayoutJson,
 	}
 }
 
@@ -32,5 +33,6 @@ func pbToBuilding(in *_map.Building) *store.Building {
 		Floors:        in.Floors,
 		FloorHeight:   in.FloorHeight,
 		RoomsPerFloor: in.RoomsPerFloor,
+		LayoutJson:    in.LayoutJson,
 	}
 }

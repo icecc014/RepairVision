@@ -13,6 +13,7 @@ type AdminBuildingCreateRequest struct {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight,optional"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type AdminBuildingIdRequest struct {
@@ -30,6 +31,7 @@ type AdminBuildingItem struct {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type AdminBuildingListResponse struct {
@@ -47,6 +49,7 @@ type AdminBuildingUpdateRequest struct {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight,optional"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type AdminFaultTypeCreateRequest struct {
@@ -525,6 +528,7 @@ type WorkerMapBuilding struct {
 	Floors        int64   `json:"floors"`
 	FloorHeight   float64 `json:"floorHeight"`
 	RoomsPerFloor int64   `json:"roomsPerFloor"`
+	LayoutJson    string  `json:"layoutJson,optional"`
 }
 
 type WorkerMapDataResponse struct {

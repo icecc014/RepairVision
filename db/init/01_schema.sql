@@ -199,6 +199,7 @@ CREATE TABLE buildings (
   floors TINYINT DEFAULT 1 COMMENT '楼层数（3D用）',
   floor_height DECIMAL(5,2) DEFAULT 3.5 COMMENT '层高（3D用）',
   rooms_per_floor TINYINT DEFAULT 10 COMMENT '每层房间数（3D用）',
+  layout_json TEXT NULL COMMENT '标准层布局(JSON)：管理员在布局设计器中绘制',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

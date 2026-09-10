@@ -19,9 +19,16 @@
           <template #default="{ row }">{{ row.floorHeight }}</template>
         </el-table-column>
         <el-table-column prop="roomsPerFloor" label="每层房间" width="100" />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="楼层布局" width="120">
           <template #default="{ row }">
-            <el-button size="small" type="primary" plain @click="openEdit(row)">编辑</el-button>
+            <span class="layout-tag" :class="{ custom: !!row.layoutJson }">
+              {{ row.layoutJson ? '已自定义' : '内置标准层' }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" @click="openDesigner(row)">布局设计</el-button>
             <el-button size="small" type="danger" plain @click="remove(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -64,6 +71,7 @@
         <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
+    <LayoutDesigner v-model="designerVisible" :building="designerBuilding" @saved="load" />
   </AdminShell>
 </template>
 
@@ -73,12 +81,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminBuilding } from '../api'
 import { apiAdminBuildings, apiCreateBuilding, apiDeleteBuilding, apiUpdateBuilding } from '../api'
 import AdminShell from '../components/AdminShell.vue'
+import LayoutDesigner from '../components/LayoutDesigner.vue'
 
 const list = ref<AdminBuilding[]>([])
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
+const designerVisible = ref(false)
+const designerBuilding = ref<AdminBuilding | null>(null)
 const form = reactive({
   code: '',
   name: '',
@@ -90,6 +101,11 @@ const form = reactive({
   floorHeight: 3.5,
   roomsPerFloor: 20,
 })
+
+function openDesigner(row: AdminBuilding) {
+  designerBuilding.value = { ...row }
+  designerVisible.value = true
+}
 
 async function load() {
   loading.value = true
@@ -178,6 +194,19 @@ onMounted(load)
 </script>
 
 <style scoped>
+.layout-tag {
+  padding: 2px 9px;
+  color: #5a6a85;
+  font-size: 12px;
+  background: var(--rv-grad-8);
+  border-radius: 999px;
+}
+
+.layout-tag.custom {
+  color: #2462d9;
+  background: var(--rv-grad-1);
+}
+
 .panel {
   padding: 18px 20px;
   background: #fff;

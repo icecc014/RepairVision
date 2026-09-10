@@ -194,5 +194,6 @@ func adminBuildingToItem(b mapclient.Building) types.AdminBuildingItem {
 		Floors:        b.Floors,
 		FloorHeight:   b.FloorHeight,
 		RoomsPerFloor: b.RoomsPerFloor,
+		LayoutJson:    b.LayoutJson,
 	}
 }

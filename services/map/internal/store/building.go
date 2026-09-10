@@ -17,6 +17,7 @@ type Building struct {
 	Floors        int64   `db:"floors"`
 	FloorHeight   float64 `db:"floor_height"`
 	RoomsPerFloor int64   `db:"rooms_per_floor"`
+	LayoutJson    string  `db:"layout_json"`
 }
 
 const buildingSelect = `select id, code, name,
@@ -26,7 +27,8 @@ const buildingSelect = `select id, code, name,
 	cast(coalesce(height, 30) as double) height,
 	coalesce(floors, 1) floors,
 	cast(coalesce(floor_height, 3.5) as double) floor_height,
-	coalesce(rooms_per_floor, 10) rooms_per_floor
+	coalesce(rooms_per_floor, 10) rooms_per_floor,
+	coalesce(layout_json, '') layout_json
 	from buildings`
 
 func ListBuildings(ctx context.Context, conn sqlx.Session) ([]Building, error) {
@@ -47,17 +49,17 @@ func FindBuildingByID(ctx context.Context, conn sqlx.Session, id int64) (*Buildi
 
 func InsertBuilding(ctx context.Context, conn sqlx.Session, b *Building) error {
 	_, err := conn.ExecCtx(ctx,
-		`insert ignore into buildings(id, code, name, pos_x, pos_y, width, height, floors, floor_height, rooms_per_floor)
-		 values(?,?,?,?,?,?,?,?,?,?)`,
-		b.ID, b.Code, b.Name, b.PosX, b.PosY, b.Width, b.Height, b.Floors, b.FloorHeight, b.RoomsPerFloor)
+		`insert ignore into buildings(id, code, name, pos_x, pos_y, width, height, floors, floor_height, rooms_per_floor, layout_json)
+		 values(?,?,?,?,?,?,?,?,?,?,?)`,
+		b.ID, b.Code, b.Name, b.PosX, b.PosY, b.Width, b.Height, b.Floors, b.FloorHeight, b.RoomsPerFloor, b.LayoutJson)
 	return err
 }
 
 func CreateBuilding(ctx context.Context, conn sqlx.Session, b *Building) (int64, error) {
 	result, err := conn.ExecCtx(ctx,
-		`insert into buildings(code, name, pos_x, pos_y, width, height, floors, floor_height, rooms_per_floor)
-		 values(?,?,?,?,?,?,?,?,?)`,
-		b.Code, b.Name, b.PosX, b.PosY, b.Width, b.Height, b.Floors, b.FloorHeight, b.RoomsPerFloor)
+		`insert into buildings(code, name, pos_x, pos_y, width, height, floors, floor_height, rooms_per_floor, layout_json)
+		 values(?,?,?,?,?,?,?,?,?,?)`,
+		b.Code, b.Name, b.PosX, b.PosY, b.Width, b.Height, b.Floors, b.FloorHeight, b.RoomsPerFloor, b.LayoutJson)
 	if err != nil {
 		return 0, err
 	}
@@ -67,8 +69,8 @@ func CreateBuilding(ctx context.Context, conn sqlx.Session, b *Building) (int64,
 func UpdateBuilding(ctx context.Context, conn sqlx.Session, b *Building) error {
 	_, err := conn.ExecCtx(ctx,
 		`update buildings set code = ?, name = ?, pos_x = ?, pos_y = ?, width = ?, height = ?,
-			floors = ?, floor_height = ?, rooms_per_floor = ? where id = ?`,
-		b.Code, b.Name, b.PosX, b.PosY, b.Width, b.Height, b.Floors, b.FloorHeight, b.RoomsPerFloor, b.ID)
+			floors = ?, floor_height = ?, rooms_per_floor = ?, layout_json = ? where id = ?`,
+		b.Code, b.Name, b.PosX, b.PosY, b.Width, b.Height, b.Floors, b.FloorHeight, b.RoomsPerFloor, b.LayoutJson, b.ID)
 	return err
 }
 

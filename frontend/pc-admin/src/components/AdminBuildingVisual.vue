@@ -45,6 +45,7 @@
             <linearGradient id="pgPublic" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#eaf2fd" /><stop offset="100%" stop-color="#dde8f8" /></linearGradient>
           </defs>
             <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="url(#pgBg)" stroke="#7d8db3" stroke-width="1.6" rx="1.5" />
+            <template v-if="!plan.custom">
             <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="url(#pgCorridor)" stroke="#a9b8d4" stroke-width="0.6" stroke-dasharray="3 2" />
             <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
             <g v-for="core in plan.cores" :key="core.index">
@@ -52,6 +53,13 @@
               <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
               <rect x="32" :y="core.z" width="68" :height="core.d" fill="url(#pgPublic)" stroke="#9aa9c6" stroke-width="0.7" stroke-dasharray="2 1.6" />
               <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
+            </g>
+            </template>
+            <g v-else>
+              <template v-for="(b, bi) in plan.blocks" :key="'blk' + bi">
+                <rect :x="b.x" :y="b.z" :width="b.w" :height="b.d" :fill="blockFill(b.type)" :stroke="b.type === 'corridor' ? '#a9b8d4' : '#7d8db3'" stroke-width="0.6" :stroke-dasharray="b.type === 'corridor' ? '3 2' : '0'" />
+                <text v-if="b.type !== 'corridor'" :x="b.x + b.w / 2" :y="b.z + b.d / 2 + 1.1" text-anchor="middle" font-size="2.6" fill="#64748b">{{ b.type === 'stair' ? '楼梯' : '公共区' }}</text>
+              </template>
             </g>
             <g v-for="room in plan.rooms" :key="room.no">
               <rect
@@ -114,15 +122,14 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from 'vue'
 import type { AdminBuilding, OrderItem } from '../api'
-import {
-  PLAN_DEPTH,
-  PLAN_WIDTH,
-  buildFloorPlan,
-  buildGridRooms,
-  matchRoomOrders,
-  supportsCorridorLayout,
-  type PlanRoom,
-} from '../utils/floorLayout'
+import { PLAN_DEPTH, PLAN_WIDTH, matchRoomOrders, type PlanRoom } from '../utils/floorLayout'
+import { resolveFloorPlan } from '../utils/layoutGrid'
+
+function blockFill(type: 'corridor' | 'stair' | 'public') {
+  if (type === 'stair') return '#dbe3f3'
+  if (type === 'public') return '#e7f1fe'
+  return '#eef3fc'
+}
 
 const props = defineProps<{ building: AdminBuilding; orders: OrderItem[] }>()
 const mode = ref<'plan' | '3d'>('plan')
@@ -137,17 +144,7 @@ const MAX_W = PLAN_WIDTH * 1.4
 const view = reactive({ x: 0, y: 0, w: PLAN_WIDTH, h: PLAN_DEPTH })
 const viewBoxStr = computed(() => `${view.x} ${view.y} ${view.w} ${view.h}`)
 
-const plan = computed(() => {
-  if (supportsCorridorLayout(props.building.roomsPerFloor)) {
-    return buildFloorPlan(floor.value, props.building.roomsPerFloor)
-  }
-  return {
-    floor: floor.value,
-    rooms: buildGridRooms(floor.value, props.building.roomsPerFloor || 8),
-    corridor: { x: 0, z: 0, w: 0, d: 0 },
-    cores: [] as { index: number; z: number; d: number }[],
-  }
-})
+const plan = computed(() => resolveFloorPlan(floor.value, props.building.roomsPerFloor, props.building.layoutJson))
 
 function roomOrders(room: PlanRoom) {
   return matchRoomOrders(
@@ -332,9 +329,7 @@ async function init3d() {
       const slab = new THREE.Mesh(new THREE.BoxGeometry(boxW + 6, 0.9, boxD + 6), new THREE.MeshLambertMaterial({ color: '#c8d8f2' }))
       slab.position.y = yBase + 0.45
       scene.add(slab)
-      const p = supportsCorridorLayout(props.building.roomsPerFloor)
-        ? buildFloorPlan(f + 1, props.building.roomsPerFloor)
-        : { rooms: buildGridRooms(f + 1, props.building.roomsPerFloor || 8), corridor: { x: 0, z: 0, w: 0, d: 0 }, cores: [] as { index: number; z: number; d: number }[] }
+      const p = resolveFloorPlan(f + 1, props.building.roomsPerFloor, props.building.layoutJson)
 
       for (const room of p.rooms) {
         const w = (room.w / PLAN_WIDTH) * boxW * 0.92

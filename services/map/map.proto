@@ -22,6 +22,7 @@ message Building {
   int64 floors = 8;
   double floor_height = 9;
   int64 rooms_per_floor = 10;
+  string layout_json = 11;
 }
 
 message ListBuildingsRequest {

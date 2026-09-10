@@ -50,7 +50,7 @@ func (l *WorkerMapDataLogic) WorkerMapData() (resp *types.WorkerMapDataResponse,
 			items = append(items, types.WorkerMapBuilding{
 				Id: b.Id, Code: b.Code, Name: b.Name, PosX: b.PosX, PosY: b.PosY,
 				Width: b.Width, Height: b.Height, Floors: b.Floors,
-				FloorHeight: b.FloorHeight, RoomsPerFloor: b.RoomsPerFloor,
+				FloorHeight: b.FloorHeight, RoomsPerFloor: b.RoomsPerFloor, LayoutJson: b.LayoutJson,
 			})
 		}
 	}

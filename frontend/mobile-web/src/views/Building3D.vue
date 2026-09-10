@@ -52,7 +52,8 @@ import { computed, ref, watch, nextTick } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
 import { apiCompleteOrder, apiStartOrder } from '../api'
 import BuildingFloorPlan from './BuildingFloorPlan.vue'
-import { PLAN_DEPTH, PLAN_WIDTH, buildFloorPlan, buildGridRooms, supportsCorridorLayout } from '../utils/floorLayout'
+import { PLAN_DEPTH, PLAN_WIDTH } from '../utils/floorLayout'
+import { resolveFloorPlan } from '../utils/layoutGrid'
 import { showConfirmDialog, showToast } from 'vant'
 
 const props = defineProps<{ building: WorkerMapBuilding | null; orders: OrderItem[] }>()
@@ -244,9 +245,7 @@ async function initScene() {
       slab.position.y = yBase + slabH / 2
       group.add(slab)
 
-      const plan = supportsCorridorLayout(b.roomsPerFloor)
-        ? buildFloorPlan(floorNo, b.roomsPerFloor)
-        : { floor: floorNo, rooms: buildGridRooms(floorNo, Math.max(b.roomsPerFloor, 1)), corridor: { x: 0, z: 0, w: 0, d: 0 }, cores: [] }
+            const plan = resolveFloorPlan(floorNo, b.roomsPerFloor, b.layoutJson)
       const roomH = 0.8
       const tileColors = ['#3b82f6', '#60a5fa', '#7cb3f8', '#94c3fa', '#38bdf8']
 
