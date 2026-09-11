@@ -2,8 +2,20 @@
   <div class="map-page">
     <div class="map-toolbar">
       <span class="map-title">2D 楼栋总览</span>
+      <div class="day-chips">
+        <button
+          v-for="d in dayOptions"
+          :key="d"
+          class="mini-btn"
+          :class="{ active: days === d }"
+          @click="setDays(d)"
+        >
+          {{ d === 30 ? '1个月' : d + '天' }}
+        </button>
+      </div>
       <button class="mini-btn" @click="load">刷新</button>
     </div>
+    <div class="range-hint">近 {{ days }} 天共 {{ map.orders.length }} 单，2D / 3D 红点按此范围显示</div>
 
     <div v-if="!loading && map.buildings.length > 0" class="canvas-card">
       <v-stage :config="stageConfig">
@@ -216,10 +228,17 @@ function open3D() {
   show3D.value = true
 }
 
+// 时间窗与"我的工单"筛选保持一致，选择结果记忆在本地
+function setDays(d: number) {
+  days.value = d
+  localStorage.setItem('rv-days', String(d))
+  load()
+}
+
 async function load() {
   loading.value = true
   try {
-    const data = await apiWorkerMapData()
+    const data = await apiWorkerMapData(days.value)
     map.buildings = data.buildings
     map.orders = data.orders
     selectedBuilding.value = map.buildings[0] || null
@@ -426,6 +445,21 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #7fb2ff, #3478f6);
   border-color: transparent;
   box-shadow: 0 8px 18px rgba(52, 120, 246, 0.26);
+}
+.day-chips {
+  display: flex;
+  gap: 6px;
+}
+.mini-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, #7fb2ff, #3478f6);
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
+}
+.range-hint {
+  padding: 4px 6px 8px;
+  color: #8a97ad;
+  font-size: 12px;
 }
 </style>
 .building-chips {

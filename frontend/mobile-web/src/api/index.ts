@@ -108,8 +108,8 @@ export interface WorkerMapData {
   orders: OrderItem[]
 }
 
-export function apiWorkerMapData(): Promise<WorkerMapData> {
-  return http.get('/worker/map-data')
+export function apiWorkerMapData(days = 3): Promise<WorkerMapData> {
+  return http.get('/worker/map-data', { params: { days } })
 }
 
 export function apiBatchComplete(buildingId: number, faultType: string): Promise<{ count: number }> {

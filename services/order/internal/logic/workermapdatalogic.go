@@ -27,7 +27,7 @@ func NewWorkerMapDataLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Wor
 	}
 }
 
-func (l *WorkerMapDataLogic) WorkerMapData() (resp *types.WorkerMapDataResponse, err error) {
+func (l *WorkerMapDataLogic) WorkerMapData(req *types.WorkerMapDataRequest) (resp *types.WorkerMapDataResponse, err error) {
 	identity, ok := auth.IdentityFromContext(l.ctx)
 	if !ok {
 		return nil, errs.Unauthorized("登录状态无效")
@@ -54,7 +54,12 @@ func (l *WorkerMapDataLogic) WorkerMapData() (resp *types.WorkerMapDataResponse,
 			})
 		}
 	}
-	orders, err := store.ListOrdersByBuildingIDs(l.ctx, l.svcCtx.DB, idsResp.Ids, true)
+	// 与宿管/工人"我的工单"列表保持同一时间窗口径：days<=0 时默认近 3 天
+	days := req.Days
+	if days <= 0 {
+		days = 3
+	}
+	orders, err := store.ListOrdersByBuildingIDsWithinDays(l.ctx, l.svcCtx.DB, idsResp.Ids, true, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}

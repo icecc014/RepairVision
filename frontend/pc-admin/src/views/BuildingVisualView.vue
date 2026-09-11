@@ -1,6 +1,17 @@
 <template>
   <AdminShell title="建筑可视化" subtitle="查看全部建筑，点开任意楼栋查看 16 间户型与 3D 视图">
     <section class="panel">
+      <div class="range-bar">
+        <span class="range-title">报修时间窗</span>
+        <el-radio-group v-model="days" size="small" @change="onDaysChange">
+          <el-radio-button :value="1">1天</el-radio-button>
+          <el-radio-button :value="3">3天</el-radio-button>
+          <el-radio-button :value="7">7天</el-radio-button>
+          <el-radio-button :value="30">1个月</el-radio-button>
+        </el-radio-group>
+        <span class="range-hint">近 {{ days }} 天共 {{ orders.length }} 单，2D / 3D 视图与红点按此范围显示</span>
+      </div>
+
       <div class="grid">
         <button
           v-for="b in buildings"
@@ -40,17 +51,29 @@ import AdminBuildingVisual from '../components/AdminBuildingVisual.vue'
 
 const buildings = ref<AdminBuilding[]>([])
 const orders = ref<OrderItem[]>([])
-const selected = ref<AdminBuilding | null>(null)
+const days = ref(3)
 const dialogVisible = ref(false)
 
-async function load() {
+async function loadOrders() {
   try {
-    buildings.value = await apiAdminBuildings()
-    const orderPage = await apiAdminOrders(0, 0, 1, 200)
+    const orderPage = await apiAdminOrders(0, 0, 1, 200, days.value)
     orders.value = orderPage.list
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
+}
+
+function onDaysChange() {
+  loadOrders()
+}
+
+async function load() {
+  try {
+    buildings.value = await apiAdminBuildings()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+  await loadOrders()
 }
 
 function orderCount(id: number) {
@@ -60,12 +83,8 @@ function orderCount(id: number) {
 async function open(b: AdminBuilding) {
   selected.value = b
   dialogVisible.value = true
-  try {
-    const page = await apiAdminOrders(0, 0, 1, 200)
-    orders.value = page.list
-  } catch {
-    // 刷新失败时沿用已有数据
-  }
+  // 打开弹窗时按当前时间窗刷新，确保红点与主页筛选一致
+  await loadOrders()
 }
 
 onMounted(load)

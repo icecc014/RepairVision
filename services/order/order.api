@@ -525,6 +525,10 @@ type OperationLogListResponse {
 	List  []OperationLogItem `json:"list"`
 }
 
+type WorkerMapDataRequest {
+	Days int64 `form:"days,optional"`
+}
+
 type WorkerMapBuilding {
 	Id            int64   `json:"id"`
 	Code          string  `json:"code"`
@@ -693,7 +697,7 @@ service order-api {
 	@handler WorkerSchedulesHandler
 	get /api/worker/schedules (ScheduleQueryRequest) returns (ScheduleListResponse)
 	@handler WorkerMapDataHandler
-	get /api/worker/map-data returns (WorkerMapDataResponse)
+	get /api/worker/map-data (WorkerMapDataRequest) returns (WorkerMapDataResponse)
 
 	@handler WorkerBatchCompleteHandler
 	post /api/worker/batch-complete (BatchCompleteRequest) returns (BatchCompleteResponse)
