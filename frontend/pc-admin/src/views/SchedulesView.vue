@@ -6,6 +6,10 @@
         <el-button @click="shiftWeek(-7)">上一周</el-button>
         <el-button type="primary" plain @click="shiftWeek(7)">下一周</el-button>
         <el-button @click="resetThisWeek">回到本周</el-button>
+        <span class="param-label">每周休息</span>
+        <el-input-number v-model="restDays" :min="0" :max="3" size="small" style="width: 108px" />
+        <span class="param-label">每栋最少在岗</span>
+        <el-input-number v-model="minPerBuilding" :min="0" :max="5" size="small" style="width: 108px" />
         <div style="flex: 1"></div>
         <el-button type="success" :loading="generating" @click="generateWeek">一键生成当周排班</el-button>
       </div>
@@ -15,8 +19,23 @@
         <el-tag type="primary" effect="plain">晚班 {{ shiftCount('AFTERNOON') }}</el-tag>
         <el-tag type="success" effect="plain">全天 {{ shiftCount('DAY') }}</el-tag>
         <el-tag type="info" effect="plain">休息 {{ shiftCount('OFF') }}</el-tag>
-        <span class="coverage-tip">每栋楼每日尽量保证午/晚班各 1 人</span>
-      </div>      <el-table :data="rows" v-loading="loading" border stripe>
+        <el-tag type="warning" effect="dark">请假 {{ leaveCount() }}</el-tag>
+        <span class="coverage-tip">紫色「请假」= 已批准请假（不参与派单）；其余按在岗人数分配午/晚班</span>
+      </div>
+
+      <el-alert
+        v-if="warnings.length"
+        class="warn-box"
+        type="warning"
+        :closable="false"
+        show-icon
+        :title="`人力不足提示（${warnings.length} 条）`"
+      >
+        <ul class="warn-list">
+          <li v-for="(w, i) in warnings" :key="i">{{ w }}</li>
+        </ul>
+      </el-alert>
+      <el-table :data="rows" v-loading="loading" border stripe>
         <el-table-column label="维修工人" width="150">
           <template #default="{ row }">
             <div class="worker-name">{{ row.name }}</div>
@@ -25,14 +44,18 @@
         </el-table-column>
         <el-table-column v-for="d in weekDates" :key="d" :label="dateLabel(d)" align="center" min-width="110">
           <template #default="{ row }">
-            <button class="shift-cell" :class="shiftCellClass(cellShift(row, d))" @click="openEdit(row, d)">
-              {{ shiftText(cellShift(row, d)) }}
+            <button
+              class="shift-cell"
+              :class="[shiftCellClass(cellShift(row, d)), { 'is-leave': isLeaveCell(row, d) }]"
+              @click="openEdit(row, d)"
+            >
+              {{ cellText(row, d) }}
             </button>
           </template>
         </el-table-column>
       </el-table>
       <el-empty v-if="!loading && rows.length === 0" description="暂无可排班工人" class="empty" />
-      <p class="hint">点击任意日期可调整班次；生成逻辑：每名工人每周休 1 天，轮休日按周错开。</p>
+      <p class="hint">点击任意日期可调整班次；生成逻辑：先固定已批准请假，再按「每周休息天数」错峰排休，并尽量保证每栋楼最少在岗人数。</p>
     </section>
 
     <el-dialog append-to-body v-model="editVisible" title="调整班次" width="460px">
@@ -68,6 +91,9 @@ const scheduleMap = ref<Record<string, ScheduleItem>>({})
 const weekStart = ref(mondayOf(new Date()))
 const loading = ref(false)
 const generating = ref(false)
+const restDays = ref(1)
+const minPerBuilding = ref(1)
+const warnings = ref<string[]>([])
 const saving = ref(false)
 const editVisible = ref(false)
 const editTarget = ref<AdminUser | null>(null)
@@ -104,6 +130,23 @@ function shiftCellClass(shift: string) {
 }function shiftCount(shift: string) {
   return Object.values(scheduleMap.value).filter((x) => x.shiftType === shift).length
 }
+function cellNote(row: AdminUser, date: string) {
+  return scheduleMap.value[`${row.id}|${date}`]?.note || ''
+}
+
+// 已批准请假在表格里单独标紫，避免与轮休混淆
+function isLeaveCell(row: AdminUser, date: string) {
+  return cellShift(row, date) === 'OFF' && (cellNote(row, date) || '').includes('请假')
+}
+
+function cellText(row: AdminUser, date: string) {
+  return isLeaveCell(row, date) ? '请假' : shiftText(cellShift(row, date))
+}
+
+function leaveCount() {
+  return Object.values(scheduleMap.value).filter((x) => x.shiftType === 'OFF' && (x.note || '').includes('请假')).length
+}
+
 function shiftText(shift: string) {
   switch (shift) {
     case 'DAY':
@@ -182,8 +225,13 @@ async function generateWeek() {
   }
   generating.value = true
   try {
-    const res = await apiGenerateWeekly(weekStart.value)
-    ElMessage.success(`已生成 ${res.list.length} 条班次记录`)
+    const res = await apiGenerateWeekly(weekStart.value, restDays.value, minPerBuilding.value)
+    warnings.value = res.warnings || []
+    if (warnings.value.length) {
+      ElMessage.warning(`已生成 ${res.list.length} 条班次，存在 ${warnings.value.length} 条人力不足提示`)
+    } else {
+      ElMessage.success(`已生成 ${res.list.length} 条班次记录`)
+    }
     await loadSchedules()
   } catch (err) {
     ElMessage.error((err as Error).message)
@@ -234,6 +282,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.param-label {
+  color: var(--pc-sub);
+  font-size: 12px;
+}
+.warn-box {
+  margin: 10px 0 14px;
+}
+.warn-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.shift-cell.is-leave {
+  color: #6b3fa0;
+  background: var(--rv-grad-2);
+  border-color: rgba(160, 120, 220, 0.5);
+}
+
 .panel {
   padding: 18px 20px;
   background: rgba(255, 255, 255, 0.55);

@@ -339,7 +339,8 @@ type ScheduleQueryRequest struct {
 }
 
 type ScheduleListResponse struct {
-	List []ScheduleItem `json:"list"`
+	List     []ScheduleItem `json:"list"`
+	Warnings []string       `json:"warnings,optional"`
 }
 
 type ScheduleSaveRequest struct {
@@ -347,7 +348,9 @@ type ScheduleSaveRequest struct {
 }
 
 type ScheduleGenerateRequest struct {
-	WeekStart string `json:"weekStart"`
+	WeekStart       string `json:"weekStart"`
+	RestDaysPerWeek int64  `json:"restDaysPerWeek,optional"`
+	MinPerBuilding  int64  `json:"minPerBuilding,optional"`
 }
 type AdminWorkerBoardItem struct {
 	WorkerId       int64    `json:"workerId"`

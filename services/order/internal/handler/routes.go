@@ -50,6 +50,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodPost, Path: "/api/admin/schedules", Handler: AdminScheduleSaveHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/schedules/generate", Handler: AdminScheduleGenerateHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/leaves", Handler: AdminLeaveListHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/leaves", Handler: AdminLeaveCreateHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/leaves/:id/cancel", Handler: AdminLeaveCancelHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/leaves/:id/review", Handler: AdminLeaveReviewHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/stats", Handler: AdminStatsHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/feedback-stats", Handler: AdminFeedbackStatsHandler(serverCtx)},

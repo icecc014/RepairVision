@@ -15,6 +15,7 @@
           <el-radio-button :value="30">30天</el-radio-button>
         </el-radio-group>
         <el-button type="primary" @click="load">查询</el-button>
+        <el-button type="primary" plain @click="openCreate">＋ 代工人登记请假</el-button>
         <div style="flex: 1"></div>
         <el-tag type="warning" effect="plain">待审批 {{ pendingCount }}</el-tag>
       </div>
@@ -40,7 +41,8 @@
           <template #default="{ row }">
             <el-button v-if="row.status === 1" size="small" type="success" plain @click="openReview(row, 2)">通过</el-button>
             <el-button v-if="row.status === 1" size="small" type="danger" plain @click="openReview(row, 3)">驳回</el-button>
-            <span v-if="row.status !== 1" class="muted">—</span>
+            <el-button v-if="row.status === 2" size="small" plain @click="cancelLeave(row)">撤销</el-button>
+            <span v-if="row.status !== 1 && row.status !== 2" class="muted">—</span>
           </template>
         </el-table-column>
       </el-table>
@@ -59,14 +61,42 @@
         <el-button :type="reviewStatus === 2 ? 'success' : 'danger'" :loading="saving" @click="submitReview">确认</el-button>
       </template>
     </el-dialog>
+    <el-dialog append-to-body v-model="createVisible" title="代工人登记请假" width="520px">
+      <el-form :model="createForm" label-width="90px">
+        <el-form-item label="维修工人">
+          <el-select v-model="createForm.workerId" placeholder="选择工人" style="width: 100%">
+            <el-option v-for="w in workers" :key="w.id" :label="`${w.name}（${w.username}）`" :value="w.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="请假区间">
+          <el-date-picker
+            v-model="createForm.range"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="请假原因">
+          <el-input v-model="createForm.reason" type="textarea" :rows="3" maxlength="200" placeholder="如：家中有事" />
+        </el-form-item>
+      </el-form>
+      <p class="create-tip">登记后直接生效为「已通过」，对应日期会自动写成休息班次，不再参与派单。</p>
+      <template #footer>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitCreate">确认登记</el-button>
+      </template>
+    </el-dialog>
   </AdminShell>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { LeaveItem } from '../api'
-import { apiAdminLeaves, apiAdminLeaveReview } from '../api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { AdminUser, LeaveItem } from '../api'
+import { apiAdminLeaveCancel, apiAdminLeaveCreate, apiAdminLeaves, apiAdminLeaveReview, apiAdminUsers } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 
 const list = ref<LeaveItem[]>([])
@@ -78,8 +108,78 @@ const reviewStatus = ref(2)
 const reviewNote = ref('')
 const days = ref(3)
 const filter = reactive({ status: 0 })
+const createVisible = ref(false)
+const workers = ref<AdminUser[]>([])
+const createForm = reactive({
+  workerId: undefined as number | undefined,
+  range: [] as string[],
+  reason: '',
+})
 
 const pendingCount = computed(() => list.value.filter((x) => x.status === 1).length)
+
+async function loadWorkers() {
+  try {
+    workers.value = await apiAdminUsers({ role: 2 })
+  } catch {
+    // 下拉失败不阻塞列表
+  }
+}
+
+function openCreate() {
+  createForm.workerId = undefined
+  createForm.range = []
+  createForm.reason = ''
+  createVisible.value = true
+  if (workers.value.length === 0) loadWorkers()
+}
+
+async function submitCreate() {
+  if (!createForm.workerId) {
+    ElMessage.warning('请选择要登记请假的工人')
+    return
+  }
+  if (!createForm.range || createForm.range.length !== 2) {
+    ElMessage.warning('请选择请假起止日期')
+    return
+  }
+  if (!createForm.reason.trim()) {
+    ElMessage.warning('请填写请假原因')
+    return
+  }
+  saving.value = true
+  try {
+    await apiAdminLeaveCreate({
+      workerId: createForm.workerId,
+      startDate: createForm.range[0],
+      endDate: createForm.range[1],
+      reason: createForm.reason.trim(),
+    })
+    ElMessage.success('已登记并直接通过')
+    createVisible.value = false
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    saving.value = false
+  }
+}
+
+async function cancelLeave(row: LeaveItem) {
+  try {
+    await ElMessageBox.confirm(`确认撤销 ${row.workerName || row.workerId} 的请假（${row.startDate} ~ ${row.endDate}）？`,
+      '撤销请假')
+  } catch {
+    return
+  }
+  try {
+    await apiAdminLeaveCancel(row.id)
+    ElMessage.success('已撤销')
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
 
 async function load() {
   loading.value = true
@@ -122,10 +222,19 @@ async function submitReview() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadWorkers()
+})
 </script>
 
 <style scoped>
+.create-tip {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
 .panel {
   padding: 18px 20px;
   background: rgba(255, 255, 255, 0.55);

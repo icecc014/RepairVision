@@ -135,3 +135,49 @@ func FindApprovedLeaveForDate(ctx context.Context, conn sqlx.SqlConn, workerID i
 	}
 	return cnt > 0, nil
 }
+
+// ListApprovedLeavesBetween 返回区间内每名工人的「已批准」请假日期（按天展开，含首尾）。
+func ListApprovedLeavesBetween(ctx context.Context, conn sqlx.SqlConn, startDate, endDate string) (map[int64][]string, error) {
+	type leaveRange struct {
+		WorkerID  int64     `db:"worker_id"`
+		StartDate time.Time `db:"start_date"`
+		EndDate   time.Time `db:"end_date"`
+	}
+	var rows []leaveRange
+	if err := conn.QueryRowsCtx(ctx, &rows,
+		`select worker_id, start_date, end_date from worker_leave_requests
+		 where status = 2 and not (end_date < ? or start_date > ?)`,
+		startDate, endDate); err != nil {
+		return nil, err
+	}
+	result := make(map[int64][]string)
+	for _, r := range rows {
+		for d := r.StartDate; !d.After(r.EndDate); d = d.AddDate(0, 0, 1) {
+			day := d.Format("2006-01-02")
+			if day < startDate || day > endDate {
+				continue
+			}
+			result[r.WorkerID] = append(result[r.WorkerID], day)
+		}
+	}
+	return result, nil
+}
+
+// CancelLeaveByAdmin 管理员撤销请假：待审批或已通过都可撤销，保留审计记录（status=4）。
+func CancelLeaveByAdmin(ctx context.Context, conn sqlx.Session, id int64) (bool, error) {
+	result, err := conn.ExecCtx(ctx,
+		"update worker_leave_requests set status = 4 where id = ? and status in (1,2)", id)
+	if err != nil {
+		return false, err
+	}
+	affected, err := result.RowsAffected()
+	return affected > 0, err
+}
+
+// ClearWorkerScheduleRange 清空某工人在日期区间内的排班（撤销已批准请假时用）。
+func ClearWorkerScheduleRange(ctx context.Context, conn sqlx.Session, workerID int64, startDate, endDate string) error {
+	_, err := conn.ExecCtx(ctx,
+		"delete from worker_schedules where worker_id = ? and work_date between ? and ?",
+		workerID, startDate, endDate)
+	return err
+}

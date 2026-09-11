@@ -15,6 +15,7 @@ type ScheduleQueryRequest {
 
 type ScheduleListResponse {
 	List []ScheduleItem `json:"list"`
+	Warnings []string `json:"warnings,optional"`
 }
 
 type ScheduleSaveRequest {
@@ -23,6 +24,8 @@ type ScheduleSaveRequest {
 
 type ScheduleGenerateRequest {
 	WeekStart string `json:"weekStart"`
+	RestDaysPerWeek int64 `json:"restDaysPerWeek,optional"`
+	MinPerBuilding  int64 `json:"minPerBuilding,optional"`
 }
 type AdminWorkerBoardItem {
 	WorkerId       int64    `json:"workerId"`
@@ -81,6 +84,13 @@ type AdminFeedbackStatsResponse {
 	Ratings   []FeedbackRatingItem `json:"ratings"`
 	Recent    []FeedbackRecentItem `json:"recent"`
 }
+type AdminLeaveCreateRequest {
+	WorkerId  int64  `json:"workerId"`
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
+	Reason    string `json:"reason"`
+}
+
 type LeaveItem {
 	Id         int64  `json:"id"`
 	WorkerId   int64  `json:"workerId"`
@@ -715,6 +725,12 @@ service order-api {
 
 	@handler AdminLeaveListHandler
 	get /api/admin/leaves (AdminLeaveListRequest) returns (LeaveListResponse)
+
+	@handler AdminLeaveCreateHandler
+	post /api/admin/leaves (AdminLeaveCreateRequest) returns (LeaveItem)
+
+	@handler AdminLeaveCancelHandler
+	post /api/admin/leaves/:id/cancel (LeaveIdRequest) returns (EmptyResponse)
 
 	@handler AdminLeaveReviewHandler
 	post /api/admin/leaves/:id/review (LeaveReviewRequest) returns (EmptyResponse)

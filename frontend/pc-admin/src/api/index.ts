@@ -130,7 +130,8 @@ export interface AdminUser {
   status: number
   statusText: string
   pendingReason?: string
-  buildingIds?: number[]
+  buildingIds?: number[]
+
   maxConcurrent?: number
   buildings?: string[]
 }
@@ -161,7 +162,8 @@ export function apiCreateUser(payload: {
   phone: string
   role: number
   buildingId?: number
-  buildingIds?: number[]
+  buildingIds?: number[]
+
   maxConcurrent?: number
 }): Promise<unknown> {
   return http.post('/admin/users', payload)
@@ -175,7 +177,8 @@ export function apiUpdateUser(
     role: number
     status: number
     buildingId?: number
-    buildingIds?: number[]
+    buildingIds?: number[]
+
     maxConcurrent?: number
   },
 ): Promise<unknown> {
@@ -354,8 +357,30 @@ export function apiSaveSchedules(items: ScheduleItem[]): Promise<{ list: Schedul
   return http.post('/admin/schedules', { items })
 }
 
-export function apiGenerateWeekly(weekStart: string): Promise<{ list: ScheduleItem[] }> {
-  return http.post('/admin/schedules/generate', { weekStart })
+export function apiGenerateWeekly(weekStart: string, restDaysPerWeek = 1, minPerBuilding = 1): Promise<ScheduleGenerateResult> {
+  return http.post('/admin/schedules/generate', { weekStart, restDaysPerWeek, minPerBuilding })
+}
+
+export interface ScheduleGenerateResult {
+  list: ScheduleItem[]
+  warnings?: string[]
+}
+
+export interface AdminLeaveCreatePayload {
+  workerId: number
+  startDate: string
+  endDate: string
+  reason: string
+}
+
+// 管理员代工人登记请假（直接置为已通过）
+export function apiAdminLeaveCreate(payload: AdminLeaveCreatePayload): Promise<LeaveItem> {
+  return http.post('/admin/leaves', payload)
+}
+
+// 管理员撤销请假（待审批或已通过均可）
+export function apiAdminLeaveCancel(id: number): Promise<unknown> {
+  return http.post(`/admin/leaves/${id}/cancel`)
 }
 
 export interface WorkerBoardItem {

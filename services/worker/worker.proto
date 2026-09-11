@@ -144,6 +144,7 @@ message ScheduleListRequest {
 
 message ScheduleListResponse {
   repeated ScheduleItem items = 1;
+  repeated string warnings = 2;
 }
 
 message SaveSchedulesRequest {
@@ -152,6 +153,8 @@ message SaveSchedulesRequest {
 
 message GenerateScheduleRequest {
   string week_start = 1;
+  int64 rest_days_per_week = 2;
+  int64 min_per_building = 3;
 }
 
 message LeaveItem {

@@ -1224,6 +1224,7 @@ func (x *ScheduleListRequest) GetEndDate() string {
 type ScheduleListResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ScheduleItem        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Warnings      []string               `protobuf:"bytes,2,rep,name=warnings,proto3" json:"warnings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1261,6 +1262,13 @@ func (*ScheduleListResponse) Descriptor() ([]byte, []int) {
 func (x *ScheduleListResponse) GetItems() []*ScheduleItem {
 	if x != nil {
 		return x.Items
+	}
+	return nil
+}
+
+func (x *ScheduleListResponse) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
 	}
 	return nil
 }
@@ -1310,10 +1318,12 @@ func (x *SaveSchedulesRequest) GetItems() []*ScheduleItem {
 }
 
 type GenerateScheduleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	WeekStart     string                 `protobuf:"bytes,1,opt,name=week_start,json=weekStart,proto3" json:"week_start,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	WeekStart       string                 `protobuf:"bytes,1,opt,name=week_start,json=weekStart,proto3" json:"week_start,omitempty"`
+	RestDaysPerWeek int64                  `protobuf:"varint,2,opt,name=rest_days_per_week,json=restDaysPerWeek,proto3" json:"rest_days_per_week,omitempty"`
+	MinPerBuilding  int64                  `protobuf:"varint,3,opt,name=min_per_building,json=minPerBuilding,proto3" json:"min_per_building,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GenerateScheduleRequest) Reset() {
@@ -1351,6 +1361,20 @@ func (x *GenerateScheduleRequest) GetWeekStart() string {
 		return x.WeekStart
 	}
 	return ""
+}
+
+func (x *GenerateScheduleRequest) GetRestDaysPerWeek() int64 {
+	if x != nil {
+		return x.RestDaysPerWeek
+	}
+	return 0
+}
+
+func (x *GenerateScheduleRequest) GetMinPerBuilding() int64 {
+	if x != nil {
+		return x.MinPerBuilding
+	}
+	return 0
 }
 
 type LeaveItem struct {
@@ -1869,14 +1893,17 @@ const file_worker_proto_rawDesc = "" +
 	"\tworker_id\x18\x01 \x01(\x03R\bworkerId\x12\x1d\n" +
 	"\n" +
 	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
-	"\bend_date\x18\x03 \x01(\tR\aendDate\"B\n" +
+	"\bend_date\x18\x03 \x01(\tR\aendDate\"^\n" +
 	"\x14ScheduleListResponse\x12*\n" +
-	"\x05items\x18\x01 \x03(\v2\x14.worker.ScheduleItemR\x05items\"B\n" +
+	"\x05items\x18\x01 \x03(\v2\x14.worker.ScheduleItemR\x05items\x12\x1a\n" +
+	"\bwarnings\x18\x02 \x03(\tR\bwarnings\"B\n" +
 	"\x14SaveSchedulesRequest\x12*\n" +
-	"\x05items\x18\x01 \x03(\v2\x14.worker.ScheduleItemR\x05items\"8\n" +
+	"\x05items\x18\x01 \x03(\v2\x14.worker.ScheduleItemR\x05items\"\x8f\x01\n" +
 	"\x17GenerateScheduleRequest\x12\x1d\n" +
 	"\n" +
-	"week_start\x18\x01 \x01(\tR\tweekStart\"\x83\x02\n" +
+	"week_start\x18\x01 \x01(\tR\tweekStart\x12+\n" +
+	"\x12rest_days_per_week\x18\x02 \x01(\x03R\x0frestDaysPerWeek\x12(\n" +
+	"\x10min_per_building\x18\x03 \x01(\x03R\x0eminPerBuilding\"\x83\x02\n" +
 	"\tLeaveItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tworker_id\x18\x02 \x01(\x03R\bworkerId\x12\x1d\n" +
