@@ -52,6 +52,7 @@ import AdminBuildingVisual from '../components/AdminBuildingVisual.vue'
 const buildings = ref<AdminBuilding[]>([])
 const orders = ref<OrderItem[]>([])
 const days = ref(3)
+const selected = ref<AdminBuilding | null>(null)
 const dialogVisible = ref(false)
 
 async function loadOrders() {
