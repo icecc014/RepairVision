@@ -46,8 +46,8 @@
       </aside>
 
       <section class="canvas-area">
-        <div class="hint-line" :class="{ warn: !brush }">
-          {{ brush ? '已选择「' + brushLabel + '」：点击网格放置，按住拖动可连续绘制；双击区块可改尺寸' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 自定义区域 / 擦除），再点击网格开始绘制' }}
+        <div class="hint-line" :class="{ warn: !brush || !!editingId, editing: !!editingId }">
+          {{ editingId ? '编辑模式：只能调整当前选中的区块（拖把手改尺寸 / 拖本体移动 / 右侧「左扩·右扩」按钮）；按 Esc 或点击空白处退出' : (brush ? '已选择「' + brushLabel + '」：点击网格放置，按住拖动可连续绘制；双击区块可改尺寸' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 自定义区域 / 擦除），再点击网格开始绘制') }}
         </div>
 
         <div class="canvas-scroll">
@@ -112,7 +112,7 @@
         <template v-if="selectedBlock">
           <div class="prop-row">
             <span class="prop-label">类型</span>
-            <el-select v-model="selectedBlock.kind" size="small" style="width: 100%" @change="onKindChange">
+            <el-select :model-value="selectedBlock.kind" size="small" style="width: 100%" @change="(v: BlockKind) => setKind(v)">
               <el-option label="房间" value="room" />
               <el-option label="过道" value="corridor" />
               <el-option label="楼梯" value="stair" />
@@ -123,29 +123,51 @@
           <div v-if="selectedBlock.kind === 'custom'" class="prop-row">
             <span class="prop-label">名称</span>
             <el-input
-              v-model="selectedBlock.label"
+              :model-value="selectedBlock.label"
               size="small"
               maxlength="12"
               placeholder="如：洗衣房"
-              @change="pushHistory"
+              @change="(v: string) => setLabel(v)"
             />
           </div>
           <div class="prop-row">
             <span class="prop-label">起始格</span>
             <div class="prop-pair">
-              <el-input-number v-model="selectedBlock.row" :min="0" :max="rows - 1" size="small" @change="applyPropChange" />
-              <el-input-number v-model="selectedBlock.col" :min="0" :max="cols - 1" size="small" @change="applyPropChange" />
+              <el-input-number :model-value="selectedBlock.row" :min="0" :max="rows - 1" size="small" @change="(v: number) => setProp('row', v)" />
+              <el-input-number :model-value="selectedBlock.col" :min="0" :max="cols - 1" size="small" @change="(v: number) => setProp('col', v)" />
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">跨格数</span>
             <div class="prop-pair">
-              <el-input-number v-model="selectedBlock.rowSpan" :min="1" :max="rows" size="small" @change="applyPropChange" />
-              <el-input-number v-model="selectedBlock.colSpan" :min="1" :max="cols" size="small" @change="applyPropChange" />
+              <el-input-number :model-value="selectedBlock.rowSpan" :min="1" :max="rows" size="small" @change="(v: number) => setProp('rowSpan', v)" />
+              <el-input-number :model-value="selectedBlock.colSpan" :min="1" :max="cols" size="small" @change="(v: number) => setProp('colSpan', v)" />
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">左右边缘（外扩 / 内收）</span>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('w', true)">← 左扩</el-button>
+              <el-button size="small" @click="expandEdge('w', false)">→ 左收</el-button>
+            </div>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('e', true)">右扩 →</el-button>
+              <el-button size="small" @click="expandEdge('e', false)">← 右收</el-button>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">上下边缘（外扩 / 内收）</span>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('n', true)">↑ 上扩</el-button>
+              <el-button size="small" @click="expandEdge('n', false)">↓ 上收</el-button>
+            </div>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('s', true)">下扩 ↓</el-button>
+              <el-button size="small" @click="expandEdge('s', false)">↑ 下收</el-button>
             </div>
           </div>
           <el-button size="small" type="danger" plain style="width: 100%" @click="removeSelected">删除该区块</el-button>
-          <p class="prop-tip">起始格 / 跨格数 越界或与其它区块重叠时会自动回退到最近合法值。</p>
+          <p class="prop-tip">起始格 / 跨格数 越界或与其它区块重叠时会自动回退到最近合法值；「左扩 / 上扩」会把区块起点一起往外移，因此 1 格宽的房间也能往左、往上变大。</p>
         </template>
         <p v-else class="prop-empty">单击区块可查看属性；双击区块进入编辑模式（显示 8 个把手）。</p>
       </aside>
@@ -295,9 +317,12 @@ function blockStyle(b: LayoutBlock) {
 function selectBrush(code: CellCode) {
   brush.value = brush.value === code ? null : code
   painting.value = false
+  // 选择工具即退出编辑模式，避免"编辑中又画出新房间"
+  editingId.value = null
 }
 
 function placeAt(row: number, col: number) {
+  if (editingId.value) return // 编辑模式只调整当前区块，不放置新内容
   const kind = brush.value ? kindOfCode(brush.value) : null
   const hit = grid.value.blocks.find((b) => row >= b.row && row < b.row + b.rowSpan && col >= b.col && col < b.col + b.colSpan)
   if (!kind) {
@@ -317,6 +342,12 @@ function placeAt(row: number, col: number) {
 }
 
 function onSlotDown(slot: { row: number; col: number }) {
+  // 编辑模式：只允许调整当前选中区块，点击空白处退出编辑
+  if (editingId.value) {
+    editingId.value = null
+    selectedId.value = null
+    return
+  }
   if (!brush.value) {
     ElMessage.warning('请先在左侧选择绘制工具，再点击网格放置')
     return
@@ -331,7 +362,7 @@ function onSlotDown(slot: { row: number; col: number }) {
 }
 
 function onSlotEnter(slot: { row: number; col: number }) {
-  if (!painting.value) return
+  if (editingId.value || !painting.value) return
   placeAt(slot.row, slot.col)
 }
 
@@ -359,6 +390,16 @@ async function createCustomAt(row: number, col: number) {
 // ---------- 选中 / 编辑模式 ----------
 
 function onBlockDown(b: LayoutBlock, ev: PointerEvent) {
+  // 编辑模式：只能操作当前区块（点其它区块=切换目标，点本体=整体拖动）
+  if (editingId.value) {
+    if (editingId.value !== b.id) {
+      editingId.value = b.id
+      selectedId.value = b.id
+      return
+    }
+    startMove(b, ev)
+    return
+  }
   if (!brush.value) {
     ElMessage.warning('请先在左侧选择绘制工具，再点击网格放置')
     return
@@ -370,7 +411,6 @@ function onBlockDown(b: LayoutBlock, ev: PointerEvent) {
     syncSelection()
     return
   }
-  if (editingId.value === b.id) startMove(b, ev)
 }
 
 function enterEdit(b: LayoutBlock) {
@@ -385,13 +425,55 @@ function removeSelected() {
   syncSelection()
 }
 
-function onKindChange(kind: BlockKind) {
+function setKind(kind: BlockKind) {
   const b = selectedBlock.value
-  if (!b) return
+  if (!b || b.kind === kind) return
   pushHistory()
   b.kind = kind
   if (kind === 'custom' && !b.label) b.label = '自定义区域'
   if (kind !== 'custom') delete b.label
+}
+
+function setLabel(value: string) {
+  const b = selectedBlock.value
+  if (!b) return
+  const next = String(value || '').trim().slice(0, 12)
+  if ((b.label || '') === next) return
+  pushHistory()
+  b.label = next
+}
+
+// 先入栈再改值，保证撤销能回到修改前的状态
+function setProp(field: 'row' | 'col' | 'rowSpan' | 'colSpan', value: number) {
+  const b = selectedBlock.value
+  if (!b) return
+  const before = { ...b }
+  pushHistory()
+  b[field] = Number(value) || 0
+  applyPropChange()
+  if (b.row === before.row && b.col === before.col && b.rowSpan === before.rowSpan && b.colSpan === before.colSpan) {
+    undoStack.value.pop() // 无实际变化，丢弃这次历史
+  }
+}
+
+// 边缘按格扩/收：左扩、上扩会同时移动起点，解决"1 格宽无法往左/往上扩大"的问题
+function expandEdge(dir: 'w' | 'e' | 'n' | 's', grow: boolean) {
+  const b = selectedBlock.value
+  if (!b) return
+  const dx = dir === 'w' ? (grow ? -1 : 1) : dir === 'e' ? (grow ? 1 : -1) : 0
+  const dy = dir === 'n' ? (grow ? -1 : 1) : dir === 's' ? (grow ? 1 : -1) : 0
+  pushHistory()
+  const next = stepResize(grid.value, b, dir, dx, dy)
+  const changed = next.row !== b.row || next.col !== b.col || next.rowSpan !== b.rowSpan || next.colSpan !== b.colSpan
+  if (!changed) {
+    undoStack.value.pop()
+    ElMessage.warning(grow ? '该方向已到边界或被其它区块挡住' : '该方向已缩到最小 1 格')
+    return
+  }
+  b.row = next.row
+  b.col = next.col
+  b.rowSpan = next.rowSpan
+  b.colSpan = next.colSpan
 }
 
 // ---------- 尺寸 / 位置编辑（逐格试探 + 碰撞检测）----------
@@ -735,6 +817,12 @@ onUnmounted(() => {
 .hint-line.warn {
   color: #b96b1c;
   font-weight: 600;
+}
+.hint-line.editing {
+  padding: 6px 10px;
+  color: #2462d9;
+  background: rgba(52, 120, 246, 0.1);
+  border-radius: 10px;
 }
 
 .canvas-scroll {
