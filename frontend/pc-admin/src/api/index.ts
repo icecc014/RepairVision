@@ -462,13 +462,14 @@ export interface LeavePage {
   list: LeaveItem[]
 }
 
-export function apiAdminLeaves(params: { workerId?: number; status?: number; page?: number; size?: number }): Promise<LeavePage> {
+export function apiAdminLeaves(params: { workerId?: number; status?: number; page?: number; size?: number; days?: number }): Promise<LeavePage> {
   return http.get('/admin/leaves', {
     params: {
       workerId: params.workerId || undefined,
       status: params.status || undefined,
       page: params.page || 1,
       size: params.size || 20,
+      days: params.days || undefined,
     },
   })
 }

@@ -21,6 +21,18 @@
 
     <section class="leave-list">
       <div class="leave-list-title">我的请假记录</div>
+      <div class="rv-filters">
+        <span class="rv-days-label">时间</span>
+        <button
+          v-for="d in dayOptions"
+          :key="d"
+          class="rv-filter-chip"
+          :class="{ active: days === d }"
+          @click="setDays(d)"
+        >
+          {{ d === 30 ? '30天' : d + '天' }}
+        </button>
+      </div>
       <div v-if="list.length === 0" class="rv-empty">
         <div class="rv-empty-icon">🗓️</div>
         <div class="rv-empty-text">暂无请假记录</div>
@@ -47,6 +59,8 @@ import { apiWorkerLeaveCancel, apiWorkerLeaveSubmit, apiWorkerLeaves } from '../
 const list = ref<LeaveItem[]>([])
 const submitting = ref(false)
 const form = reactive({ startDate: '', endDate: '', reason: '' })
+const dayOptions = [1, 3, 7, 30]
+const days = ref(Number(localStorage.getItem('rv-days') || 3))
 
 function today() {
   const d = new Date()
@@ -56,11 +70,17 @@ function today() {
 
 async function load() {
   try {
-    const res = await apiWorkerLeaves(0, 1, 50)
+    const res = await apiWorkerLeaves(0, 1, 50, days.value)
     list.value = res.list
   } catch (err) {
     showToast((err as Error).message)
   }
+}
+
+function setDays(d: number) {
+  days.value = d
+  localStorage.setItem('rv-days', String(d))
+  load()
 }
 
 async function submit() {

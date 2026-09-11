@@ -8,6 +8,12 @@
           <el-option label="已驳回" :value="3" />
           <el-option label="已撤销" :value="4" />
         </el-select>
+        <el-radio-group v-model="days" size="small" @change="load">
+          <el-radio-button :value="1">1天</el-radio-button>
+          <el-radio-button :value="3">3天</el-radio-button>
+          <el-radio-button :value="7">7天</el-radio-button>
+          <el-radio-button :value="30">30天</el-radio-button>
+        </el-radio-group>
         <el-button type="primary" @click="load">查询</el-button>
         <div style="flex: 1"></div>
         <el-tag type="warning" effect="plain">待审批 {{ pendingCount }}</el-tag>
@@ -70,6 +76,7 @@ const reviewVisible = ref(false)
 const reviewTarget = ref<LeaveItem | null>(null)
 const reviewStatus = ref(2)
 const reviewNote = ref('')
+const days = ref(3)
 const filter = reactive({ status: 0 })
 
 const pendingCount = computed(() => list.value.filter((x) => x.status === 1).length)
@@ -77,7 +84,7 @@ const pendingCount = computed(() => list.value.filter((x) => x.status === 1).len
 async function load() {
   loading.value = true
   try {
-    const res = await apiAdminLeaves({ status: filter.status, page: 1, size: 100 })
+    const res = await apiAdminLeaves({ status: filter.status, page: 1, size: 100, days: days.value })
     list.value = res.list
   } catch (err) {
     ElMessage.error((err as Error).message)

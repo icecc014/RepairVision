@@ -203,8 +203,8 @@ export function apiWorkerLeaveSubmit(payload: { startDate: string; endDate: stri
   return http.post('/worker/leaves', payload)
 }
 
-export function apiWorkerLeaves(status = 0, page = 1, size = 20): Promise<LeavePage> {
-  return http.get('/worker/leaves', { params: { status: status || undefined, page, size } })
+export function apiWorkerLeaves(status = 0, page = 1, size = 20, days = 3): Promise<LeavePage> {
+  return http.get('/worker/leaves', { params: { status: status || undefined, page, size, days } })
 }
 
 export function apiWorkerLeaveCancel(id: number): Promise<unknown> {

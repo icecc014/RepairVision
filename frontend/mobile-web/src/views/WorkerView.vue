@@ -146,7 +146,7 @@ const dayOptions = [
   { value: 1, label: '1天' },
   { value: 3, label: '3天' },
   { value: 7, label: '7天' },
-  { value: 30, label: '1个月' },
+  { value: 30, label: '30天' },
 ]
 function setDays(v: number) {
   days.value = v

@@ -27,6 +27,7 @@ func (l *AdminLeaveListLogic) AdminLeaveList(req *types.AdminLeaveListRequest) (
 		Status:   req.Status,
 		Page:     req.Page,
 		Size:     req.Size,
+		Days:     leaveDaysOrDefault(req.Days),
 	})
 	if err != nil {
 		return nil, rpcBizError(err)
@@ -85,4 +86,12 @@ func (l *AdminLeaveReviewLogic) AdminLeaveReview(req *types.LeaveReviewRequest) 
 	notifyUsers(l.ctx, l.svcCtx, []int64{item.WorkerId}, "leave",
 		"请假审批结果："+result, item.StartDate+" 至 "+item.EndDate, 0)
 	return &types.EmptyResponse{}, nil
+}
+
+// leaveDaysOrDefault 请假列表时间窗缺省值：与工单列表保持一致，默认近 3 天。
+func leaveDaysOrDefault(days int64) int64 {
+	if days <= 0 {
+		return 3
+	}
+	return days
 }

@@ -10,7 +10,7 @@
           :class="{ active: days === d }"
           @click="setDays(d)"
         >
-          {{ d === 30 ? '1个月' : d + '天' }}
+          {{ d === 30 ? '30天' : d + '天' }}
         </button>
       </div>
       <button class="mini-btn" @click="load">刷新</button>

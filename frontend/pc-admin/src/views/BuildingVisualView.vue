@@ -7,7 +7,7 @@
           <el-radio-button :value="1">1天</el-radio-button>
           <el-radio-button :value="3">3天</el-radio-button>
           <el-radio-button :value="7">7天</el-radio-button>
-          <el-radio-button :value="30">1个月</el-radio-button>
+          <el-radio-button :value="30">30天</el-radio-button>
         </el-radio-group>
         <span class="range-hint">近 {{ days }} 天共 {{ orders.length }} 单，2D / 3D 视图与红点按此范围显示</span>
       </div>
@@ -102,4 +102,29 @@ onMounted(load)
 .name { margin-top:8px; font-weight:600; color:#1e293b; }
 .meta { margin-top:4px; color:#94a3b8; font-size:12px; }
 .action { margin-top:12px; color:#2563eb; font-size:13px; font-weight:600; }
+
+.range-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  min-height: 32px;
+}
+.range-title {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 32px;
+}
+.range-hint {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 32px;
+}
+.range-bar :deep(.el-radio-button__inner) {
+  height: 32px;
+  padding: 0 16px;
+  font-size: 13px;
+}
 </style>

@@ -204,6 +204,24 @@ body::before {
   box-shadow: 0 8px 18px rgba(224, 100, 138, 0.24);
 }
 
+/* Element Plus：单选胶囊组（时间窗筛选）统一高度与垂直对齐，避免与相邻文字错位 */
+.el-radio-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.el-radio-button__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 14px;
+  line-height: 1;
+}
+.el-radio-group--small .el-radio-button__inner {
+  height: 28px;
+  padding: 0 12px;
+}
 /* Element Plus：表格 */
 .el-table {
   --el-table-border-color: var(--pc-line);

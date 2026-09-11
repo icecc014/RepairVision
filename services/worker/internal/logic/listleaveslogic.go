@@ -24,7 +24,7 @@ func NewListLeavesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListLe
 }
 
 func (l *ListLeavesLogic) ListLeaves(in *worker.ListLeavesRequest) (*worker.ListLeavesResponse, error) {
-	rows, total, err := store.ListLeaves(l.ctx, l.svcCtx.DB, in.WorkerId, in.Status, in.Page, in.Size)
+	rows, total, err := store.ListLeaves(l.ctx, l.svcCtx.DB, in.WorkerId, in.Status, in.Page, in.Size, in.Days)
 	if err != nil {
 		return nil, err
 	}

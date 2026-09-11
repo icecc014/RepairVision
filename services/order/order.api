@@ -104,6 +104,7 @@ type WorkerLeaveListRequest {
 	Status int64 `form:"status,optional"`
 	Page   int64 `form:"page,optional"`
 	Size   int64 `form:"size,optional"`
+	Days int64 `form:"days,optional"`
 }
 
 type AdminLeaveListRequest {
@@ -111,6 +112,7 @@ type AdminLeaveListRequest {
 	Status   int64 `form:"status,optional"`
 	Page     int64 `form:"page,optional"`
 	Size     int64 `form:"size,optional"`
+	Days int64 `form:"days,optional"`
 }
 
 type LeaveListResponse {

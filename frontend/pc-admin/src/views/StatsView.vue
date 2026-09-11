@@ -14,7 +14,7 @@
           <el-radio-button :value="1">1天</el-radio-button>
           <el-radio-button :value="3">3天</el-radio-button>
           <el-radio-button :value="7">7天</el-radio-button>
-          <el-radio-button :value="30">1个月</el-radio-button>
+          <el-radio-button :value="30">30天</el-radio-button>
         </el-radio-group>
       </div>
       <div class="sla-grid">

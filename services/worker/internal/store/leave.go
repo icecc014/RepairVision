@@ -49,7 +49,7 @@ func FindLeaveByID(ctx context.Context, conn sqlx.Session, id int64) (*LeaveRequ
 	return &row, nil
 }
 
-func ListLeaves(ctx context.Context, conn sqlx.Session, workerID, status, page, size int64) ([]LeaveRequest, int64, error) {
+func ListLeaves(ctx context.Context, conn sqlx.Session, workerID, status, page, size, days int64) ([]LeaveRequest, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -68,6 +68,10 @@ func ListLeaves(ctx context.Context, conn sqlx.Session, workerID, status, page, 
 	if status > 0 {
 		where += " and status = ?"
 		args = append(args, status)
+	}
+	if days > 0 {
+		where += " and created_at >= ?"
+		args = append(args, time.Now().AddDate(0, 0, -int(days)+1))
 	}
 	var total int64
 	if err := conn.QueryRowCtx(ctx, &total, "select count(*) from worker_leave_requests "+where, args...); err != nil {

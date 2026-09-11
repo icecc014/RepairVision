@@ -1535,6 +1535,7 @@ type ListLeavesRequest struct {
 	Status        int64                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
 	Page          int64                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
 	Size          int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
+	Days          int64                  `protobuf:"varint,5,opt,name=days,proto3" json:"days,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1593,6 +1594,13 @@ func (x *ListLeavesRequest) GetPage() int64 {
 func (x *ListLeavesRequest) GetSize() int64 {
 	if x != nil {
 		return x.Size
+	}
+	return 0
+}
+
+func (x *ListLeavesRequest) GetDays() int64 {
+	if x != nil {
+		return x.Days
 	}
 	return 0
 }
@@ -1888,12 +1896,13 @@ const file_worker_proto_rawDesc = "" +
 	"\n" +
 	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
 	"\bend_date\x18\x03 \x01(\tR\aendDate\x12\x16\n" +
-	"\x06reason\x18\x04 \x01(\tR\x06reason\"p\n" +
+	"\x06reason\x18\x04 \x01(\tR\x06reason\"\x84\x01\n" +
 	"\x11ListLeavesRequest\x12\x1b\n" +
 	"\tworker_id\x18\x01 \x01(\x03R\bworkerId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\x03R\x06status\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x03R\x04page\x12\x12\n" +
-	"\x04size\x18\x04 \x01(\x03R\x04size\"S\n" +
+	"\x04size\x18\x04 \x01(\x03R\x04size\x12\x12\n" +
+	"\x04days\x18\x05 \x01(\x03R\x04days\"S\n" +
 	"\x12ListLeavesResponse\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12'\n" +
 	"\x05items\x18\x02 \x03(\v2\x11.worker.LeaveItemR\x05items\"~\n" +

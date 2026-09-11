@@ -34,7 +34,7 @@
           <el-radio-button :value="1">1天</el-radio-button>
           <el-radio-button :value="3">3天</el-radio-button>
           <el-radio-button :value="7">7天</el-radio-button>
-          <el-radio-button :value="30">1个月</el-radio-button>
+          <el-radio-button :value="30">30天</el-radio-button>
         </el-radio-group>
         <el-button type="primary" @click="load">查询</el-button>
         <el-button @click="reset">重置</el-button>

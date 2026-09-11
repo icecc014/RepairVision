@@ -61,6 +61,7 @@ func (l *WorkerLeaveListLogic) WorkerLeaveList(req *types.WorkerLeaveListRequest
 		Status:   req.Status,
 		Page:     req.Page,
 		Size:     req.Size,
+		Days:     leaveDaysOrDefault(req.Days),
 	})
 	if err != nil {
 		return nil, rpcBizError(err)

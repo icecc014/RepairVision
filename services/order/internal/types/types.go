@@ -429,6 +429,7 @@ type WorkerLeaveListRequest struct {
 	Status int64 `form:"status,optional"`
 	Page   int64 `form:"page,optional"`
 	Size   int64 `form:"size,optional"`
+	Days   int64 `form:"days,optional"`
 }
 
 type AdminLeaveListRequest struct {
@@ -436,6 +437,7 @@ type AdminLeaveListRequest struct {
 	Status   int64 `form:"status,optional"`
 	Page     int64 `form:"page,optional"`
 	Size     int64 `form:"size,optional"`
+	Days     int64 `form:"days,optional"`
 }
 
 type LeaveListResponse struct {
