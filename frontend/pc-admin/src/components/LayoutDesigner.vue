@@ -47,7 +47,7 @@
 
       <section class="canvas-area">
         <div class="hint-line" :class="{ warn: !brush || !!editingId, editing: !!editingId }">
-          {{ editingId ? '编辑模式：只能调整当前选中的区块（拖把手改尺寸 / 拖本体移动 / 右侧「左扩·右扩」按钮）；按 Esc 或点击空白处退出' : (brush ? '已选择「' + brushLabel + '」：点击网格放置，按住拖动可连续绘制；双击区块可改尺寸' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 自定义区域 / 擦除），再点击网格开始绘制') }}
+          {{ editingId ? '编辑模式：只能调整当前选中的区块（拖把手改尺寸 / 拖本体移动 / 右侧「左扩·右扩」按钮）；按 Esc 或点击空白处退出' : (brush ? '已选择「' + brushLabel + '」：点击网格放置（一次点击放一个格子）；双击区块可改尺寸' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 自定义区域 / 擦除），再点击网格开始绘制') }}
         </div>
 
         <div class="canvas-scroll">
@@ -64,7 +64,6 @@
                 class="slot"
                 :class="{ painted: !!slot.blockId }"
                 @pointerdown.prevent="onSlotDown(slot)"
-                @pointerenter="onSlotEnter(slot)"
               />
             </div>
 
@@ -228,7 +227,6 @@ const grid = ref<LayoutGrid>(defaultLayout())
 const cols = ref(6)
 const rows = ref(10)
 const brush = ref<CellCode | null>(null)
-const painting = ref(false)
 const saving = ref(false)
 const selectedId = ref<string | null>(null)
 const editingId = ref<string | null>(null)
@@ -316,7 +314,6 @@ function blockStyle(b: LayoutBlock) {
 
 function selectBrush(code: CellCode) {
   brush.value = brush.value === code ? null : code
-  painting.value = false
   // 选择工具即退出编辑模式，避免"编辑中又画出新房间"
   editingId.value = null
 }
@@ -352,17 +349,10 @@ function onSlotDown(slot: { row: number; col: number }) {
     ElMessage.warning('请先在左侧选择绘制工具，再点击网格放置')
     return
   }
-  painting.value = true
   if (brush.value === '5') {
     createCustomAt(slot.row, slot.col)
-    painting.value = false
     return
   }
-  placeAt(slot.row, slot.col)
-}
-
-function onSlotEnter(slot: { row: number; col: number }) {
-  if (editingId.value || !painting.value) return
   placeAt(slot.row, slot.col)
 }
 
@@ -539,7 +529,6 @@ function endDrag() {
   }
   drag.mode = ''
   drag.base = null
-  painting.value = false
 }
 
 function applyPropChange() {
@@ -691,7 +680,6 @@ watch(
     cols.value = base.cols
     rows.value = base.rows
     brush.value = null
-    painting.value = false
     selectedId.value = null
     editingId.value = null
     undoStack.value = []
