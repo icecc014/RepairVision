@@ -1,8 +1,9 @@
 <template>
-  <el-dialog append-to-body
+  <el-dialog
+    append-to-body
     :model-value="modelValue"
     :title="`楼层布局设计 · ${building?.name || ''}`"
-    width="1240px"
+    width="1320px"
     top="3vh"
     @update:model-value="(v: boolean) => emit('update:modelValue', v)"
   >
@@ -32,66 +33,164 @@
         <el-button size="small" @click="loadTemplate">一键生成标准层</el-button>
         <el-button size="small" @click="clearAll">清空画布</el-button>
         <el-button size="small" type="danger" plain @click="clearCustom">清除自定义布局</el-button>
+
+        <div class="tool-title">快捷键</div>
+        <ul class="key-list">
+          <li><b>双击</b> 区块进入编辑模式</li>
+          <li><b>拖动把手</b> 按格改尺寸</li>
+          <li><b>编辑模式拖动</b> 整体移动</li>
+          <li><b>Ctrl+Z / Ctrl+Shift+Z</b> 撤销 / 重做</li>
+          <li><b>Delete</b> 删除选中区块</li>
+          <li><b>Esc</b> 退出编辑模式</li>
+        </ul>
       </aside>
 
       <section class="canvas-area">
         <div class="hint-line" :class="{ warn: !brush }">
-          {{ brush ? '已选择「' + brushLabel + '」：点击网格放置，按住拖动可连续绘制' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 空白），再点击网格开始绘制' }}
+          {{ brush ? '已选择「' + brushLabel + '」：点击网格放置，按住拖动可连续绘制；双击区块可改尺寸' : '请先在左侧选择绘制工具（房间 / 过道 / 楼梯 / 公共区 / 自定义区域 / 擦除），再点击网格开始绘制' }}
         </div>
-        <div
-          class="grid"
-          :class="{ 'no-brush': !brush }"
-          :style="{ gridTemplateColumns: `repeat(${cols}, 1fr)` }"
-        >
-          <button
-            v-for="(cell, i) in flatCells"
-            :key="i"
-            class="cell"
-            :class="[`c${cell.code}`, { snapshot: cell.snapshot }]"
-            @pointerdown.prevent="startPaint(i)"
-            @pointerenter="dragPaint(i)"
+
+        <div class="canvas-scroll">
+          <div
+            ref="canvasRef"
+            class="canvas"
+            :class="{ 'no-brush': !brush }"
+            :style="{ '--cols': cols, '--rows': rows }"
           >
-            <span v-if="cell.code === '1'" class="cell-no">{{ cell.no }}</span>
-            <span v-else-if="cell.code === '3'" class="cell-tag">楼梯</span>
-            <span v-else-if="cell.code === '4'" class="cell-tag">公共</span>
-          </button>
+            <div class="slot-layer">
+              <button
+                v-for="slot in slots"
+                :key="slot.key"
+                class="slot"
+                :class="{ painted: !!slot.blockId }"
+                @pointerdown.prevent="onSlotDown(slot)"
+                @pointerenter="onSlotEnter(slot)"
+              />
+            </div>
+
+            <div class="block-layer">
+              <div
+                v-for="b in grid.blocks"
+                :key="b.id"
+                class="block"
+                :class="[`k-${b.kind}`, { selected: selectedId === b.id, editing: editingId === b.id }]"
+                :style="blockStyle(b)"
+                @pointerdown.stop="onBlockDown(b, $event)"
+                @dblclick.stop="enterEdit(b)"
+              >
+                <span class="block-label">{{ labelOf(b) }}</span>
+                <template v-if="editingId === b.id">
+                  <i
+                    v-for="h in HANDLES"
+                    :key="h"
+                    class="handle"
+                    :class="`h-${h}`"
+                    @pointerdown.stop="onHandleDown(b, h, $event)"
+                  />
+                </template>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="summary">
           <span>房间 <b>{{ roomCount }}</b> 间</span>
-          <span>过道 <b>{{ typeCount('2') }}</b> 格</span>
-          <span>楼梯 <b>{{ typeCount('3') }}</b> 格</span>
-          <span>公共区 <b>{{ typeCount('4') }}</b> 格</span>
+          <span>过道 <b>{{ kindCount('corridor') }}</b> 块</span>
+          <span>楼梯 <b>{{ kindCount('stair') }}</b> 块</span>
+          <span>公共区 <b>{{ kindCount('public') }}</b> 块</span>
+          <span>自定义 <b>{{ kindCount('custom') }}</b> 块</span>
           <span>楼层 <b>{{ building?.floors || 0 }}</b> 层</span>
         </div>
         <p class="tips">
-          保存后，该楼栋的 2D 平面图与 3D 楼宇都会按这份布局逐层渲染；其它楼栋不受影响。
+          保存后该楼栋的 2D 平面图与 3D 楼宇都会按这份布局逐层渲染；房间号按「楼层 × 100 + 顺序」自动生成，
+          自定义区域不参与编号、也不显示故障红点。
         </p>
       </section>
+
+      <aside class="props">
+        <div class="tool-title">区块属性</div>
+        <template v-if="selectedBlock">
+          <div class="prop-row">
+            <span class="prop-label">类型</span>
+            <el-select v-model="selectedBlock.kind" size="small" style="width: 100%" @change="onKindChange">
+              <el-option label="房间" value="room" />
+              <el-option label="过道" value="corridor" />
+              <el-option label="楼梯" value="stair" />
+              <el-option label="公共区" value="public" />
+              <el-option label="自定义区域" value="custom" />
+            </el-select>
+          </div>
+          <div v-if="selectedBlock.kind === 'custom'" class="prop-row">
+            <span class="prop-label">名称</span>
+            <el-input
+              v-model="selectedBlock.label"
+              size="small"
+              maxlength="12"
+              placeholder="如：洗衣房"
+              @change="pushHistory"
+            />
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">起始格</span>
+            <div class="prop-pair">
+              <el-input-number v-model="selectedBlock.row" :min="0" :max="rows - 1" size="small" @change="applyPropChange" />
+              <el-input-number v-model="selectedBlock.col" :min="0" :max="cols - 1" size="small" @change="applyPropChange" />
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">跨格数</span>
+            <div class="prop-pair">
+              <el-input-number v-model="selectedBlock.rowSpan" :min="1" :max="rows" size="small" @change="applyPropChange" />
+              <el-input-number v-model="selectedBlock.colSpan" :min="1" :max="cols" size="small" @change="applyPropChange" />
+            </div>
+          </div>
+          <el-button size="small" type="danger" plain style="width: 100%" @click="removeSelected">删除该区块</el-button>
+          <p class="prop-tip">起始格 / 跨格数 越界或与其它区块重叠时会自动回退到最近合法值。</p>
+        </template>
+        <p v-else class="prop-empty">单击区块可查看属性；双击区块进入编辑模式（显示 8 个把手）。</p>
+      </aside>
     </div>
 
     <template #footer>
-      <el-button @click="emit('update:modelValue', false)">取消</el-button>
-      <el-button type="primary" :loading="saving" @click="save">保存布局</el-button>
+      <div class="footer-bar">
+        <span class="history-tip">撤销栈 {{ undoStack.length }} 步</span>
+        <el-button size="small" :disabled="undoStack.length === 0" @click="undo">撤销</el-button>
+        <el-button size="small" :disabled="redoStack.length === 0" @click="redo">重做</el-button>
+        <div style="flex: 1" />
+        <el-button @click="emit('update:modelValue', false)">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存布局</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminBuilding } from '../api'
 import { apiUpdateBuilding } from '../api'
 import {
   CELL_TYPES,
+  KIND_TEXT,
   buildPlanFromLayout,
+  countKind,
   countRooms,
   defaultLayout,
   emptyLayout,
+  inBounds,
+  kindOfCode,
+  makeBlock,
   parseLayout,
   serializeLayout,
+  stepMove,
+  stepResize,
+  blocksOverlap,
+  isAreaFree,
+  type BlockKind,
   type CellCode,
+  type LayoutBlock,
   type LayoutGrid,
+  type ResizeHandle,
 } from '../utils/layoutGrid'
 
 const props = defineProps<{ modelValue: boolean; building: AdminBuilding | null }>()
@@ -100,119 +199,331 @@ const emit = defineEmits<{
   (e: 'saved'): void
 }>()
 
+type Handle = ResizeHandle
+const HANDLES: Handle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
+
 const grid = ref<LayoutGrid>(defaultLayout())
-const cols = ref(defaultLayout().cols)
-const rows = ref(defaultLayout().rows)
+const cols = ref(6)
+const rows = ref(10)
 const brush = ref<CellCode | null>(null)
 const painting = ref(false)
 const saving = ref(false)
+const selectedId = ref<string | null>(null)
+const editingId = ref<string | null>(null)
+const canvasRef = ref<HTMLElement | null>(null)
+const undoStack = ref<LayoutBlock[][]>([])
+const redoStack = ref<LayoutBlock[][]>([])
 
-watch(
-  () => [props.modelValue, props.building?.id] as const,
-  () => {
-    if (!props.modelValue) return
-    const parsed = parseLayout(props.building?.layoutJson)
-    const base = parsed || defaultLayout()
-    grid.value = { version: base.version, cols: base.cols, rows: base.rows, cells: [...base.cells] }
-    cols.value = base.cols
-    rows.value = base.rows
-    brush.value = null
-  },
-  { immediate: true },
-)
-
-const flatCells = computed(() => {
-  const numbers = new Map<string, string>()
-  const plan = buildPlanFromLayout(grid.value, 1)
-  plan.rooms.forEach((room, i) => {
-    const c = i % grid.value.cols
-    const r = Math.floor(i / grid.value.cols)
-    numbers.set(`${r}-${c}`, String(room.no).slice(1))
-  })
-  let index = 0
-  const out: { code: string; no: string; snapshot: boolean }[] = []
+const selectedBlock = computed(() => grid.value.blocks.find((b) => b.id === selectedId.value) || null)
+const roomCount = computed(() => countRooms(grid.value))
+const brushLabel = computed(() => CELL_TYPES.find((t) => t.code === brush.value)?.label || '')
+const slots = computed(() => {
+  const list: { key: string; row: number; col: number; blockId: string | null }[] = []
   for (let r = 0; r < grid.value.rows; r++) {
-    const line = (grid.value.cells[r] || '').padEnd(grid.value.cols, '0')
     for (let c = 0; c < grid.value.cols; c++) {
-      const code = line[c] || '0'
-      index++
-      out.push({ code, no: numbers.get(`${r}-${c}`) || String(index), snapshot: code === '1' })
+      const hit = grid.value.blocks.find(
+        (b) => r >= b.row && r < b.row + b.rowSpan && c >= b.col && c < b.col + b.colSpan,
+      )
+      list.push({ key: `${r}-${c}`, row: r, col: c, blockId: hit?.id ?? null })
     }
   }
-  return out
+  return list
 })
 
-const roomCount = computed(() => countRooms(grid.value))
-
-function typeCount(code: CellCode) {
-  let total = 0
-  for (const line of grid.value.cells) {
-    for (const ch of line) if (ch === code) total++
-  }
-  return total
+function cloneBlocks(): LayoutBlock[] {
+  return grid.value.blocks.map((b) => ({ ...b }))
 }
 
-const brushLabel = computed(() => CELL_TYPES.find((t) => t.code === brush.value)?.label || '')
+function pushHistory() {
+  undoStack.value.push(cloneBlocks())
+  if (undoStack.value.length > 50) undoStack.value.shift()
+  redoStack.value = []
+}
 
-// 选择/取消绘制工具：默认不选，必须先点工具才允许放置
+function undo() {
+  const last = undoStack.value.pop()
+  if (!last) return
+  redoStack.value.push(cloneBlocks())
+  grid.value.blocks = last
+  syncSelection()
+}
+
+function redo() {
+  const next = redoStack.value.pop()
+  if (!next) return
+  undoStack.value.push(cloneBlocks())
+  grid.value.blocks = next
+  syncSelection()
+}
+
+function syncSelection() {
+  if (selectedId.value && !grid.value.blocks.some((b) => b.id === selectedId.value)) selectedId.value = null
+  if (editingId.value && !grid.value.blocks.some((b) => b.id === editingId.value)) editingId.value = null
+}
+
+function kindCount(kind: BlockKind) {
+  return countKind(grid.value, kind)
+}
+
+function labelOf(b: LayoutBlock) {
+  if (b.kind === 'room') {
+    const plan = buildPlanFromLayout(grid.value, 1)
+    return plan.rooms.find((r) => r.index === roomIndex(b))?.no || ''
+  }
+  return b.label || KIND_TEXT[b.kind]
+}
+
+function roomIndex(b: LayoutBlock) {
+  const rooms = grid.value.blocks
+    .filter((x) => x.kind === 'room')
+    .slice()
+    .sort((m, n) => (m.row - n.row) || (m.col - n.col))
+  return rooms.findIndex((x) => x.id === b.id) + 1
+}
+
+function blockStyle(b: LayoutBlock) {
+  return {
+    left: `${(b.col / grid.value.cols) * 100}%`,
+    top: `${(b.row / grid.value.rows) * 100}%`,
+    width: `${(b.colSpan / grid.value.cols) * 100}%`,
+    height: `${(b.rowSpan / grid.value.rows) * 100}%`,
+  }
+}
+
+// ---------- 绘制 ----------
+
 function selectBrush(code: CellCode) {
   brush.value = brush.value === code ? null : code
   painting.value = false
 }
 
-function applyCell(index: number) {
-  if (!brush.value) return
-  const r = Math.floor(index / grid.value.cols)
-  const c = index % grid.value.cols
-  const line = (grid.value.cells[r] || '').padEnd(grid.value.cols, '0')
-  grid.value.cells[r] = line.slice(0, c) + brush.value + line.slice(c + 1)
+function placeAt(row: number, col: number) {
+  const kind = brush.value ? kindOfCode(brush.value) : null
+  const hit = grid.value.blocks.find((b) => row >= b.row && row < b.row + b.rowSpan && col >= b.col && col < b.col + b.colSpan)
+  if (!kind) {
+    // 擦除
+    if (hit) {
+      pushHistory()
+      grid.value.blocks = grid.value.blocks.filter((b) => b.id !== hit.id)
+      syncSelection()
+    }
+    return
+  }
+  if (hit) return
+  pushHistory()
+  const block = makeBlock(kind, row, col)
+  grid.value.blocks.push(block)
+  selectedId.value = block.id
 }
 
-// 只能通过“按下鼠标”开始绘制；单纯滑过网格不会放置任何内容
-function startPaint(index: number) {
+function onSlotDown(slot: { row: number; col: number }) {
   if (!brush.value) {
     ElMessage.warning('请先在左侧选择绘制工具，再点击网格放置')
     return
   }
   painting.value = true
-  applyCell(index)
+  if (brush.value === '5') {
+    createCustomAt(slot.row, slot.col)
+    painting.value = false
+    return
+  }
+  placeAt(slot.row, slot.col)
 }
 
-function dragPaint(index: number) {
+function onSlotEnter(slot: { row: number; col: number }) {
   if (!painting.value) return
-  applyCell(index)
+  placeAt(slot.row, slot.col)
 }
 
-function endPaint() {
+async function createCustomAt(row: number, col: number) {
+  const hit = grid.value.blocks.find((b) => row >= b.row && row < b.row + b.rowSpan && col >= b.col && col < b.col + b.colSpan)
+  if (hit) return
+  let label = ''
+  try {
+    const res = await ElMessageBox.prompt('请输入该区域的名称（如：洗衣房 / 自习室 / 值班室）', '自定义区域', {
+      inputValue: '',
+      inputValidator: (v: string) => (v && v.trim() ? true : '名称不能为空'),
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    })
+    label = String(res.value || '').trim().slice(0, 12)
+  } catch {
+    return
+  }
+  pushHistory()
+  const block = makeBlock('custom', row, col, 1, 1, label)
+  grid.value.blocks.push(block)
+  selectedId.value = block.id
+}
+
+// ---------- 选中 / 编辑模式 ----------
+
+function onBlockDown(b: LayoutBlock, ev: PointerEvent) {
+  if (!brush.value) {
+    ElMessage.warning('请先在左侧选择绘制工具，再点击网格放置')
+    return
+  }
+  selectedId.value = b.id
+  if (brush.value === '0') {
+    pushHistory()
+    grid.value.blocks = grid.value.blocks.filter((x) => x.id !== b.id)
+    syncSelection()
+    return
+  }
+  if (editingId.value === b.id) startMove(b, ev)
+}
+
+function enterEdit(b: LayoutBlock) {
+  selectedId.value = b.id
+  editingId.value = editingId.value === b.id ? null : b.id
+}
+
+function removeSelected() {
+  if (!selectedId.value) return
+  pushHistory()
+  grid.value.blocks = grid.value.blocks.filter((b) => b.id !== selectedId.value)
+  syncSelection()
+}
+
+function onKindChange(kind: BlockKind) {
+  const b = selectedBlock.value
+  if (!b) return
+  pushHistory()
+  b.kind = kind
+  if (kind === 'custom' && !b.label) b.label = '自定义区域'
+  if (kind !== 'custom') delete b.label
+}
+
+// ---------- 尺寸 / 位置编辑（逐格试探 + 碰撞检测）----------
+
+const drag = reactive({
+  mode: '' as '' | 'resize' | 'move',
+  id: '',
+  handle: 'se' as Handle,
+  base: null as LayoutBlock | null,
+  startX: 0,
+  startY: 0,
+  cellW: 1,
+  cellH: 1,
+})
+
+function beginDrag(mode: 'resize' | 'move', b: LayoutBlock, handle: Handle, ev: PointerEvent) {
+  const rect = canvasRef.value?.getBoundingClientRect()
+  if (!rect) return
+  pushHistory()
+  drag.mode = mode
+  drag.id = b.id
+  drag.handle = handle
+  drag.base = { ...b }
+  drag.startX = ev.clientX
+  drag.startY = ev.clientY
+  drag.cellW = rect.width / grid.value.cols
+  drag.cellH = rect.height / grid.value.rows
+  selectedId.value = b.id
+  editingId.value = b.id
+}
+
+function onHandleDown(b: LayoutBlock, handle: Handle, ev: PointerEvent) {
+  beginDrag('resize', b, handle, ev)
+}
+
+function startMove(b: LayoutBlock, ev: PointerEvent) {
+  beginDrag('move', b, 'se', ev)
+}
+
+function onPointerMove(ev: PointerEvent) {
+  if (!drag.mode || !drag.base) return
+  const dx = Math.round((ev.clientX - drag.startX) / drag.cellW)
+  const dy = Math.round((ev.clientY - drag.startY) / drag.cellH)
+  const target = grid.value.blocks.find((b) => b.id === drag.id)
+  if (!target) return
+  const next = drag.mode === 'resize'
+    ? stepResize(grid.value, drag.base, drag.handle, dx, dy)
+    : stepMove(grid.value, drag.base, dx, dy)
+  target.row = next.row
+  target.col = next.col
+  target.rowSpan = next.rowSpan
+  target.colSpan = next.colSpan
+}
+
+function endDrag() {
+  if (!drag.mode) return
+  const target = grid.value.blocks.find((b) => b.id === drag.id)
+  const base = drag.base
+  // 没有实际变化时回滚这次历史（避免空撤销）
+  if (target && base && target.row === base.row && target.col === base.col &&
+    target.rowSpan === base.rowSpan && target.colSpan === base.colSpan) {
+    undoStack.value.pop()
+  }
+  drag.mode = ''
+  drag.base = null
   painting.value = false
 }
 
-onMounted(() => window.addEventListener('pointerup', endPaint))
-onUnmounted(() => window.removeEventListener('pointerup', endPaint))
+function applyPropChange() {
+  const b = selectedBlock.value
+  if (!b) return
+  const cand: LayoutBlock = {
+    ...b,
+    row: Math.max(0, Math.min(rows.value - 1, Number(b.row) || 0)),
+    col: Math.max(0, Math.min(cols.value - 1, Number(b.col) || 0)),
+    rowSpan: Math.max(1, Math.min(rows.value, Number(b.rowSpan) || 1)),
+    colSpan: Math.max(1, Math.min(cols.value, Number(b.colSpan) || 1)),
+  }
+  // 越界 → 贴边；重叠 → 逐步回退到最近合法尺寸
+  if (cand.row + cand.rowSpan > rows.value) cand.row = Math.max(0, rows.value - cand.rowSpan)
+  if (cand.col + cand.colSpan > cols.value) cand.col = Math.max(0, cols.value - cand.colSpan)
+  const conflicts = !isAreaFree(grid.value, cand)
+  if (conflicts) {
+    const fallback = stepResize(grid.value, { ...b }, 'se', cand.colSpan - b.colSpan, cand.rowSpan - b.rowSpan)
+    b.rowSpan = fallback.rowSpan
+    b.colSpan = fallback.colSpan
+    ElMessage.warning('与其它区块重叠，已回退到最近合法的尺寸')
+    return
+  }
+  b.row = cand.row
+  b.col = cand.col
+  b.rowSpan = cand.rowSpan
+  b.colSpan = cand.colSpan
+}
+
+// ---------- 画布尺寸 / 模板 ----------
 
 function applySize() {
   const c = Math.max(4, Math.min(16, Number(cols.value) || 6))
   const r = Math.max(4, Math.min(20, Number(rows.value) || 10))
-  const cells: string[] = []
-  for (let i = 0; i < r; i++) {
-    const old = (grid.value.cells[i] || '').padEnd(c, '0').slice(0, c)
-    cells.push(old)
+  const kept: LayoutBlock[] = []
+  for (const b of grid.value.blocks) {
+    const cand: LayoutBlock = { ...b }
+    cand.colSpan = Math.min(cand.colSpan, c)
+    cand.rowSpan = Math.min(cand.rowSpan, r)
+    cand.col = Math.min(cand.col, c - cand.colSpan)
+    cand.row = Math.min(cand.row, r - cand.rowSpan)
+    if (inBounds({ cols: c, rows: r } as LayoutGrid, cand) &&
+      !kept.some((o) => blocksOverlap(cand, o))) {
+      kept.push(cand)
+    }
   }
-  grid.value = { version: grid.value.version, cols: c, rows: r, cells }
+  grid.value = { version: grid.value.version, cols: c, rows: r, blocks: kept }
   cols.value = c
   rows.value = r
+  syncSelection()
 }
 
 function loadTemplate() {
-  const tpl = defaultLayout(cols.value, rows.value)
-  grid.value = tpl
+  pushHistory()
+  grid.value = defaultLayout(cols.value, rows.value)
+  selectedId.value = null
+  editingId.value = null
 }
 
 function clearAll() {
+  pushHistory()
   grid.value = emptyLayout(cols.value, rows.value)
+  selectedId.value = null
+  editingId.value = null
 }
 
-// 清除自定义布局：楼栋回到内置标准层模板渲染
 async function clearCustom() {
   if (!props.building) return
   try {
@@ -232,6 +543,29 @@ async function clearCustom() {
     saving.value = false
   }
 }
+
+// ---------- 键盘快捷键 ----------
+
+function onKeyDown(ev: KeyboardEvent) {
+  if (!props.modelValue) return
+  const key = ev.key.toLowerCase()
+  if ((ev.ctrlKey || ev.metaKey) && key === 'z') {
+    ev.preventDefault()
+    if (ev.shiftKey) redo()
+    else undo()
+    return
+  }
+  if (key === 'delete' || key === 'backspace') {
+    if (selectedId.value) {
+      ev.preventDefault()
+      removeSelected()
+    }
+    return
+  }
+  if (key === 'escape') editingId.value = null
+}
+
+// ---------- 保存 ----------
 
 async function save() {
   if (!props.building) return
@@ -262,16 +596,51 @@ async function save() {
     saving.value = false
   }
 }
+
+// ---------- 打开时初始化 ----------
+
+watch(
+  () => [props.modelValue, props.building?.id] as const,
+  async () => {
+    if (!props.modelValue) return
+    const parsed = parseLayout(props.building?.layoutJson)
+    const base = parsed || defaultLayout()
+    grid.value = { version: base.version, cols: base.cols, rows: base.rows, blocks: base.blocks.map((b) => ({ ...b })) }
+    cols.value = base.cols
+    rows.value = base.rows
+    brush.value = null
+    painting.value = false
+    selectedId.value = null
+    editingId.value = null
+    undoStack.value = []
+    redoStack.value = []
+    await nextTick()
+  },
+  { immediate: true },
+)
+
+onMounted(() => {
+  window.addEventListener('pointerup', endDrag)
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('pointerup', endDrag)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('keydown', onKeyDown)
+})
 </script>
 
 <style scoped>
 .designer {
   display: grid;
-  grid-template-columns: 230px 1fr;
-  gap: 18px;
+  grid-template-columns: 215px minmax(0, 1fr) 215px;
+  gap: 16px;
 }
 
-.tools {
+.tools,
+.props {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -330,7 +699,8 @@ async function save() {
   border-radius: 4px;
 }
 
-.size-row {
+.size-row,
+.prop-pair {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -338,6 +708,18 @@ async function save() {
 
 .times {
   color: #94a3b8;
+}
+
+.key-list {
+  margin: 0;
+  padding-left: 16px;
+  color: #7c8aa3;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.key-list b {
+  color: #33415c;
 }
 
 .canvas-area {
@@ -350,84 +732,151 @@ async function save() {
   font-size: 12px;
 }
 
-.grid {
-  display: grid;
-  gap: 4px;
-  padding: 12px;
-  background: linear-gradient(135deg, #eef3fc, #e6ecfa);
-  border: 1px solid #c8d5ea;
-  border-radius: 14px;
-  max-height: 72vh;
-  overflow: auto;
-  touch-action: none;
-}
-
-.cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  color: #3d5687;
-  font-size: 12px;
-  font-weight: 700;
-  background: transparent;
-  border: 1px dashed rgba(150, 170, 205, 0.55);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-}
-
-.cell.c1 {
-  background: linear-gradient(135deg, #dcebff, #c7dcf7);
-  border: 1px solid #5f7bb5;
-  cursor: pointer;
-}
-
-.cell.c2 {
-  background: linear-gradient(180deg, #f3f7fd, #e9f0fa);
-  border: 1px dashed #a9b8d4;
-}
-
-.cell.c3 {
-  background: linear-gradient(135deg, #e6ecf7, #d3dcec);
-  border: 1px solid #7d8db3;
-}
-
-.cell.c4 {
-  background: linear-gradient(135deg, #eaf2fd, #dde8f8);
-  border: 1px dashed #9aa9c6;
-}
-
-.grid.no-brush .cell {
-  cursor: default;
-}
-
 .hint-line.warn {
   color: #b96b1c;
   font-weight: 600;
 }
 
-.cell:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(46, 68, 112, 0.16);
+.canvas-scroll {
+  max-height: 70vh;
+  overflow: auto;
 }
 
-.cell-no {
+.canvas {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  background: linear-gradient(135deg, #eef3fc, #e6ecfa);
+  border: 1px solid #c8d5ea;
+  border-radius: 14px;
+  touch-action: none;
+}
+
+.slot-layer {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  gap: 3px;
+  padding: 8px;
+  height: calc(var(--rows) * 46px);
+}
+
+.slot {
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px dashed rgba(150, 170, 205, 0.5);
+  border-radius: 6px;
+  cursor: crosshair;
+  transition: background 0.15s ease;
+}
+
+.canvas.no-brush .slot {
+  cursor: default;
+}
+
+.slot:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.slot.painted {
+  background: transparent;
+  border-color: transparent;
+}
+
+.block-layer {
+  position: absolute;
+  inset: 8px;
   pointer-events: none;
 }
 
-.cell-tag {
-  color: #64748b;
-  font-size: 10px;
-  pointer-events: none;
+.block {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: #3d5687;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 7px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
 }
+
+.block-label {
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.k-room {
+  background: linear-gradient(135deg, #dcebff, #c7dcf7);
+  border: 1px solid #5f7bb5;
+}
+
+.k-corridor {
+  background: linear-gradient(180deg, #f3f7fd, #e9f0fa);
+  border: 1px dashed #a9b8d4;
+}
+
+.k-stair {
+  background: linear-gradient(135deg, #e6ecf7, #d3dcec);
+  border: 1px solid #7d8db3;
+}
+
+.k-public {
+  background: linear-gradient(135deg, #eaf2fd, #dde8f8);
+  border: 1px dashed #9aa9c6;
+}
+
+.k-custom {
+  color: #6b3fa0;
+  background: linear-gradient(135deg, #f2e8ff, #e4d6fb);
+  border: 1px solid #a985d8;
+}
+
+.block:hover {
+  box-shadow: 0 6px 14px rgba(46, 68, 112, 0.18);
+}
+
+.block.selected {
+  outline: 2px solid #3478f6;
+  outline-offset: 1px;
+}
+
+.block.editing {
+  outline: 2px dashed #2462d9;
+  outline-offset: 2px;
+  z-index: 3;
+}
+
+.handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border: 2px solid #3478f6;
+  border-radius: 2px;
+}
+
+.h-n { top: -5px; left: 50%; margin-left: -5px; cursor: ns-resize; }
+.h-s { bottom: -5px; left: 50%; margin-left: -5px; cursor: ns-resize; }
+.h-e { right: -5px; top: 50%; margin-top: -5px; cursor: ew-resize; }
+.h-w { left: -5px; top: 50%; margin-top: -5px; cursor: ew-resize; }
+.h-nw { top: -5px; left: -5px; cursor: nwse-resize; }
+.h-ne { top: -5px; right: -5px; cursor: nesw-resize; }
+.h-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.h-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
 
 .summary {
   display: flex;
-  gap: 18px;
+  gap: 16px;
   margin-top: 12px;
   color: #5a6a85;
   font-size: 13px;
+  flex-wrap: wrap;
 }
 
 .summary b {
@@ -436,6 +885,38 @@ async function save() {
 
 .tips {
   margin: 8px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.prop-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.prop-label {
+  color: #5a6a85;
+  font-size: 12px;
+}
+
+.prop-tip,
+.prop-empty {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.footer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-tip {
   color: #94a3b8;
   font-size: 12px;
 }

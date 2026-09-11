@@ -58,7 +58,7 @@
             <g v-else>
               <template v-for="(b, bi) in plan.blocks" :key="'blk' + bi">
                 <rect :x="b.x" :y="b.z" :width="b.w" :height="b.d" :fill="blockFill(b.type)" :stroke="b.type === 'corridor' ? '#a9b8d4' : '#7d8db3'" stroke-width="0.6" :stroke-dasharray="b.type === 'corridor' ? '3 2' : '0'" />
-                <text v-if="b.type !== 'corridor'" :x="b.x + b.w / 2" :y="b.z + b.d / 2 + 1.1" text-anchor="middle" font-size="2.6" fill="#64748b">{{ b.type === 'stair' ? '楼梯' : '公共区' }}</text>
+                <text v-if="b.type !== 'corridor'" :x="b.x + b.w / 2" :y="b.z + b.d / 2 + 1.1" text-anchor="middle" font-size="2.6" fill="#64748b">{{ b.label || (b.type === 'stair' ? '楼梯' : '公共区') }}</text>
               </template>
             </g>
             <g v-for="room in plan.rooms" :key="room.no">
