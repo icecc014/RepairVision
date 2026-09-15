@@ -7,9 +7,15 @@
       <button class="campus-retry" @click="zoomReset">重置</button>
     </div>
     <div v-if="!layout" class="campus-empty">
-      <template v-if="loading">正在加载校园概览…</template>
+      <template v-if="!started">
+        <span>是否加载区域示意图？</span>
+        <button class="campus-retry" @click="startLoad">加载</button>
+      </template>
+      <template v-else-if="loading">正在加载区域概览…</template>
       <template v-else>
+        <template v-else>
         <span>{{ errorMsg ? ('加载失败：' + errorMsg) : '管理员尚未绘制区域概览' }}</span>
+        </template>
         <button class="campus-retry" @click="load">重试</button>
       </template>
     </div>
@@ -79,6 +85,7 @@ const props = defineProps<{
 
 const loading = ref(false)
 const errorMsg = ref('')
+const started = ref(false)
 const zoom = ref(1)
 const svgStyle = computed(() => ({ transform: 'scale(' + zoom.value + ')', transformOrigin: 'top left' }))
 function zoomIn() { zoom.value = Math.min(4, Math.round((zoom.value + 0.25) * 100) / 100) }
@@ -169,14 +176,23 @@ async function load() {
   }
 }
 
+function startLoad() {
+  started.value = true
+  load()
+}
+
 function reload() {
   errorMsg.value = ''
   if (props.autoLoad !== false) load()
 }
 
 onMounted(() => {
-  if (props.autoLoad !== false) load()
-  // 管理端保存区域概览后会通过 WebSocket 广播，宿管端 / 工人端就地刷新
+  // 默认不自动加载：工人端先显示“是否加载区域示意图？”，点击后加载
+  if (props.autoLoad === true) {
+    started.value = true
+    load()
+  }
+  // 管理端保存区域概览后会通过 WebSocket 广播，就地刷新
   window.addEventListener('rv-campus-refresh', reload)
 })
 
