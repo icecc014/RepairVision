@@ -158,3 +158,7 @@ func guardLevelText(guardHit, warnHit bool) (level, message string) {
 		return guardLevelOK, "运行正常"
 	}
 }
+// pendingBacklogOf 包装积压查询，供派单循环判断是否需要提前评估保护线。
+func pendingBacklogOf(ctx context.Context, svcCtx *svc.ServiceContext) (int64, int64, error) {
+	return store.PendingBacklog(ctx, svcCtx.DB)
+}

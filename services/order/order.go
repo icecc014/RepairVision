@@ -11,6 +11,7 @@ import (
 	"order/internal/config"
 	"order/internal/errs"
 	"order/internal/handler"
+	"order/internal/logic"
 	"order/internal/oplog"
 	"order/internal/seed"
 	"order/internal/store"
@@ -98,6 +99,8 @@ func main() {
 	defer server.Stop()
 
 	handler.RegisterHandlers(server, ctx)
+	// V5.4 自动派单兜底扫描（60 秒一次，保护模式下自动跳过）
+	go logic.StartDispatchLoop(context.Background(), ctx)
 
 	// WebSocket 需要 Hijacker，go-zero rest 包装不支持，故由独立 HTTP 端口承载
 	wsMux := http.NewServeMux()

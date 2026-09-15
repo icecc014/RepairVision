@@ -51,5 +51,7 @@ func (l *CompleteOrderLogic) CompleteOrder(req *types.OrderIdRequest) (resp *typ
 		notifyUsers(l.ctx, l.svcCtx, recipients, "complete",
 			"工单已完成 "+order.OrderNo, order.Room+"室维修已完成", order.ID)
 	}
+	// V5.4 事件驱动：完工后空闲出的工人立即参与待派队列的重算（1.5 秒防抖）
+	TriggerDispatchRecheck(l.svcCtx)
 	return &types.EmptyResponse{}, nil
 }

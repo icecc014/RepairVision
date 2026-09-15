@@ -42,6 +42,14 @@ func IdentityFromContext(ctx context.Context) (*Identity, bool) {
 	}, true
 }
 
+// WithSystemIdentity 注入"系统身份"，供定时任务等内部调用复用与管理员相同的校验路径。
+func WithSystemIdentity(ctx context.Context) context.Context {
+	ctx = context.WithValue(ctx, ctxKeyUID, int64(0))
+	ctx = context.WithValue(ctx, ctxKeyRole, int64(1))
+	ctx = context.WithValue(ctx, ctxKeyUsername, "system")
+	ctx = context.WithValue(ctx, ctxKeyName, "自动派单")
+	return ctx
+}
 func toInt64(v any) (int64, bool) {
 	switch t := v.(type) {
 	case json.Number:
