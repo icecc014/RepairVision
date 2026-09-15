@@ -102,7 +102,7 @@
             比例尺：1 格 = {{ distances.gridMeters }} 米 · 道路格 {{ distances.roadCells }} 个 ·
             最远建筑间距 {{ distances.maxMeters }} 米（派单距离即按路网最短路计算）
           </p>
-          <el-table :data="distances.buildings" size="small" border>
+          <el-table :data="distances.buildings" size="small" border max-height="300">
             <el-table-column prop="name" label="建筑" min-width="130" />
             <el-table-column label="接入路网" width="100" align="center">
               <template #default="{ row }">
@@ -115,7 +115,7 @@
             </el-table-column>
           </el-table>
           <p v-if="distances.pairs.length" class="dist-tip" style="margin-top: 10px">建筑间路网距离（米）</p>
-          <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border>
+          <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border max-height="300">
             <el-table-column label="起点" min-width="120">
               <template #default="{ row }">{{ nameOfBuilding(row.fromId) }}</template>
             </el-table-column>
