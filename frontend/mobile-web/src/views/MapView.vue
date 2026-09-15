@@ -17,6 +17,13 @@
     </div>
     <div class="range-hint">近 {{ days }} 天共 {{ map.orders.length }} 单，2D / 3D 红点按此范围显示</div>
 
+    <div class="campus-card">
+      <div class="campus-head">
+        <span class="campus-title">校园概览</span>
+        <button class="mini-btn" @click="showCampus = !showCampus">{{ showCampus ? '收起' : '展开' }}</button>
+      </div>
+      <CampusOverviewMap v-if="showCampus" :buildings="map.buildings" :highlight-building-id="selectedBuilding?.id" />
+    </div>
     <div v-if="!loading && map.buildings.length > 0" class="canvas-card">
       <v-stage :config="stageConfig">
         <v-layer>
@@ -85,6 +92,7 @@ import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem, WorkerMapBuilding, WorkerMapData } from '../api'
 import { apiBatchComplete, apiWorkerMapData } from '../api'
 import Building3D from './Building3D.vue'
+import CampusOverviewMap from '../components/CampusOverviewMap.vue'
 import { useAuthStore } from '../stores/auth'
 
 const map = reactive<WorkerMapData>({ buildings: [], orders: [] })
@@ -96,6 +104,7 @@ const dayOptions = [1, 3, 7, 30]
 const days = ref(Number(localStorage.getItem('rv-days') || 3))
 const selectedBuilding = ref<WorkerMapBuilding | null>(null)
 const show3D = ref(false)
+const showCampus = ref(false)
 const actingType = ref('')
 
 const stageWidth = Math.max(Math.min((window.innerWidth || 390) - 28, 420), 300)
@@ -462,6 +471,36 @@ onUnmounted(() => {
   padding: 4px 6px 8px;
   color: #8a97ad;
   font-size: 12px;
+}
+
+.campus-card {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(46, 68, 112, 0.09);
+}
+.campus-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.campus-title {
+  color: var(--rv-text, #2b3445);
+  font-size: 14px;
+  font-weight: 800;
+}
+.campus-head .mini-btn {
+  padding: 4px 12px;
+  color: #2462d9;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(120, 145, 190, 0.25);
+  border-radius: 999px;
 }
 </style>
 .building-chips {

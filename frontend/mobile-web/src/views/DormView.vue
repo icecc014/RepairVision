@@ -27,6 +27,13 @@
         </div>
       </section>
 
+      <div class="campus-card">
+        <div class="campus-head">
+          <span class="campus-title">校园概览</span>
+          <button class="mini-btn" @click="showCampus = !showCampus">{{ showCampus ? '收起' : '展开' }}</button>
+        </div>
+        <CampusOverviewMap v-if="showCampus" />
+      </div>
       <div class="rv-filters">
         <button
           v-for="chip in chips"
@@ -184,6 +191,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { FaultType, OrderItem } from '../api'
+import CampusOverviewMap from '../components/CampusOverviewMap.vue'
 import { apiCancelOrder, apiCreateOrder, apiDormFeedback, apiDormOrderPage, apiFaultTypes } from '../api'
 import NotificationBell from '../components/NotificationBell.vue'
 import { useAuthStore } from '../stores/auth'
@@ -211,6 +219,7 @@ const feedbackTarget = ref<OrderItem | null>(null)
 const feedbackRating = ref(5)
 const feedbackComment = ref('')
 const feedbackSubmitting = ref(false)
+const showCampus = ref(false)
 const filter = ref<FilterValue>('all')
 const days = ref(3)
 const dayOptions = [
@@ -439,5 +448,35 @@ onUnmounted(() => {
   margin: 6px 2px 0;
   color: var(--rv-primary-deep);
   font-size: 12px;
+}
+
+.campus-card {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(46, 68, 112, 0.09);
+}
+.campus-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.campus-title {
+  color: var(--rv-text, #2b3445);
+  font-size: 14px;
+  font-weight: 800;
+}
+.campus-head .mini-btn {
+  padding: 4px 12px;
+  color: #2462d9;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(120, 145, 190, 0.25);
+  border-radius: 999px;
 }
 </style>

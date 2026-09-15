@@ -1,5 +1,18 @@
 import http from './http'
 
+export interface CampusLayoutData {
+  id: number
+  name: string
+  cols: number
+  rows: number
+  layoutJson: string
+  updatedAt: string
+}
+
+// 区域概览（校园/建筑群总平面图，只读）
+export function apiCampusMap(): Promise<CampusLayoutData> {
+  return http.get('/campus-map')
+}
 export interface LoginResult {
   token: string
   user: UserInfo
