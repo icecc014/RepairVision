@@ -70,15 +70,19 @@
             {{ row.available ? '可派' : '暂停' }}
           </template>
         </el-table-column>
-        <el-table-column label="在途/最大并发" width="150" align="center">
+        <el-table-column label="在途 / 软上限" width="170" align="center">
           <template #default="{ row }">
             <el-progress
-              :percentage="revealed ? Math.min(100, Math.round((row.activeOrders / Math.max(row.maxConcurrent, 1)) * 100)) : 0"
+              :percentage="revealed ? Math.min(100, Math.round((row.activeOrders / Math.max(row.maxConcurrent + 2, 1)) * 100)) : 0"
               :duration="0.9"
               :stroke-width="10"
+              :status="row.activeOrders > row.maxConcurrent + 2 ? 'exception' : ''"
               style="width: 110px"
             />
-            <div class="load-text">{{ row.activeOrders }} / {{ row.maxConcurrent }}</div>
+            <div class="load-text" :class="{ 'is-high': row.activeOrders > row.maxConcurrent + 2 }">
+              {{ row.activeOrders }} / {{ row.maxConcurrent + 2 }}
+              <span class="load-text">（并发 {{ row.maxConcurrent }} + 2）</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="todayCompleted" label="今日完成" width="100" align="center" />
