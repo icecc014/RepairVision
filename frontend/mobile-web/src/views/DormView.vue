@@ -27,13 +27,7 @@
         </div>
       </section>
 
-      <div class="campus-card">
-        <div class="campus-head">
-          <span class="campus-title">校园概览</span>
-          <button class="mini-btn" @click="showCampus = !showCampus">{{ showCampus ? '收起' : '展开' }}</button>
-        </div>
-        <CampusOverviewMap v-if="showCampus" />
-      </div>
+      
       <div class="rv-filters">
         <button
           v-for="chip in chips"

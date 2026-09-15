@@ -94,112 +94,114 @@
         </div>
       </section>
 
+      <div class="side-col">
       <section class="panel distances">
-        <div class="panel-title">路网与距离</div>
-        <p class="dist-tip">
-          比例尺：1 格 = {{ distances.gridMeters }} 米 · 道路格 {{ distances.roadCells }} 个 ·
-          最远建筑间距 {{ distances.maxMeters }} 米（派单距离即按路网最短路计算）
-        </p>
-        <el-table :data="distances.buildings" size="small" border>
-          <el-table-column prop="name" label="建筑" min-width="130" />
-          <el-table-column label="接入路网" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="row.connected ? 'success' : 'info'" size="small">{{ row.connected ? '已接入' : '未接入' }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="entryCount" label="入口格" width="90" align="center" />
-          <el-table-column label="最远通勤" width="110" align="center">
-            <template #default="{ row }">{{ row.connected ? row.maxMeters + ' 米' : '回退欧氏' }}</template>
-          </el-table-column>
-        </el-table>
-        <p v-if="distances.pairs.length" class="dist-tip" style="margin-top: 10px">建筑间路网距离（米）</p>
-        <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border>
-          <el-table-column label="起点" min-width="120">
-            <template #default="{ row }">{{ nameOfBuilding(row.fromId) }}</template>
-          </el-table-column>
-          <el-table-column label="终点" min-width="120">
-            <template #default="{ row }">{{ nameOfBuilding(row.toId) }}</template>
-          </el-table-column>
-          <el-table-column label="路网距离" width="110" align="center">
-            <template #default="{ row }">{{ row.meters }} 米</template>
-          </el-table-column>
-        </el-table>
-      </section>
-      <section class="panel props">
-        <div class="panel-title">图元属性</div>
-        <template v-if="selectedBlock">
-          <div class="prop-row">
-            <span class="prop-label">类型</span>
-            <el-select :model-value="selectedBlock.kind" size="small" style="width: 100%" @change="setKind">
-              <el-option v-for="t in CAMPUS_KINDS" :key="t.kind" :label="t.label" :value="t.kind" />
-            </el-select>
-          </div>
-          <template v-if="selectedBlock.kind === 'building'">
+          <div class="panel-title">路网与距离</div>
+          <p class="dist-tip">
+            比例尺：1 格 = {{ distances.gridMeters }} 米 · 道路格 {{ distances.roadCells }} 个 ·
+            最远建筑间距 {{ distances.maxMeters }} 米（派单距离即按路网最短路计算）
+          </p>
+          <el-table :data="distances.buildings" size="small" border>
+            <el-table-column prop="name" label="建筑" min-width="130" />
+            <el-table-column label="接入路网" width="100" align="center">
+              <template #default="{ row }">
+                <el-tag :type="row.connected ? 'success' : 'info'" size="small">{{ row.connected ? '已接入' : '未接入' }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="entryCount" label="入口格" width="90" align="center" />
+            <el-table-column label="最远通勤" width="110" align="center">
+              <template #default="{ row }">{{ row.connected ? row.maxMeters + ' 米' : '回退欧氏' }}</template>
+            </el-table-column>
+          </el-table>
+          <p v-if="distances.pairs.length" class="dist-tip" style="margin-top: 10px">建筑间路网距离（米）</p>
+          <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border>
+            <el-table-column label="起点" min-width="120">
+              <template #default="{ row }">{{ nameOfBuilding(row.fromId) }}</template>
+            </el-table-column>
+            <el-table-column label="终点" min-width="120">
+              <template #default="{ row }">{{ nameOfBuilding(row.toId) }}</template>
+            </el-table-column>
+            <el-table-column label="路网距离" width="110" align="center">
+              <template #default="{ row }">{{ row.meters }} 米</template>
+            </el-table-column>
+          </el-table>
+        </section>
+        <section class="panel props">
+          <div class="panel-title">图元属性</div>
+          <template v-if="selectedBlock">
             <div class="prop-row">
-              <span class="prop-label">名称来源</span>
-              <el-radio-group :model-value="selectedBlock.customBuilding ? 'custom' : 'building'" size="small" @change="setBuildingSource">
-                <el-radio-button value="building">已有楼栋</el-radio-button>
-                <el-radio-button value="custom">自定义</el-radio-button>
-              </el-radio-group>
-            </div>
-            <div v-if="!selectedBlock.customBuilding" class="prop-row">
-              <span class="prop-label">关联楼栋</span>
-              <el-select :model-value="selectedBlock.buildingId" size="small" style="width: 100%" @change="setBuilding">
-                <el-option v-for="b in buildings" :key="b.id" :label="`${b.name}（${b.code}）`" :value="b.id" />
+              <span class="prop-label">类型</span>
+              <el-select :model-value="selectedBlock.kind" size="small" style="width: 100%" @change="setKind">
+                <el-option v-for="t in CAMPUS_KINDS" :key="t.kind" :label="t.label" :value="t.kind" />
               </el-select>
             </div>
+            <template v-if="selectedBlock.kind === 'building'">
+              <div class="prop-row">
+                <span class="prop-label">名称来源</span>
+                <el-radio-group :model-value="selectedBlock.customBuilding ? 'custom' : 'building'" size="small" @change="setBuildingSource">
+                  <el-radio-button value="building">已有楼栋</el-radio-button>
+                  <el-radio-button value="custom">自定义</el-radio-button>
+                </el-radio-group>
+              </div>
+              <div v-if="!selectedBlock.customBuilding" class="prop-row">
+                <span class="prop-label">关联楼栋</span>
+                <el-select :model-value="selectedBlock.buildingId" size="small" style="width: 100%" @change="setBuilding">
+                  <el-option v-for="b in buildings" :key="b.id" :label="`${b.name}（${b.code}）`" :value="b.id" />
+                </el-select>
+              </div>
+            </template>
+            <div v-if="needLabel" class="prop-row">
+              <span class="prop-label">名称</span>
+              <el-input
+                :model-value="selectedBlock.label"
+                size="small"
+                maxlength="16"
+                placeholder="如：第二食堂 / 图书馆"
+                @input="setLabelLive"
+                @change="setLabel"
+              />
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">起始格（行 / 列）</span>
+              <div class="prop-pair">
+                <el-input-number :model-value="selectedBlock.row" :min="0" :max="grid.rows - 1" size="small" @change="(v: number) => setProp('row', v)" />
+                <el-input-number :model-value="selectedBlock.col" :min="0" :max="grid.cols - 1" size="small" @change="(v: number) => setProp('col', v)" />
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">跨格数（行 / 列）</span>
+              <div class="prop-pair">
+                <el-input-number :model-value="selectedBlock.rowSpan" :min="1" :max="grid.rows" size="small" @change="(v: number) => setProp('rowSpan', v)" />
+                <el-input-number :model-value="selectedBlock.colSpan" :min="1" :max="grid.cols" size="small" @change="(v: number) => setProp('colSpan', v)" />
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">左右边缘</span>
+              <div class="prop-pair">
+                <el-button size="small" @click="expandEdge('w', true)">← 左扩</el-button>
+                <el-button size="small" @click="expandEdge('w', false)">→ 左收</el-button>
+              </div>
+              <div class="prop-pair">
+                <el-button size="small" @click="expandEdge('e', true)">右扩 →</el-button>
+                <el-button size="small" @click="expandEdge('e', false)">← 右收</el-button>
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">上下边缘</span>
+              <div class="prop-pair">
+                <el-button size="small" @click="expandEdge('n', true)">↑ 上扩</el-button>
+                <el-button size="small" @click="expandEdge('n', false)">↓ 上收</el-button>
+              </div>
+              <div class="prop-pair">
+                <el-button size="small" @click="expandEdge('s', true)">下扩 ↓</el-button>
+                <el-button size="small" @click="expandEdge('s', false)">↑ 下收</el-button>
+              </div>
+            </div>
+            <el-button size="small" type="danger" plain style="width: 100%" @click="removeSelected">删除该图元</el-button>
           </template>
-          <div v-if="needLabel" class="prop-row">
-            <span class="prop-label">名称</span>
-            <el-input
-              :model-value="selectedBlock.label"
-              size="small"
-              maxlength="16"
-              placeholder="如：第二食堂 / 图书馆"
-              @input="setLabelLive"
-              @change="setLabel"
-            />
-          </div>
-          <div class="prop-row">
-            <span class="prop-label">起始格（行 / 列）</span>
-            <div class="prop-pair">
-              <el-input-number :model-value="selectedBlock.row" :min="0" :max="grid.rows - 1" size="small" @change="(v: number) => setProp('row', v)" />
-              <el-input-number :model-value="selectedBlock.col" :min="0" :max="grid.cols - 1" size="small" @change="(v: number) => setProp('col', v)" />
-            </div>
-          </div>
-          <div class="prop-row">
-            <span class="prop-label">跨格数（行 / 列）</span>
-            <div class="prop-pair">
-              <el-input-number :model-value="selectedBlock.rowSpan" :min="1" :max="grid.rows" size="small" @change="(v: number) => setProp('rowSpan', v)" />
-              <el-input-number :model-value="selectedBlock.colSpan" :min="1" :max="grid.cols" size="small" @change="(v: number) => setProp('colSpan', v)" />
-            </div>
-          </div>
-          <div class="prop-row">
-            <span class="prop-label">左右边缘</span>
-            <div class="prop-pair">
-              <el-button size="small" @click="expandEdge('w', true)">← 左扩</el-button>
-              <el-button size="small" @click="expandEdge('w', false)">→ 左收</el-button>
-            </div>
-            <div class="prop-pair">
-              <el-button size="small" @click="expandEdge('e', true)">右扩 →</el-button>
-              <el-button size="small" @click="expandEdge('e', false)">← 右收</el-button>
-            </div>
-          </div>
-          <div class="prop-row">
-            <span class="prop-label">上下边缘</span>
-            <div class="prop-pair">
-              <el-button size="small" @click="expandEdge('n', true)">↑ 上扩</el-button>
-              <el-button size="small" @click="expandEdge('n', false)">↓ 上收</el-button>
-            </div>
-            <div class="prop-pair">
-              <el-button size="small" @click="expandEdge('s', true)">下扩 ↓</el-button>
-              <el-button size="small" @click="expandEdge('s', false)">↑ 下收</el-button>
-            </div>
-          </div>
-          <el-button size="small" type="danger" plain style="width: 100%" @click="removeSelected">删除该图元</el-button>
-        </template>
-        <p v-else class="prop-empty">单击图元查看属性；双击进入编辑模式（显示 8 个把手）。<br />建筑图元可关联"建筑信息管理"中的楼栋，或选择自定义后手动命名。</p>
-      </section>
+          <p v-else class="prop-empty">单击图元查看属性；双击进入编辑模式（显示 8 个把手）。<br />建筑图元可关联"建筑信息管理"中的楼栋，或选择自定义后手动命名。</p>
+        </section>
+      </div>
     </div>
   </AdminShell>
 </template>
@@ -662,7 +664,7 @@ onUnmounted(() => {
 
 <style scoped>
 .distances {
-  margin-top: 16px;
+  margin-top: 0;
 }
 .dist-tip {
   margin: 0 0 10px;
@@ -691,8 +693,9 @@ onUnmounted(() => {
   font-size: 12px;
 }
 .layout {
+  align-items: start;
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 240px;
+  grid-template-columns: 210px minmax(0, 1fr) 330px;
   gap: 16px;
 }
 .panel-title {
@@ -851,6 +854,14 @@ onUnmounted(() => {
 .h-ne { top: -5px; right: -5px; cursor: nesw-resize; }
 .h-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
 .h-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-height: 80vh;
+  overflow: auto;
+}
 .props {
   min-width: 0;
 }

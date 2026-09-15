@@ -70,7 +70,7 @@
           <template #default="{ row }">{{ row.buildingName }} {{ row.floor }}F-{{ row.room }}</template>
         </el-table-column>
         <el-table-column prop="faultTypeName" label="类型" width="90" />
-        <el-table-column label="状态" width="105">
+        <el-table-column label="状态" width="176">
           <template #default="{ row }">
             <span class="status-badge" :class="'st' + row.status">{{ row.statusText }}</span>
             <el-tag
@@ -102,7 +102,7 @@
         </el-table-column>
         <el-table-column prop="reporterName" label="报修宿管" width="110" />
         <el-table-column prop="createdAt" label="创建时间" width="170" />
-        <el-table-column label="操作" width="430" fixed="right">
+        <el-table-column label="操作" width="540" fixed="right" class-name="op-cell">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">详情</el-button>
             <el-button size="small" type="warning" plain @click="toggleLock(row)">
@@ -615,8 +615,11 @@ onUnmounted(() => {
 }
 
 .manual-tag {
-  margin-top: 5px;
+  margin-left: 6px;
   font-weight: 700;
+}
+.op-cell {
+  white-space: nowrap;
 }
 
 .assign-note {
