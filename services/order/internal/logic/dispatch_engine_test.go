@@ -135,3 +135,36 @@ func TestDistanceScoreWithRoadNetwork(t *testing.T) {
 		t.Fatalf("跨楼栋路网距离得分应在 [0,1)，实际 %v", got)
 	}
 }
+// V6：类别 → 所需工种映射
+func TestRequiredJobTypeOf(t *testing.T) {
+	cases := []struct {
+		category string
+		want     int64
+	}{
+		{"electric", 1}, {"water", 2}, {"masonry", 3}, {"wood", 4}, {"other", 0}, {"", 0}, {"UNKNOWN", 0},
+	}
+	for _, c := range cases {
+		if got := requiredJobTypeOf(c.category); got != c.want {
+			t.Fatalf("类别 %q 期望工种 %d，实际 %d", c.category, c.want, got)
+		}
+	}
+}
+
+// V6：4 类工种 × 4 类需求的匹配矩阵（通用工人可接任意类别）
+func TestJobTypeMatrix(t *testing.T) {
+	expect := map[int64]map[int64]bool{
+		1: {1: true, 2: false, 3: false, 4: false},  // 电工
+		2: {1: false, 2: true, 3: false, 4: false},  // 水工
+		3: {1: false, 2: false, 3: true, 4: false},  // 泥瓦工
+		4: {1: false, 2: false, 3: false, 4: true},  // 木工
+		0: {1: true, 2: true, 3: true, 4: true},     // 通用
+	}
+	for workerJobType, row := range expect {
+		for required := int64(1); required <= 4; required++ {
+			want := row[required]
+			if got := jobTypeAllowed(workerJobType, required); got != want {
+				t.Fatalf("工人工种 %d × 需求 %d：期望 %v，实际 %v", workerJobType, required, want, got)
+			}
+		}
+	}
+}
