@@ -710,6 +710,81 @@ onUnmounted(() => {
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('keydown', onKeyDown)
 })
+// ---------- #7 长按拖动（只改位置、不改尺寸；松手时若重叠则回退） ----------
+const pressDrag = reactive({
+  timer: 0,
+  active: false,
+  id: '',
+  base: null as CampusBlock | null,
+  startX: 0,
+  startY: 0,
+  cellW: 1,
+  cellH: 1,
+})
+
+function startLongPress(b: CampusBlock, ev: PointerEvent) {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  if (!rect.width || !rect.height) return
+  pressDrag.cellW = rect.width / grid.value.cols
+  pressDrag.cellH = rect.height / grid.value.rows
+  pressDrag.startX = ev.clientX
+  pressDrag.startY = ev.clientY
+  pressDrag.id = b.id
+  pressDrag.base = { ...b }
+  cancelLongPress()
+  pressDrag.timer = window.setTimeout(() => {
+    pressDrag.active = true
+    pushHistory()
+    ElMessage.info('拖动模式：移动到目标位置后松开鼠标')
+  }, 300)
+}
+
+function cancelLongPress() {
+  if (pressDrag.timer) {
+    clearTimeout(pressDrag.timer)
+    pressDrag.timer = 0
+  }
+}
+
+function onPressMove(ev: PointerEvent) {
+  if (!pressDrag.active || !pressDrag.base) return
+  const target = grid.value.blocks.find((x) => x.id === pressDrag.id)
+  const base = pressDrag.base
+  if (!target || !base) return
+  const dx = Math.round((ev.clientX - pressDrag.startX) / pressDrag.cellW)
+  const dy = Math.round((ev.clientY - pressDrag.startY) / pressDrag.cellH)
+  // 只改位置、不改尺寸；拖动过程允许暂时重叠，松手时统一校验
+  target.row = Math.max(0, Math.min(grid.value.rows - target.rowSpan, base.row + dy))
+  target.col = Math.max(0, Math.min(grid.value.cols - target.colSpan, base.col + dx))
+}
+
+function overlapsOthers(b: CampusBlock) {
+  return grid.value.blocks.some((o) => o.id !== b.id &&
+    b.row < o.row + o.rowSpan && o.row < b.row + b.rowSpan &&
+    b.col < o.col + o.colSpan && o.col < b.col + b.colSpan)
+}
+
+function finishPressDrag() {
+  cancelLongPress()
+  if (!pressDrag.active) return
+  pressDrag.active = false
+  const target = grid.value.blocks.find((x) => x.id === pressDrag.id)
+  const base = pressDrag.base
+  pressDrag.base = null
+  if (!target || !base) return
+  if (target.row === base.row && target.col === base.col) {
+    undoStack.value.pop() // 没移动：丢弃这次撤销点
+    return
+  }
+  if (overlapsOthers(target)) {
+    target.row = base.row
+    target.col = base.col
+    undoStack.value.pop()
+    ElMessage.warning('该位置与其它图元重叠，已还原到拖动前的位置')
+  }
+}
 </script>
 
 <style scoped>
@@ -939,78 +1014,3 @@ onUnmounted(() => {
   line-height: 1.7;
 }
 </style>
-// ---------- #7 长按拖动（只改位置、不改尺寸；松手时若重叠则回退） ----------
-const pressDrag = reactive({
-  timer: 0,
-  active: false,
-  id: '',
-  base: null as CampusBlock | null,
-  startX: 0,
-  startY: 0,
-  cellW: 1,
-  cellH: 1,
-})
-
-function startLongPress(b: CampusBlock, ev: PointerEvent) {
-  const canvas = canvasRef.value
-  if (!canvas) return
-  const rect = canvas.getBoundingClientRect()
-  if (!rect.width || !rect.height) return
-  pressDrag.cellW = rect.width / grid.value.cols
-  pressDrag.cellH = rect.height / grid.value.rows
-  pressDrag.startX = ev.clientX
-  pressDrag.startY = ev.clientY
-  pressDrag.id = b.id
-  pressDrag.base = { ...b }
-  cancelLongPress()
-  pressDrag.timer = window.setTimeout(() => {
-    pressDrag.active = true
-    pushHistory()
-    ElMessage.info('拖动模式：移动到目标位置后松开鼠标')
-  }, 300)
-}
-
-function cancelLongPress() {
-  if (pressDrag.timer) {
-    clearTimeout(pressDrag.timer)
-    pressDrag.timer = 0
-  }
-}
-
-function onPressMove(ev: PointerEvent) {
-  if (!pressDrag.active || !pressDrag.base) return
-  const target = grid.value.blocks.find((x) => x.id === pressDrag.id)
-  const base = pressDrag.base
-  if (!target || !base) return
-  const dx = Math.round((ev.clientX - pressDrag.startX) / pressDrag.cellW)
-  const dy = Math.round((ev.clientY - pressDrag.startY) / pressDrag.cellH)
-  // 只改位置、不改尺寸；拖动过程允许暂时重叠，松手时统一校验
-  target.row = Math.max(0, Math.min(grid.value.rows - target.rowSpan, base.row + dy))
-  target.col = Math.max(0, Math.min(grid.value.cols - target.colSpan, base.col + dx))
-}
-
-function overlapsOthers(b: CampusBlock) {
-  return grid.value.blocks.some((o) => o.id !== b.id &&
-    b.row < o.row + o.rowSpan && o.row < b.row + b.rowSpan &&
-    b.col < o.col + o.colSpan && o.col < b.col + b.colSpan)
-}
-
-function finishPressDrag() {
-  cancelLongPress()
-  if (!pressDrag.active) return
-  pressDrag.active = false
-  const target = grid.value.blocks.find((x) => x.id === pressDrag.id)
-  const base = pressDrag.base
-  pressDrag.base = null
-  if (!target || !base) return
-  if (target.row === base.row && target.col === base.col) {
-    undoStack.value.pop() // 没移动：丢弃这次撤销点
-    return
-  }
-  if (overlapsOthers(target)) {
-    target.row = base.row
-    target.col = base.col
-    undoStack.value.pop()
-    ElMessage.warning('该位置与其它图元重叠，已还原到拖动前的位置')
-  }
-}
