@@ -182,6 +182,27 @@ type CampusLayoutResponse {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
+type CampusDistanceBuilding {
+	BuildingId int64   `json:"buildingId"`
+	Name       string  `json:"name"`
+	EntryCount int64   `json:"entryCount"`
+	Connected  bool    `json:"connected"`
+	MaxMeters  float64 `json:"maxMeters"`
+}
+
+type CampusDistancePair {
+	FromId int64   `json:"fromId"`
+	ToId   int64   `json:"toId"`
+	Meters float64 `json:"meters"`
+}
+
+type CampusDistanceResponse {
+	GridMeters float64                  `json:"gridMeters"`
+	MaxMeters  float64                  `json:"maxMeters"`
+	RoadCells  int64                    `json:"roadCells"`
+	Buildings  []CampusDistanceBuilding `json:"buildings"`
+	Pairs      []CampusDistancePair     `json:"pairs"`
+}
 type CampusLayoutSaveRequest {
 	Name       string `json:"name,optional"`
 	Cols       int64  `json:"cols,optional"`

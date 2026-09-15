@@ -10,7 +10,6 @@ import (
 	"order/internal/store"
 	"order/internal/svc"
 	"order/internal/types"
-	"worker/workerclient"
 )
 
 type WorkerMapDataLogic struct {
@@ -32,17 +31,23 @@ func (l *WorkerMapDataLogic) WorkerMapData(req *types.WorkerMapDataRequest) (res
 	if !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
-	idsResp, err := l.svcCtx.WorkerRpc.ListManagedBuildings(l.ctx, &workerclient.IdRequest{Id: identity.UID})
+	// V5.4+：工人端只展示"实际派给他的工单所在的楼栋"（而不是管辖楼栋），
+	// 管辖楼栋仍保留在账号资料中；这样工人一眼能看到今天真正要去哪几栋。
+	days := req.Days
+	if days <= 0 {
+		days = 3
+	}
+	orders, err := store.ListActiveOrdersByWorkerWithinDays(l.ctx, l.svcCtx.DB, identity.UID, days)
 	if err != nil {
-		return nil, errs.Upstream()
+		return nil, errs.Internal(err)
 	}
 	buildingResp, err := l.svcCtx.MapRpc.ListBuildings(l.ctx, &mapclient.ListBuildingsRequest{})
 	if err != nil {
 		return nil, errs.Upstream()
 	}
 	allowed := make(map[int64]struct{})
-	for _, id := range idsResp.Ids {
-		allowed[id] = struct{}{}
+	for _, o := range orders {
+		allowed[o.BuildingID] = struct{}{}
 	}
 	items := make([]types.WorkerMapBuilding, 0)
 	for _, b := range buildingResp.Buildings {
@@ -54,15 +59,7 @@ func (l *WorkerMapDataLogic) WorkerMapData(req *types.WorkerMapDataRequest) (res
 			})
 		}
 	}
-	// 与宿管/工人"我的工单"列表保持同一时间窗口径：days<=0 时默认近 3 天
-	days := req.Days
-	if days <= 0 {
-		days = 3
-	}
-	orders, err := store.ListOrdersByBuildingIDsWithinDays(l.ctx, l.svcCtx.DB, idsResp.Ids, true, days)
-	if err != nil {
-		return nil, errs.Internal(err)
-	}
+	// 工单列表同样是"该工人自己的活动工单"（与楼栋保持一致）
 	orderItems, err := buildOrderItems(l.ctx, l.svcCtx, orders)
 	if err != nil {
 		return nil, err

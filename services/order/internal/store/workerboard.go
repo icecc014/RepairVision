@@ -39,3 +39,17 @@ func ListActiveOrdersByWorkers(ctx context.Context, conn sqlx.Session, workerIDs
 	}
 	return rows, nil
 }
+
+// ListActiveOrdersByWorkerWithinDays 返回该工人近 N 天内仍活动的工单（待开工 / 维修中 / 已派单）。
+func ListActiveOrdersByWorkerWithinDays(ctx context.Context, conn sqlx.Session, workerID, days int64) ([]Order, error) {
+	if days <= 0 {
+		days = 3
+	}
+	var orders []Order
+	if err := conn.QueryRowsCtx(ctx, &orders,
+		orderBase+"where worker_id = ? and status in (?, ?, ?) and created_at >= date_sub(now(), interval ? day) order by field(status, ?, ?), priority desc, id desc",
+		workerID, StatusDispatched, StatusWorking, StatusPending, days, StatusWorking, StatusDispatched); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

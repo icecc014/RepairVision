@@ -57,7 +57,8 @@ func TestBuildRoadNetworkDistance(t *testing.T) {
 	}
 }
 
-func TestBuildRoadNetworkIsolatedBuilding(t *testing.T) {
+// 建筑与道路不直接相邻时，应通过"最近道路格 + 步行 gap"接入路网（不再直接判为孤立）。
+func TestBuildRoadNetworkConnectsByGap(t *testing.T) {
 	layout := map[string]any{
 		"version": 1,
 		"cols":    8,
@@ -73,14 +74,25 @@ func TestBuildRoadNetworkIsolatedBuilding(t *testing.T) {
 	if net == nil {
 		t.Fatal("期望构建出路网")
 	}
-	if d, ok := net.DistanceBetween(11, 12); ok {
-		t.Fatalf("孤立建筑不应有路网距离，实际 %v", d)
+	if net.IsIsolated(12) {
+		t.Fatal("建筑应通过最近道路格接入路网，不应判为孤立")
 	}
-	if !net.IsIsolated(12) {
-		t.Fatal("12 号楼未接道路，应标记为孤立")
+	// 12 号楼 (row 5, col 6) 到道路 row 0 的曼哈顿距离 = 5 格
+	if g := net.GapCells(12); g != 5 {
+		t.Fatalf("12 号楼到最近道路应相隔 5 格，实际 %d", g)
+	}
+	if g := net.GapCells(11); g != 0 {
+		t.Fatalf("11 号楼紧贴道路，gap 应为 0，实际 %d", g)
+	}
+	d, ok := net.DistanceBetween(11, 12)
+	if !ok || d <= 0 {
+		t.Fatalf("应能计算路网距离，实际 %v (ok=%v)", d, ok)
+	}
+	// 入口 (0,1)/(0,0) -> (0,6) 共 5~6 格，加 12 号楼 gap 5 格 => 100~110 米
+	if d < 100 || d > 110 {
+		t.Fatalf("距离应在 100~110 米之间，实际 %v", d)
 	}
 }
-
 func TestBuildRoadNetworkDegraded(t *testing.T) {
 	if n := buildRoadNetwork("", 10); n != nil {
 		t.Fatal("空布局应返回 nil")

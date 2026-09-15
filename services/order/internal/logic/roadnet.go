@@ -39,6 +39,7 @@ type RoadNetwork struct {
 	buildingIDs []int64
 	entries     map[int64][]int
 	isolated    map[int64]bool
+	gap         map[int64]int
 	dist        map[int64]map[int64]float64
 	maxMeters   float64
 }
@@ -67,6 +68,7 @@ func buildRoadNetwork(layoutJSON string, gridMeters float64) *RoadNetwork {
 		road:       map[int]bool{},
 		entries:    map[int64][]int{},
 		isolated:   map[int64]bool{},
+		gap:        map[int64]int{},
 		dist:       map[int64]map[int64]float64{},
 	}
 
@@ -114,7 +116,21 @@ func buildRoadNetwork(layoutJSON string, gridMeters float64) *RoadNetwork {
 			}
 		}
 		if len(entrySet) == 0 {
-			net.isolated[b.BuildingID] = true
+			// 建筑与道路不直接相邻时：取离建筑轮廓最近的道路格作为入口，
+			// 这段步行距离（gap 格）会计入建筑间距离，保证任意绘制方式都能走路网。
+			bestGap, bestKey := -1, -1
+			for key := range net.road {
+				g := boxGapCells(b, cellRow(layout.Cols, key), cellCol(layout.Cols, key))
+				if bestGap < 0 || g < bestGap {
+					bestGap, bestKey = g, key
+				}
+			}
+			if bestKey >= 0 {
+				entrySet[bestKey] = true
+				net.gap[b.BuildingID] = bestGap
+			} else {
+				net.isolated[b.BuildingID] = true
+			}
 		}
 		for k := range entrySet {
 			net.entries[b.BuildingID] = append(net.entries[b.BuildingID], k)
@@ -144,7 +160,7 @@ func buildRoadNetwork(layoutJSON string, gridMeters float64) *RoadNetwork {
 				}
 			}
 			if best >= 0 {
-				row[to] = float64(best) * net.gridMeters
+				row[to] = float64(best+net.gap[from]+net.gap[to]) * net.gridMeters
 			}
 		}
 		for _, d := range row {
@@ -271,4 +287,89 @@ func (c *roadNetCache) network(ctx context.Context, svcCtx *svc.ServiceContext) 
 	c.layoutJSON, c.net = raw, built
 	c.mu.Unlock()
 	return built
+}
+
+// DistancePair 两栋建筑间的路网距离（米）。
+type DistancePair struct {
+	FromID int64
+	ToID   int64
+	Meters float64
+}
+
+// Pairs 返回所有可计算的路网距离对（from < to，去重）。
+func (n *RoadNetwork) Pairs() []DistancePair {
+	if n == nil {
+		return nil
+	}
+	pairs := make([]DistancePair, 0)
+	for _, from := range n.buildingIDs {
+		row, ok := n.dist[from]
+		if !ok {
+			continue
+		}
+		for _, to := range n.buildingIDs {
+			if to <= from {
+				continue
+			}
+			if d, ok := row[to]; ok {
+				pairs = append(pairs, DistancePair{FromID: from, ToID: to, Meters: d})
+			}
+		}
+	}
+	return pairs
+}
+
+// NearestMeters 返回该建筑到最远可达建筑的路网距离（用于展示"最远通勤距离"）。
+func (n *RoadNetwork) NearestMeters(buildingID int64) float64 {
+	if n == nil {
+		return 0
+	}
+	best := 0.0
+	for _, d := range n.dist[buildingID] {
+		if d > best {
+			best = d
+		}
+	}
+	return best
+}
+
+// EntryCount 与道路相邻的入口格数量。
+func (n *RoadNetwork) EntryCount(buildingID int64) int {
+	if n == nil {
+		return 0
+	}
+	return len(n.entries[buildingID])
+}
+
+// RoadCellCount 栅格路网的道路格数量。
+func (n *RoadNetwork) RoadCellCount() int {
+	if n == nil {
+		return 0
+	}
+	return len(n.road)
+}
+
+// boxGapCells 计算格点到建筑矩形轮廓的曼哈顿距离（0 表示紧贴建筑）。
+func boxGapCells(b campusBlock, r, c int) int {
+	rowSpan, colSpan := spanOf(b)
+	dr, dc := 0, 0
+	if r < b.Row {
+		dr = b.Row - r
+	} else if r > b.Row+rowSpan-1 {
+		dr = r - (b.Row + rowSpan - 1)
+	}
+	if c < b.Col {
+		dc = b.Col - c
+	} else if c > b.Col+colSpan-1 {
+		dc = c - (b.Col + colSpan - 1)
+	}
+	return dr + dc
+}
+
+// GapCells 建筑到其接入道路格的步行格数（0 表示与道路紧贴）。
+func (n *RoadNetwork) GapCells(buildingID int64) int {
+	if n == nil {
+		return 0
+	}
+	return n.gap[buildingID]
 }

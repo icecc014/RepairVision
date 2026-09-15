@@ -637,3 +637,25 @@ type AdminOrderPriorityRequest struct {
 	Id       int64 `path:"id"`
 	Priority int64 `json:"priority"`
 }
+type CampusDistanceBuilding struct {
+	BuildingId int64   `json:"buildingId"`
+	Name       string  `json:"name"`
+	EntryCount int64   `json:"entryCount"`
+	Connected  bool    `json:"connected"`
+	MaxMeters  float64 `json:"maxMeters"`
+	GapCells   int64   `json:"gapCells"`
+}
+
+type CampusDistancePair struct {
+	FromId int64   `json:"fromId"`
+	ToId   int64   `json:"toId"`
+	Meters float64 `json:"meters"`
+}
+
+type CampusDistanceResponse struct {
+	GridMeters float64                  `json:"gridMeters"`
+	MaxMeters  float64                  `json:"maxMeters"`
+	RoadCells  int64                    `json:"roadCells"`
+	Buildings  []CampusDistanceBuilding `json:"buildings"`
+	Pairs      []CampusDistancePair     `json:"pairs"`
+}

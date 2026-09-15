@@ -75,6 +75,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodDelete, Path: "/api/admin/users/:id", Handler: AdminUserDeleteHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/buildings", Handler: AdminBuildingsHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/campus-layout", Handler: CampusLayoutHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/campus-layout/distances", Handler: CampusDistanceHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/campus-layout", Handler: CampusLayoutSaveHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/buildings", Handler: AdminBuildingCreateHandler(serverCtx)},
 		{Method: http.MethodPut, Path: "/api/admin/buildings/:id", Handler: AdminBuildingUpdateHandler(serverCtx)},
