@@ -1,5 +1,5 @@
 <template>
-  <AdminShell title="工人排班" subtitle="按周维护工人班次与轮休，休息日不参与自动派单">
+  <AdminShell title="工人排班" subtitle="双休白班：白班 08:00-12:00 / 14:00-18:00，每周休息 2 天（可配置）">
     <section class="panel">
       <div class="toolbar">
         <div class="week-title">{{ weekLabel }}</div>
@@ -11,16 +11,16 @@
         <span class="param-label">每栋最少在岗</span>
         <el-input-number v-model="minPerBuilding" :min="0" :max="5" size="small" style="width: 108px" />
         <div style="flex: 1"></div>
+        <el-button @click="openSettings">排班设置</el-button>
         <el-button type="success" :loading="generating" @click="generateWeek">一键生成当周排班</el-button>
       </div>
 
       <div class="coverage-row">
-        <el-tag type="warning" effect="plain">午班 {{ shiftCount('MORNING') }}</el-tag>
-        <el-tag type="primary" effect="plain">晚班 {{ shiftCount('AFTERNOON') }}</el-tag>
-        <el-tag type="success" effect="plain">全天 {{ shiftCount('DAY') }}</el-tag>
-        <el-tag type="info" effect="plain">休息 {{ shiftCount('OFF') }}</el-tag>
+        <el-tag type="primary" effect="plain">白班 {{ dayShiftCount() }}</el-tag>
+        <el-tag type="info" effect="plain">休息 {{ offShiftCount() }}</el-tag>
+        <el-tag type="success" effect="dark">当前在岗 {{ onDutyCount }} 人</el-tag>
         <el-tag type="warning" effect="dark">请假 {{ leaveCount() }}</el-tag>
-        <span class="coverage-tip">紫色「请假」= 已批准请假（不参与派单）；其余按在岗人数分配午/晚班</span>
+        <span class="coverage-tip">{{ dutyTip }}</span>
       </div>
 
       <el-alert
@@ -55,19 +55,57 @@
         </el-table-column>
       </el-table>
       <el-empty v-if="!loading && rows.length === 0" description="暂无可排班工人" class="empty" />
-      <p class="hint">点击任意日期可调整班次；生成逻辑：先固定已批准请假，再按「每周休息天数」错峰排休，并尽量保证每栋楼最少在岗人数。</p>
+      <p class="hint">点击任意日期可调整班次（白班 / 休息）。生成逻辑：先固定已批准请假，再按「每周休息天数」错峰排休（或按排班设置里的固定休息日），保证每栋楼最少在岗人数；非工作时段开工需工人确认。</p>
     </section>
 
+    <el-dialog append-to-body v-model="settingsVisible" title="排班设置" width="520px">
+      <el-form :model="settingsForm" label-width="120px">
+        <el-form-item label="每周休息天数">
+          <el-input-number v-model="settingsForm.restDaysPerWeek" :min="0" :max="3" />
+          <div class="form-tip">默认 2 天（双休）</div>
+        </el-form-item>
+        <el-form-item label="轮休模式">
+          <el-radio-group v-model="settingsForm.restMode">
+            <el-radio value="staggered">错峰轮休（保证每栋楼在岗）</el-radio>
+            <el-radio value="fixed">固定休息日</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="settingsForm.restMode === 'fixed'" label="固定休息日">
+          <el-checkbox-group v-model="fixedWeekdayList">
+            <el-checkbox :value="1">周一</el-checkbox>
+            <el-checkbox :value="2">周二</el-checkbox>
+            <el-checkbox :value="3">周三</el-checkbox>
+            <el-checkbox :value="4">周四</el-checkbox>
+            <el-checkbox :value="5">周五</el-checkbox>
+            <el-checkbox :value="6">周六</el-checkbox>
+            <el-checkbox :value="7">周日</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="上午工作时段">
+          <el-time-picker v-model="morningRange" is-range format="HH:mm" value-format="HH:mm" start-placeholder="上班" end-placeholder="下班" />
+        </el-form-item>
+        <el-form-item label="下午工作时段">
+          <el-time-picker v-model="afternoonRange" is-range format="HH:mm" value-format="HH:mm" start-placeholder="上班" end-placeholder="下班" />
+        </el-form-item>
+        <el-form-item label="非时段开工">
+          <el-switch v-model="settingsForm.allowForceStart" :active-value="1" :inactive-value="0" />
+          <div class="form-tip">开启：工人确认后可强制开工；关闭：非工作时段禁止开工</div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="settingsVisible = false">取消</el-button>
+        <el-button type="primary" :loading="settingsSaving" @click="saveSettings">保存设置</el-button>
+      </template>
+    </el-dialog>
     <el-dialog append-to-body v-model="editVisible" title="调整班次" width="460px">
       <template v-if="editTarget">
         <p class="edit-hint">
           {{ editTarget.name }}（{{ editTarget.username }}）· {{ dateLabel(editDate) }}
         </p>
         <el-select v-model="editShift" style="width: 100%">
-          <el-option label="全天班 DAY" value="DAY" />
-          <el-option label="午班 MORNING（8:00-14:00）" value="MORNING" />
-          <el-option label="晚班 AFTERNOON（14:00-20:00）" value="AFTERNOON" />
-          <el-option label="休息 OFF" value="OFF" />
+          <el-option :label="`白班 ${settings.morningStart}-${settings.morningEnd} / ${settings.afternoonStart}-${settings.afternoonEnd}`" value="DAY" />
+          <el-option label="休息" value="OFF" />
+          <el-option v-if="isLegacyShift(editShift)" label="白班（历史午/晚班数据）" :value="editShift" />
         </el-select>
         <el-input v-model="editNote" placeholder="备注（可选）" style="margin-top: 12px" />
       </template>
@@ -82,8 +120,16 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { AdminUser, ScheduleItem } from '../api'
-import { apiAdminSchedules, apiAdminUsers, apiGenerateWeekly, apiSaveSchedules } from '../api'
+import type { AdminUser, ScheduleItem, WorkSettings } from '../api'
+import {
+  apiAdminDutyOverview,
+  apiAdminSchedules,
+  apiAdminUsers,
+  apiAdminWorkSettings,
+  apiGenerateWeekly,
+  apiSaveSchedules,
+  apiUpdateWorkSettings,
+} from '../api'
 import AdminShell from '../components/AdminShell.vue'
 
 const workers = ref<AdminUser[]>([])
@@ -91,7 +137,7 @@ const scheduleMap = ref<Record<string, ScheduleItem>>({})
 const weekStart = ref(mondayOf(new Date()))
 const loading = ref(false)
 const generating = ref(false)
-const restDays = ref(1)
+const restDays = ref(2)
 const minPerBuilding = ref(1)
 const warnings = ref<string[]>([])
 const saving = ref(false)
@@ -100,6 +146,28 @@ const editTarget = ref<AdminUser | null>(null)
 const editDate = ref('')
 const editShift = ref('DAY')
 const editNote = ref('')
+const settings = ref<WorkSettings>({
+  restDaysPerWeek: 2,
+  restMode: 'staggered',
+  fixedRestWeekdays: '6,7',
+  morningStart: '08:00',
+  morningEnd: '12:00',
+  afternoonStart: '14:00',
+  afternoonEnd: '18:00',
+  allowForceStart: 1,
+})
+const onDutyCount = ref(0)
+const dutyTip = ref('当前在岗人数按「今日白班 ∧ 工作时段内 ∧ 未请假 ∧ 启用」统计')
+const settingsVisible = ref(false)
+const settingsSaving = ref(false)
+const settingsForm = reactive({
+  restDaysPerWeek: 2,
+  restMode: 'staggered',
+  allowForceStart: 1,
+})
+const fixedWeekdayList = ref<number[]>([6, 7])
+const morningRange = ref<[string, string]>(['08:00', '12:00'])
+const afternoonRange = ref<[string, string]>(['14:00', '18:00'])
 
 const weekDates = computed(() => {
   const start = parseDate(weekStart.value)
@@ -147,14 +215,87 @@ function leaveCount() {
   return Object.values(scheduleMap.value).filter((x) => x.shiftType === 'OFF' && (x.note || '').includes('请假')).length
 }
 
+
+function dayShiftCount() {
+  return Object.values(scheduleMap.value).filter(
+    (x) => x.shiftType === 'DAY' || x.shiftType === 'MORNING' || x.shiftType === 'AFTERNOON',
+  ).length
+}
+
+function offShiftCount() {
+  return Object.values(scheduleMap.value).filter((x) => x.shiftType === 'OFF' && !(x.note || '').includes('请假')).length
+}
+
+function isLegacyShift(shift: string) {
+  return shift === 'MORNING' || shift === 'AFTERNOON'
+}
+
+async function loadSettings() {
+  try {
+    settings.value = await apiAdminWorkSettings()
+    restDays.value = settings.value.restDaysPerWeek
+    settingsForm.restDaysPerWeek = settings.value.restDaysPerWeek
+    settingsForm.restMode = settings.value.restMode
+    settingsForm.allowForceStart = settings.value.allowForceStart
+    fixedWeekdayList.value = settings.value.fixedRestWeekdays
+      .split(',')
+      .map((x) => Number(x))
+      .filter((x) => x >= 1 && x <= 7)
+    morningRange.value = [settings.value.morningStart, settings.value.morningEnd]
+    afternoonRange.value = [settings.value.afternoonStart, settings.value.afternoonEnd]
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+
+async function loadDuty() {
+  try {
+    const ov = await apiAdminDutyOverview()
+    onDutyCount.value = ov.onDutyCount
+    dutyTip.value = `工作时段 ${ov.morning} / ${ov.afternoon} · 在岗 ${ov.onDutyCount}/${ov.total} 人`
+  } catch {
+    // 在岗统计失败不阻塞排班表
+  }
+}
+
+function openSettings() {
+  settingsForm.restDaysPerWeek = settings.value.restDaysPerWeek
+  settingsForm.restMode = settings.value.restMode
+  settingsForm.allowForceStart = settings.value.allowForceStart
+  settingsVisible.value = true
+}
+
+async function saveSettings() {
+  settingsSaving.value = true
+  try {
+    settings.value = await apiUpdateWorkSettings({
+      restDaysPerWeek: settingsForm.restDaysPerWeek,
+      restMode: settingsForm.restMode,
+      fixedRestWeekdays: fixedWeekdayList.value.join(','),
+      morningStart: morningRange.value[0],
+      morningEnd: morningRange.value[1],
+      afternoonStart: afternoonRange.value[0],
+      afternoonEnd: afternoonRange.value[1],
+      allowForceStart: settingsForm.allowForceStart,
+    })
+    restDays.value = settings.value.restDaysPerWeek
+    ElMessage.success('排班设置已保存')
+    settingsVisible.value = false
+    loadDuty()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    settingsSaving.value = false
+  }
+}
 function shiftText(shift: string) {
   switch (shift) {
     case 'DAY':
-      return '全天'
+      return '白班'
     case 'MORNING':
-      return '午班'
+      return '白班*'
     case 'AFTERNOON':
-      return '晚班'
+      return '白班*'
     case 'OFF':
       return '休息'
     default:
@@ -277,6 +418,8 @@ function dateLabel(date: string) {
 
 onMounted(() => {
   loadWorkers()
+  loadSettings()
+  loadDuty()
   loadSchedules()
 })
 </script>
@@ -384,6 +527,12 @@ onMounted(() => {
   color: #5a6a85;
   font-size: 14px;
   font-weight: 600;
+}
+ .form-tip {
+  margin-top: 4px;
+  color: #8a97ad;
+  font-size: 12px;
+  line-height: 1.5;
 }
 .empty {
   padding: 24px 0;

@@ -158,7 +158,8 @@
 import { computed, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem, WorkerMapBuilding } from '../api'
-import { apiCompleteOrder, apiStartOrder } from '../api'
+import { apiCompleteOrder } from '../api'
+import { startOrderFlow } from '../utils/startOrderFlow'
 import { PLAN_DEPTH, PLAN_WIDTH, matchRoomOrders, type PlanRoom } from '../utils/floorLayout'
 import { resolveFloorPlan } from '../utils/layoutGrid'
 
@@ -240,7 +241,7 @@ async function act(o: OrderItem, action: 'start' | 'complete') {
   actingId.value = o.id
   try {
     if (action === 'start') {
-      await apiStartOrder(o.id)
+      if (!(await startOrderFlow(o.id))) return
       showToast('已开工')
     } else {
       await apiCompleteOrder(o.id)

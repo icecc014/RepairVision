@@ -118,7 +118,8 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem } from '../api'
-import { apiCompleteOrder, apiStartOrder, apiWorkerOrderPage } from '../api'
+import { apiCompleteOrder, apiWorkerOrderPage } from '../api'
+import { startOrderFlow } from '../utils/startOrderFlow'
 import MapView from './MapView.vue'
 import WorkerSchedule from './WorkerSchedule.vue'
 import NotificationBell from '../components/NotificationBell.vue'
@@ -231,7 +232,7 @@ async function start(item: OrderItem) {
   }
   actingId.value = item.id
   try {
-    await apiStartOrder(item.id)
+    if (!(await startOrderFlow(item.id))) return
     showToast('已开工，请尽快处理')
     load()
   } catch (err) {

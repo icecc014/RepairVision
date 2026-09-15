@@ -50,7 +50,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
 import type { OrderItem, WorkerMapBuilding } from '../api'
-import { apiCompleteOrder, apiStartOrder } from '../api'
+import { apiCompleteOrder } from '../api'
+import { startOrderFlow } from '../utils/startOrderFlow'
 import BuildingFloorPlan from './BuildingFloorPlan.vue'
 import { PLAN_DEPTH, PLAN_WIDTH } from '../utils/floorLayout'
 import { resolveFloorPlan } from '../utils/layoutGrid'
@@ -477,7 +478,7 @@ async function runAction(o: OrderItem, action: 'start' | 'complete') {
   }
   try {
     if (action === 'start') {
-      await apiStartOrder(o.id)
+      if (!(await startOrderFlow(o.id))) return
       showToast('已开工')
     } else {
       await apiCompleteOrder(o.id)

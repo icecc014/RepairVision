@@ -363,6 +363,50 @@ export function apiAdminOrderExternal(id: number): Promise<unknown> {
   return http.post(`/admin/orders/${id}/external`, {})
 }
 
+export interface WorkSettings {
+  restDaysPerWeek: number
+  restMode: string
+  fixedRestWeekdays: string
+  morningStart: string
+  morningEnd: string
+  afternoonStart: string
+  afternoonEnd: string
+  allowForceStart: number
+}
+
+export interface DutyStatusItem {
+  workerId: number
+  name: string
+  onDuty: boolean
+  shiftType: string
+  inWorkPeriod: boolean
+  onLeave: boolean
+  enabled: boolean
+  reason: string
+  morning: string
+  afternoon: string
+}
+
+export interface DutyOverview {
+  onDutyCount: number
+  total: number
+  morning: string
+  afternoon: string
+  list: DutyStatusItem[]
+}
+
+export async function apiAdminWorkSettings(): Promise<WorkSettings> {
+  return http.get('/admin/work-settings')
+}
+
+export async function apiUpdateWorkSettings(payload: Partial<WorkSettings>): Promise<WorkSettings> {
+  return http.post('/admin/work-settings', payload)
+}
+
+export async function apiAdminDutyOverview(): Promise<DutyOverview> {
+  return http.get('/admin/duty-overview')
+}
+
 export function apiAdminBatchDispatch(payload?: { buildingId?: number; orderIds?: number[] }): Promise<BatchDispatchResult> {
   return http.post('/admin/orders/batch-dispatch', payload || {})
 }

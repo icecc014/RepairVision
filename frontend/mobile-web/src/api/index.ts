@@ -95,8 +95,8 @@ export async function apiWorkerOrders(status = 0): Promise<OrderItem[]> {
   return res.list || []
 }
 
-export function apiStartOrder(id: number): Promise<unknown> {
-  return http.post(`/worker/orders/${id}/start`)
+export function apiStartOrder(id: number, force = false): Promise<{ warning?: string }> {
+  return http.post(`/worker/orders/${id}/start`, { force })
 }
 
 export function apiCompleteOrder(id: number): Promise<unknown> {
