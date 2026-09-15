@@ -21,6 +21,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodGet, Path: "/api/notifications", Handler: NotificationListHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/notifications/:id/read", Handler: NotificationReadHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/notifications/read-all", Handler: NotificationReadAllHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/campus-map", Handler: CampusLayoutHandler(serverCtx)},
 	}, jwtOpt)
 
 	server.AddRoutes(rest.WithMiddleware(auth.RoleGuard(3), []rest.Route{
@@ -64,6 +65,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodPost, Path: "/api/admin/users/:id/reset-password", Handler: AdminUserResetPasswordHandler(serverCtx)},
 		{Method: http.MethodDelete, Path: "/api/admin/users/:id", Handler: AdminUserDeleteHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/buildings", Handler: AdminBuildingsHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/admin/campus-layout", Handler: CampusLayoutHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/campus-layout", Handler: CampusLayoutSaveHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/buildings", Handler: AdminBuildingCreateHandler(serverCtx)},
 		{Method: http.MethodPut, Path: "/api/admin/buildings/:id", Handler: AdminBuildingUpdateHandler(serverCtx)},
 		{Method: http.MethodDelete, Path: "/api/admin/buildings/:id", Handler: AdminBuildingDeleteHandler(serverCtx)},

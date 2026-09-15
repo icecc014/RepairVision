@@ -13,6 +13,7 @@ import RepairRecordsView from '../views/RepairRecordsView.vue'
 import StatsView from '../views/StatsView.vue'
 import PermissionsView from '../views/PermissionsView.vue'
 import BuildingVisualView from '../views/BuildingVisualView.vue'
+import CampusOverviewView from '../views/CampusOverviewView.vue'
 
 const router = createRouter({
   history: createWebHistory('/admin/'),
@@ -31,6 +32,7 @@ const router = createRouter({
     { path: '/stats', name: 'stats', component: StatsView, meta: { requiresAuth: true } },
     { path: '/permissions', name: 'permissions', component: PermissionsView, meta: { requiresAuth: true } },
     { path: '/building-visual', name: 'building-visual', component: BuildingVisualView, meta: { requiresAuth: true } },
+    { path: '/campus', name: 'campus-overview', component: CampusOverviewView, meta: { requiresAuth: true } },
   ],
 })
 

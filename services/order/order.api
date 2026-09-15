@@ -173,6 +173,22 @@ type PingResponse {
 	Map    string `json:"map"`
 }
 
+type CampusLayoutResponse {
+	Id         int64  `json:"id"`
+	Name       string `json:"name"`
+	Cols       int64  `json:"cols"`
+	Rows       int64  `json:"rows"`
+	LayoutJson string `json:"layoutJson"`
+	UpdatedAt  string `json:"updatedAt"`
+}
+
+type CampusLayoutSaveRequest {
+	Name       string `json:"name,optional"`
+	Cols       int64  `json:"cols,optional"`
+	Rows       int64  `json:"rows,optional"`
+	LayoutJson string `json:"layoutJson"`
+}
+
 type LoginRequest {
 	Username string `json:"username"`
 	Password string `json:"password"`

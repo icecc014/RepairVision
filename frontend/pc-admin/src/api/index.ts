@@ -271,6 +271,23 @@ export function apiAdminRepairRecords(params: {
   })
 }
 
+export interface CampusLayoutData {
+  id: number
+  name: string
+  cols: number
+  rows: number
+  layoutJson: string
+  updatedAt: string
+}
+
+// 区域概览（校园/建筑群总平面图）
+export function apiAdminCampusLayout(): Promise<CampusLayoutData> {
+  return http.get('/admin/campus-layout')
+}
+
+export function apiSaveCampusLayout(payload: { name: string; cols: number; rows: number; layoutJson: string }): Promise<CampusLayoutData> {
+  return http.post('/admin/campus-layout', payload)
+}
 export interface OperationLogItem {
   id: number
   userId?: number

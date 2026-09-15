@@ -22,6 +22,7 @@
       <router-link class="nav-item" to="/logs" active-class="active">报修记录</router-link>
       <router-link class="nav-item" to="/permissions" active-class="active">权限说明</router-link>
       <router-link class="nav-item" to="/building-visual" active-class="active">建筑可视化</router-link>
+      <router-link class="nav-item" to="/campus" active-class="active">区域概览</router-link>
 
       <div class="side-footer">校园维修 · 毕业设计</div>
     </aside>

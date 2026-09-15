@@ -121,6 +121,21 @@ CREATE TABLE notifications (
   KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE DATABASE IF NOT EXISTS worker_db CHARACTER SET utf8mb4;
+CREATE TABLE IF NOT EXISTS campus_layouts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL DEFAULT '默认区域概览',
+  is_default TINYINT NOT NULL DEFAULT 1 COMMENT '1=默认展示的概览图',
+  grid_cols INT NOT NULL DEFAULT 40 COMMENT '网格列数',
+  grid_rows INT NOT NULL DEFAULT 30 COMMENT '网格行数',
+  layout_json LONGTEXT NULL COMMENT '图元区块 JSON',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_default (is_default)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO campus_layouts(id, name, is_default, grid_cols, grid_rows, layout_json)
+SELECT 1, '默认区域概览', 1, 40, 30, NULL
+WHERE NOT EXISTS (SELECT 1 FROM campus_layouts WHERE id = 1);
 USE worker_db;
 
 CREATE TABLE users (

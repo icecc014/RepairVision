@@ -1,0 +1,795 @@
+<template>
+  <AdminShell title="区域概览" subtitle="绘制校园 / 建筑群总平面图（建筑、道路、广场、校门），作为派单算法的空间数据基础">
+    <section class="panel">
+      <div class="toolbar">
+        <el-input v-model="name" placeholder="概览图名称" style="width: 200px" />
+        <el-button size="small" @click="loadTemplate">生成示例布局</el-button>
+        <el-button size="small" @click="clearAll">清空画布</el-button>
+        <el-button size="small" @click="reload">放弃修改</el-button>
+        <div style="flex: 1" />
+        <span class="toolbar-tip">画布 {{ cols }} × {{ rows }} 格</span>
+        <el-input-number v-model="cols" :min="10" :max="80" size="small" style="width: 110px" @change="applySize" />
+        <el-input-number v-model="rows" :min="10" :max="60" size="small" style="width: 110px" @change="applySize" />
+        <el-button type="primary" :loading="saving" @click="save">保存概览</el-button>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="panel tools">
+        <div class="panel-title">图元工具</div>
+        <button
+          v-for="t in CAMPUS_KINDS"
+          :key="t.kind"
+          class="tool-btn"
+          :class="{ active: brush === t.kind }"
+          @click="selectBrush(t.kind)"
+        >
+          <i class="chip" :style="{ background: t.color }" />
+          <span>{{ t.label }}</span>
+          <em>{{ t.hint }}</em>
+        </button>
+        <button class="tool-btn" :class="{ active: brush === 'erase' }" @click="selectBrush('erase')">
+          <i class="chip" style="background: #fff" />
+          <span>擦除</span>
+          <em>点击图元即可删除</em>
+        </button>
+
+        <div class="panel-title">统计</div>
+        <div class="stat-line">建筑 <b>{{ campusCount(grid, 'building') }}</b> 个</div>
+        <div class="stat-line">道路 <b>{{ campusCount(grid, 'road') }}</b> 块</div>
+        <div class="stat-line">广场绿地 <b>{{ campusCount(grid, 'green') }}</b> 块</div>
+        <div class="stat-line">校门 <b>{{ campusCount(grid, 'gate') }}</b> 个</div>
+        <div class="stat-line">自定义 <b>{{ campusCount(grid, 'custom') }}</b> 块</div>
+
+        <div class="panel-title">快捷键</div>
+        <ul class="key-list">
+          <li><b>单击</b> 放置图元</li>
+          <li><b>双击</b> 进入编辑模式</li>
+          <li><b>拖把手</b> 按格改尺寸</li>
+          <li><b>Ctrl+Z</b> 撤销 / <b>Delete</b> 删除</li>
+          <li><b>Esc</b> 退出编辑</li>
+        </ul>
+      </section>
+
+      <section class="panel canvas-area">
+        <div class="hint-line" :class="{ warn: !brush || !!editingId }">
+          {{ editingId ? '编辑模式：只能调整当前图元（拖把手改尺寸 / 拖本体移动）；按 Esc 或点击空白处退出'
+            : (brush === 'erase' ? '擦除模式：点击图元即可删除'
+              : (brush ? '已选择「' + brushLabel + '」：点击网格放置图元' : '请先在左侧选择图元工具，再点击网格开始绘制')) }}
+        </div>
+        <div class="canvas-scroll">
+          <div ref="canvasRef" class="canvas" :style="{ '--cols': grid.cols, '--rows': grid.rows }">
+            <div class="slot-layer">
+              <button
+                v-for="slot in slots"
+                :key="slot.key"
+                class="slot"
+                :class="{ painted: !!slot.blockId }"
+                @pointerdown.prevent="onSlotDown(slot)"
+              />
+            </div>
+            <div class="block-layer">
+              <div
+                v-for="b in grid.blocks"
+                :key="b.id"
+                class="block"
+                :class="[`k-${b.kind}`, { selected: selectedId === b.id, editing: editingId === b.id }]"
+                :style="blockStyle(b)"
+                @pointerdown.stop="onBlockDown(b, $event)"
+                @dblclick.stop="enterEdit(b)"
+              >
+                <span class="block-label">{{ labelOf(b) }}</span>
+                <template v-if="editingId === b.id">
+                  <i
+                    v-for="h in HANDLES"
+                    :key="h"
+                    class="handle"
+                    :class="`h-${h}`"
+                    @pointerdown.stop="onHandleDown(b, h, $event)"
+                  />
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel props">
+        <div class="panel-title">图元属性</div>
+        <template v-if="selectedBlock">
+          <div class="prop-row">
+            <span class="prop-label">类型</span>
+            <el-select :model-value="selectedBlock.kind" size="small" style="width: 100%" @change="setKind">
+              <el-option v-for="t in CAMPUS_KINDS" :key="t.kind" :label="t.label" :value="t.kind" />
+            </el-select>
+          </div>
+          <template v-if="selectedBlock.kind === 'building'">
+            <div class="prop-row">
+              <span class="prop-label">名称来源</span>
+              <el-radio-group :model-value="selectedBlock.customBuilding ? 'custom' : 'building'" size="small" @change="setBuildingSource">
+                <el-radio-button value="building">已有楼栋</el-radio-button>
+                <el-radio-button value="custom">自定义</el-radio-button>
+              </el-radio-group>
+            </div>
+            <div v-if="!selectedBlock.customBuilding" class="prop-row">
+              <span class="prop-label">关联楼栋</span>
+              <el-select :model-value="selectedBlock.buildingId" size="small" style="width: 100%" @change="setBuilding">
+                <el-option v-for="b in buildings" :key="b.id" :label="`${b.name}（${b.code}）`" :value="b.id" />
+              </el-select>
+            </div>
+          </template>
+          <div v-if="needLabel" class="prop-row">
+            <span class="prop-label">名称</span>
+            <el-input
+              :model-value="selectedBlock.label"
+              size="small"
+              maxlength="16"
+              placeholder="如：第二食堂 / 图书馆"
+              @change="setLabel"
+            />
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">起始格（行 / 列）</span>
+            <div class="prop-pair">
+              <el-input-number :model-value="selectedBlock.row" :min="0" :max="grid.rows - 1" size="small" @change="(v: number) => setProp('row', v)" />
+              <el-input-number :model-value="selectedBlock.col" :min="0" :max="grid.cols - 1" size="small" @change="(v: number) => setProp('col', v)" />
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">跨格数（行 / 列）</span>
+            <div class="prop-pair">
+              <el-input-number :model-value="selectedBlock.rowSpan" :min="1" :max="grid.rows" size="small" @change="(v: number) => setProp('rowSpan', v)" />
+              <el-input-number :model-value="selectedBlock.colSpan" :min="1" :max="grid.cols" size="small" @change="(v: number) => setProp('colSpan', v)" />
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">左右边缘</span>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('w', true)">← 左扩</el-button>
+              <el-button size="small" @click="expandEdge('w', false)">→ 左收</el-button>
+            </div>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('e', true)">右扩 →</el-button>
+              <el-button size="small" @click="expandEdge('e', false)">← 右收</el-button>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">上下边缘</span>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('n', true)">↑ 上扩</el-button>
+              <el-button size="small" @click="expandEdge('n', false)">↓ 上收</el-button>
+            </div>
+            <div class="prop-pair">
+              <el-button size="small" @click="expandEdge('s', true)">下扩 ↓</el-button>
+              <el-button size="small" @click="expandEdge('s', false)">↑ 下收</el-button>
+            </div>
+          </div>
+          <el-button size="small" type="danger" plain style="width: 100%" @click="removeSelected">删除该图元</el-button>
+        </template>
+        <p v-else class="prop-empty">单击图元查看属性；双击进入编辑模式（显示 8 个把手）。<br />建筑图元可关联"建筑信息管理"中的楼栋，或选择自定义后手动命名。</p>
+      </section>
+    </div>
+  </AdminShell>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { AdminBuilding } from '../api'
+import { apiAdminBuildings, apiAdminCampusLayout, apiSaveCampusLayout } from '../api'
+import AdminShell from '../components/AdminShell.vue'
+import {
+  CAMPUS_KINDS,
+  CAMPUS_KIND_TEXT,
+  campusAreaFree,
+  campusCount,
+  campusInBounds,
+  campusStepMove,
+  campusStepResize,
+  emptyCampus,
+  defaultCampus,
+  makeCampusBlock,
+  parseCampus,
+  serializeCampus,
+  type CampusBlock,
+  type CampusGrid,
+  type CampusKind,
+} from '../utils/campusLayout'
+import type { ResizeHandle } from '../utils/layoutGrid'
+
+type Brush = CampusKind | 'erase'
+const HANDLES: ResizeHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
+
+const grid = ref<CampusGrid>(emptyCampus())
+const cols = ref(40)
+const rows = ref(30)
+const name = ref('校园总览')
+const brush = ref<Brush | null>(null)
+const selectedId = ref<string | null>(null)
+const editingId = ref<string | null>(null)
+const canvasRef = ref<HTMLElement | null>(null)
+const buildings = ref<AdminBuilding[]>([])
+const saving = ref(false)
+const undoStack = ref<CampusBlock[][]>([])
+const redoStack = ref<CampusBlock[][]>([])
+
+const selectedBlock = computed(() => grid.value.blocks.find((b) => b.id === selectedId.value) || null)
+const brushLabel = computed(() => (brush.value === 'erase' ? '擦除' : CAMPUS_KIND_TEXT[brush.value as CampusKind] || ''))
+const needLabel = computed(() => {
+  const b = selectedBlock.value
+  if (!b) return false
+  if (b.kind === 'building') return !!b.customBuilding
+  return b.kind !== 'road'
+})
+const slots = computed(() => {
+  const out: { key: string; row: number; col: number; blockId: string | null }[] = []
+  for (let r = 0; r < grid.value.rows; r++) {
+    for (let c = 0; c < grid.value.cols; c++) {
+      const hit = grid.value.blocks.find((b) => r >= b.row && r < b.row + b.rowSpan && c >= b.col && c < b.col + b.colSpan)
+      out.push({ key: `${r}-${c}`, row: r, col: c, blockId: hit?.id ?? null })
+    }
+  }
+  return out
+})
+
+function cloneBlocks(): CampusBlock[] {
+  return grid.value.blocks.map((b) => ({ ...b }))
+}
+function pushHistory() {
+  undoStack.value.push(cloneBlocks())
+  if (undoStack.value.length > 50) undoStack.value.shift()
+  redoStack.value = []
+}
+function syncSelection() {
+  if (selectedId.value && !grid.value.blocks.some((b) => b.id === selectedId.value)) selectedId.value = null
+  if (editingId.value && !grid.value.blocks.some((b) => b.id === editingId.value)) editingId.value = null
+}
+function labelOf(b: CampusBlock) {
+  if (b.label) return b.label
+  return CAMPUS_KIND_TEXT[b.kind]
+}
+function blockStyle(b: CampusBlock) {
+  return {
+    left: `${(b.col / grid.value.cols) * 100}%`,
+    top: `${(b.row / grid.value.rows) * 100}%`,
+    width: `${(b.colSpan / grid.value.cols) * 100}%`,
+    height: `${(b.rowSpan / grid.value.rows) * 100}%`,
+  }
+}
+
+// ---------- 绘制与编辑 ----------
+function selectBrush(kind: Brush) {
+  brush.value = brush.value === kind ? null : kind
+  editingId.value = null
+}
+function onSlotDown(slot: { row: number; col: number }) {
+  if (editingId.value) {
+    editingId.value = null
+    selectedId.value = null
+    return
+  }
+  if (!brush.value) {
+    ElMessage.warning('请先在左侧选择图元工具，再点击网格放置')
+    return
+  }
+  const hit = grid.value.blocks.find((b) => slot.row >= b.row && slot.row < b.row + b.rowSpan && slot.col >= b.col && slot.col < b.col + b.colSpan)
+  if (brush.value === 'erase') {
+    if (!hit) return
+    pushHistory()
+    grid.value.blocks = grid.value.blocks.filter((b) => b.id !== hit.id)
+    syncSelection()
+    return
+  }
+  if (hit) return
+  pushHistory()
+  const kind = brush.value
+  const block = makeCampusBlock(kind, slot.row, slot.col, kind === 'building' ? 3 : 1, kind === 'building' ? 4 : 1)
+  if (kind === 'building') block.label = '新建筑'
+  if (kind !== 'building' && kind !== 'road') block.label = CAMPUS_KIND_TEXT[kind]
+  grid.value.blocks.push(block)
+  selectedId.value = block.id
+}
+function onBlockDown(b: CampusBlock, ev: PointerEvent) {
+  if (editingId.value) {
+    if (editingId.value !== b.id) {
+      editingId.value = b.id
+      selectedId.value = b.id
+      return
+    }
+    beginDrag('move', b, 'se', ev)
+    return
+  }
+  if (brush.value === 'erase') {
+    pushHistory()
+    grid.value.blocks = grid.value.blocks.filter((x) => x.id !== b.id)
+    syncSelection()
+    return
+  }
+  selectedId.value = b.id
+}
+function enterEdit(b: CampusBlock) {
+  selectedId.value = b.id
+  editingId.value = editingId.value === b.id ? null : b.id
+}
+function removeSelected() {
+  if (!selectedId.value) return
+  pushHistory()
+  grid.value.blocks = grid.value.blocks.filter((b) => b.id !== selectedId.value)
+  syncSelection()
+}
+
+// ---------- 属性编辑 ----------
+function setKind(kind: CampusKind) {
+  const b = selectedBlock.value
+  if (!b || b.kind === kind) return
+  pushHistory()
+  b.kind = kind
+  if (kind !== 'building') {
+    delete b.buildingId
+    delete b.customBuilding
+  }
+  if (!b.label) b.label = CAMPUS_KIND_TEXT[kind]
+}
+function setBuildingSource(source: string) {
+  const b = selectedBlock.value
+  if (!b) return
+  pushHistory()
+  if (source === 'custom') {
+    b.customBuilding = true
+    delete b.buildingId
+    b.label = b.label || '自定义建筑'
+  } else {
+    delete b.customBuilding
+    b.buildingId = buildings.value[0]?.id
+    b.label = buildings.value[0]?.name || b.label
+  }
+}
+function setBuilding(id: number) {
+  const b = selectedBlock.value
+  if (!b) return
+  pushHistory()
+  b.buildingId = id
+  b.label = buildings.value.find((x) => x.id === id)?.name || b.label
+}
+function setLabel(value: string) {
+  const b = selectedBlock.value
+  if (!b) return
+  const next = String(value || '').trim().slice(0, 16)
+  if ((b.label || '') === next) return
+  pushHistory()
+  b.label = next
+}
+function setProp(field: 'row' | 'col' | 'rowSpan' | 'colSpan', value: number) {
+  const b = selectedBlock.value
+  if (!b) return
+  const before = { ...b }
+  pushHistory()
+  b[field] = Number(value) || 0
+  const cand: CampusBlock = {
+    ...b,
+    rowSpan: Math.max(1, Math.min(grid.value.rows, b.rowSpan)),
+    colSpan: Math.max(1, Math.min(grid.value.cols, b.colSpan)),
+  }
+  cand.row = Math.max(0, Math.min(grid.value.rows - cand.rowSpan, b.row))
+  cand.col = Math.max(0, Math.min(grid.value.cols - cand.colSpan, b.col))
+  if (!campusInBounds(grid.value, cand) || !campusAreaFree(grid.value, cand)) {
+    const fallback = campusStepResize(grid.value, before, 'se', cand.colSpan - before.colSpan, cand.rowSpan - before.rowSpan)
+    b.rowSpan = fallback.rowSpan
+    b.colSpan = fallback.colSpan
+    ElMessage.warning('与其它图元重叠或越界，已回退到最近合法值')
+  } else {
+    b.row = cand.row
+    b.col = cand.col
+    b.rowSpan = cand.rowSpan
+    b.colSpan = cand.colSpan
+  }
+  if (b.row === before.row && b.col === before.col && b.rowSpan === before.rowSpan && b.colSpan === before.colSpan) {
+    undoStack.value.pop()
+  }
+}
+function expandEdge(dir: 'w' | 'e' | 'n' | 's', grow: boolean) {
+  const b = selectedBlock.value
+  if (!b) return
+  const dx = dir === 'w' ? (grow ? -1 : 1) : dir === 'e' ? (grow ? 1 : -1) : 0
+  const dy = dir === 'n' ? (grow ? -1 : 1) : dir === 's' ? (grow ? 1 : -1) : 0
+  pushHistory()
+  const next = campusStepResize(grid.value, b, dir, dx, dy)
+  const changed = next.row !== b.row || next.col !== b.col || next.rowSpan !== b.rowSpan || next.colSpan !== b.colSpan
+  if (!changed) {
+    undoStack.value.pop()
+    ElMessage.warning(grow ? '该方向已到边界或被其它图元挡住' : '该方向已缩到最小 1 格')
+    return
+  }
+  b.row = next.row
+  b.col = next.col
+  b.rowSpan = next.rowSpan
+  b.colSpan = next.colSpan
+}
+
+// ---------- 拖拽 ----------
+const drag = reactive({
+  mode: '' as '' | 'resize' | 'move',
+  id: '',
+  handle: 'se' as ResizeHandle,
+  base: null as CampusBlock | null,
+  startX: 0,
+  startY: 0,
+  cellW: 1,
+  cellH: 1,
+})
+function beginDrag(mode: 'resize' | 'move', b: CampusBlock, handle: ResizeHandle, ev: PointerEvent) {
+  const rect = canvasRef.value?.getBoundingClientRect()
+  if (!rect) return
+  pushHistory()
+  drag.mode = mode
+  drag.id = b.id
+  drag.handle = handle
+  drag.base = { ...b }
+  drag.startX = ev.clientX
+  drag.startY = ev.clientY
+  drag.cellW = rect.width / grid.value.cols
+  drag.cellH = rect.height / grid.value.rows
+  selectedId.value = b.id
+  editingId.value = b.id
+}
+function onHandleDown(b: CampusBlock, handle: ResizeHandle, ev: PointerEvent) {
+  beginDrag('resize', b, handle, ev)
+}
+function onPointerMove(ev: PointerEvent) {
+  if (!drag.mode || !drag.base) return
+  const dx = Math.round((ev.clientX - drag.startX) / drag.cellW)
+  const dy = Math.round((ev.clientY - drag.startY) / drag.cellH)
+  const target = grid.value.blocks.find((b) => b.id === drag.id)
+  if (!target) return
+  const next = drag.mode === 'resize'
+    ? campusStepResize(grid.value, drag.base, drag.handle, dx, dy)
+    : campusStepMove(grid.value, drag.base, dx, dy)
+  target.row = next.row
+  target.col = next.col
+  target.rowSpan = next.rowSpan
+  target.colSpan = next.colSpan
+}
+function endDrag() {
+  if (!drag.mode) return
+  const target = grid.value.blocks.find((b) => b.id === drag.id)
+  const base = drag.base
+  if (target && base && target.row === base.row && target.col === base.col &&
+    target.rowSpan === base.rowSpan && target.colSpan === base.colSpan) {
+    undoStack.value.pop()
+  }
+  drag.mode = ''
+  drag.base = null
+}
+function undo() {
+  const last = undoStack.value.pop()
+  if (!last) return
+  redoStack.value.push(cloneBlocks())
+  grid.value.blocks = last
+  syncSelection()
+}
+function redo() {
+  const next = redoStack.value.pop()
+  if (!next) return
+  undoStack.value.push(cloneBlocks())
+  grid.value.blocks = next
+  syncSelection()
+}
+function onKeyDown(ev: KeyboardEvent) {
+  const key = ev.key.toLowerCase()
+  if ((ev.ctrlKey || ev.metaKey) && key === 'z') {
+    ev.preventDefault()
+    if (ev.shiftKey) redo()
+    else undo()
+    return
+  }
+  if ((key === 'delete' || key === 'backspace') && selectedId.value) {
+    const tag = (ev.target as HTMLElement)?.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return
+    ev.preventDefault()
+    removeSelected()
+    return
+  }
+  if (key === 'escape') editingId.value = null
+}
+
+// ---------- 画布操作与保存 ----------
+function applySize() {
+  const c = Math.max(10, Math.min(80, Number(cols.value) || 40))
+  const r = Math.max(10, Math.min(60, Number(rows.value) || 30))
+  const kept: CampusBlock[] = []
+  for (const b of grid.value.blocks) {
+    const cand: CampusBlock = { ...b }
+    cand.colSpan = Math.min(cand.colSpan, c)
+    cand.rowSpan = Math.min(cand.rowSpan, r)
+    cand.col = Math.min(cand.col, c - cand.colSpan)
+    cand.row = Math.min(cand.row, r - cand.rowSpan)
+    if (!kept.some((o) => o.row < cand.row + cand.rowSpan && cand.row < o.row + o.rowSpan &&
+      o.col < cand.col + cand.colSpan && cand.col < o.col + o.colSpan)) {
+      kept.push(cand)
+    }
+  }
+  grid.value = { version: grid.value.version, cols: c, rows: r, blocks: kept }
+  cols.value = c
+  rows.value = r
+  syncSelection()
+}
+function loadTemplate() {
+  pushHistory()
+  grid.value = defaultCampus(cols.value, rows.value)
+  selectedId.value = null
+  editingId.value = null
+}
+function clearAll() {
+  pushHistory()
+  grid.value = emptyCampus(cols.value, rows.value)
+  selectedId.value = null
+  editingId.value = null
+}
+async function load() {
+  try {
+    const data = await apiAdminCampusLayout()
+    name.value = data.name || '校园总览'
+    cols.value = data.cols || 40
+    rows.value = data.rows || 30
+    const parsed = parseCampus(data.layoutJson)
+    grid.value = parsed || emptyCampus(cols.value, rows.value)
+    selectedId.value = null
+    editingId.value = null
+    undoStack.value = []
+    redoStack.value = []
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+function reload() {
+  load()
+  ElMessage.info('已重新加载服务器上的概览数据')
+}
+async function save() {
+  if (campusCount(grid.value, 'building') === 0) {
+    try {
+      await ElMessageBox.confirm('当前还没有建筑图元，仍要保存吗？', '保存区域概览')
+    } catch {
+      return
+    }
+  }
+  saving.value = true
+  try {
+    await apiSaveCampusLayout({
+      name: name.value || '校园总览',
+      cols: grid.value.cols,
+      rows: grid.value.rows,
+      layoutJson: serializeCampus(grid.value),
+    })
+    ElMessage.success('区域概览已保存，宿管端与工人端可查看')
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    saving.value = false
+  }
+}
+onMounted(async () => {
+  window.addEventListener('pointerup', endDrag)
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('keydown', onKeyDown)
+  try {
+    buildings.value = await apiAdminBuildings()
+  } catch {
+    // 楼栋列表失败不影响绘制
+  }
+  load()
+})
+onUnmounted(() => {
+  window.removeEventListener('pointerup', endDrag)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('keydown', onKeyDown)
+})
+</script>
+
+<style scoped>
+.panel {
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(46, 68, 112, 0.08);
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.toolbar-tip {
+  color: #8a97ad;
+  font-size: 12px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 240px;
+  gap: 16px;
+}
+.panel-title {
+  margin: 6px 0 8px;
+  color: #2b3445;
+  font-size: 13px;
+  font-weight: 800;
+}
+.tool-btn {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  color: #33415c;
+  font-size: 13px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
+}
+.tool-btn em {
+  grid-column: 2;
+  color: #94a3b8;
+  font-size: 11px;
+  font-style: normal;
+}
+.tool-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(46, 68, 112, 0.12);
+}
+.tool-btn.active {
+  color: #2462d9;
+  background: var(--rv-grad-1);
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.18);
+}
+.chip {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #9fb2d4;
+  border-radius: 4px;
+}
+.stat-line {
+  color: #5a6a85;
+  font-size: 12px;
+  line-height: 1.9;
+}
+.stat-line b {
+  color: #2462d9;
+}
+.key-list {
+  margin: 0;
+  padding-left: 16px;
+  color: #7c8aa3;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.key-list b {
+  color: #33415c;
+}
+.canvas-area {
+  min-width: 0;
+}
+.hint-line {
+  margin-bottom: 10px;
+  color: #5a6a85;
+  font-size: 12px;
+}
+.hint-line.warn {
+  color: #b96b1c;
+  font-weight: 600;
+}
+.canvas-scroll {
+  max-height: 74vh;
+  overflow: auto;
+}
+.canvas {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+  background: linear-gradient(135deg, #f2f6fb, #e8eef8);
+  border: 1px solid #c8d5ea;
+  border-radius: 14px;
+  touch-action: none;
+}
+.slot-layer {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  gap: 1px;
+  padding: 8px;
+  height: calc(var(--rows) * 20px);
+}
+.slot {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px dashed rgba(150, 170, 205, 0.35);
+  border-radius: 3px;
+  cursor: crosshair;
+}
+.slot:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+.slot.painted {
+  background: transparent;
+  border-color: transparent;
+}
+.block-layer {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+}
+.block {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: #33415c;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.block-label {
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+.k-building { background: linear-gradient(135deg, #dcebff, #c7dcf7); border: 1px solid #5f7bb5; }
+.k-road { background: linear-gradient(135deg, #efe8da, #e2d8c4); border: 1px dashed #b3a68c; }
+.k-green { background: linear-gradient(135deg, #ddf0e3, #c8e6d2); border: 1px solid #7fb894; }
+.k-gate { background: linear-gradient(135deg, #f7e3ef, #eccfdf); border: 1px solid #c084a5; }
+.k-custom { background: linear-gradient(135deg, #f2e8ff, #e4d6fb); border: 1px solid #a985d8; }
+.block.selected { outline: 2px solid #3478f6; outline-offset: 1px; }
+.block.editing { outline: 2px dashed #2462d9; outline-offset: 2px; z-index: 3; }
+.handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border: 2px solid #3478f6;
+  border-radius: 2px;
+}
+.h-n { top: -5px; left: 50%; margin-left: -5px; cursor: ns-resize; }
+.h-s { bottom: -5px; left: 50%; margin-left: -5px; cursor: ns-resize; }
+.h-e { right: -5px; top: 50%; margin-top: -5px; cursor: ew-resize; }
+.h-w { left: -5px; top: 50%; margin-top: -5px; cursor: ew-resize; }
+.h-nw { top: -5px; left: -5px; cursor: nwse-resize; }
+.h-ne { top: -5px; right: -5px; cursor: nesw-resize; }
+.h-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.h-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.props {
+  min-width: 0;
+}
+.prop-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.prop-label {
+  color: #5a6a85;
+  font-size: 12px;
+}
+.prop-pair {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.prop-empty {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.7;
+}
+</style>
