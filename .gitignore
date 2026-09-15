@@ -8,3 +8,6 @@ db/backups/
 logs/*.log
 .idea/
 .vscode/
+
+# 私密材料：论文/任务书/开题报告等本地文档，不入库
+文档/
