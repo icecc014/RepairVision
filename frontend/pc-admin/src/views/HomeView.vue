@@ -101,8 +101,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="reporterName" label="报修宿管" width="110" />
-        <el-table-column prop="createdAt" label="创建时间" width="170" />
-        <el-table-column label="操作" width="540" class-name="op-cell">
+        <el-table-column label="操作" width="600" class-name="op-cell">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">详情</el-button>
             <el-button size="small" type="warning" plain @click="toggleLock(row)">

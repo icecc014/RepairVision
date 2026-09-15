@@ -1,4 +1,5 @@
-<template>
+SKIP(0): function badgePos(b: WorkerMapBuilding) {
+   <template>
   <div class="map-page">
     <div class="map-toolbar">
       <span class="map-title">我的维修楼栋</span>
@@ -144,26 +145,27 @@ function scaleBounds() {
   return { minX, minY, rangeX, rangeY, pad, cw: stageWidth - pad * 2, ch: stageHeight - pad * 2 }
 }
 
-const maxBuildingWidth = computed(() => Math.max(1, ...map.buildings.map((b) => b.width || 1)))
-
-// 柱状布局：每栋楼一行等高条形（宽度受限），不再按坐标比例缩放，
-// 这样即使只有一栋楼有工单也不会被放大占满，多栋时列宽依旧受限、观感统一。
-function barMetrics() {
+// 竖状柱图：每栋楼一根竖条（宽度受限、并排排列），条高按该楼在手工单数递增，
+// 楼栋代号标在柱底、工单数徽标固定在柱顶，保证"数字与楼栋"一一对应。
+function chartMetrics() {
   const n = Math.max(1, map.buildings.length)
-  const avail = Math.max(160, stageHeight - 60)
-  const h = n > 5 ? Math.max(20, Math.floor(avail / n) - 8) : 46
-  const gap = n > 5 ? 8 : 14
-  return { h, gap }
+  const gap = 8
+  const usable = stageWidth - 60
+  const colW = Math.max(16, Math.min(56, Math.floor((usable - gap * (n - 1)) / n)))
+  return { n, gap, colW, baseY: stageHeight - 42, maxH: stageHeight - 120 }
+}
+
+function maxOrderCount() {
+  return Math.max(1, ...map.buildings.map((b) => countOf(b.id)))
 }
 
 function barRect(b: WorkerMapBuilding) {
-  const s = scaleBounds()
-  const { h, gap } = barMetrics()
+  const { gap, colW, baseY, maxH } = chartMetrics()
   const index = Math.max(0, map.buildings.findIndex((x) => x.id === b.id))
-  const ratio = Math.max(0.2, Math.min(1, (b.width || 1) / maxBuildingWidth.value))
-  const minW = s.cw * 0.4
-  const maxW = s.cw * 0.92
-  return { x: s.pad, y: s.pad + index * (h + gap), width: minW + (maxW - minW) * ratio, height: h }
+  const ratio = countOf(b.id) / maxOrderCount()
+  const h = Math.round(28 + (maxH - 28) * ratio)
+  const x = 30 + index * (colW + gap)
+  return { x, y: baseY - h, width: colW, height: h }
 }
 
 const buildingShapes = computed(() =>
@@ -179,7 +181,7 @@ const buildingShapes = computed(() =>
         fill: selectedBuilding.value?.id === b.id ? '#60a5fa' : '#bfdbfe',
         stroke: selectedBuilding.value?.id === b.id ? '#2563eb' : '#93c5fd',
         strokeWidth: selectedBuilding.value?.id === b.id ? 3 : 1.5,
-        cornerRadius: 8,
+        cornerRadius: 6,
         shadowColor: '#2563eb',
         shadowBlur: selectedBuilding.value?.id === b.id ? 12 : 0,
         onClick: () => select(b),
@@ -194,14 +196,14 @@ const labelShapes = computed(() =>
     return {
       id: 'label' + b.id,
       config: {
-        x: r.x + 12,
-        y: r.y + r.height / 2 - 7,
-        width: Math.max(60, r.width - 70),
-        text: `${b.code} ${b.name}`,
-        fontSize: Math.max(10, Math.min(14, Math.round(r.height / 3))),
+        x: r.x - 6,
+        y: r.y + r.height + 6,
+        width: r.width + 12,
+        text: b.code,
+        fontSize: 10,
         fontStyle: 'bold',
         fill: '#1e3a8a',
-        align: 'left',
+        align: 'center',
       },
     }
   }),

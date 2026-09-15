@@ -116,7 +116,7 @@ export function parseCampus(json?: string | null): CampusGrid | null {
       if (typeof item.label === 'string' && item.label.trim()) block.label = item.label.trim()
       if (typeof item.buildingId === 'number' && item.buildingId > 0) block.buildingId = item.buildingId
       if (item.customBuilding) block.customBuilding = true
-      if (!campusAreaFree({ ...raw, cols, rows, blocks } as CampusGrid, block)) continue
+      // 载入时不做重叠过滤（重叠由编辑态校验/提示负责），保证"保存后的视图"原样加载，避免整页空白
       blocks.push(block)
     }
     return { version: CAMPUS_VERSION, cols, rows, blocks }
