@@ -52,6 +52,7 @@ message WorkerInfo {
   repeated SkillInfo skills = 6;
   int64 max_concurrent = 7;
   string today_shift = 8;
+  int64 job_type = 9;
 }
 
 message BuildingWorkersResponse {

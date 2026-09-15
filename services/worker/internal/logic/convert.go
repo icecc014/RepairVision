@@ -46,6 +46,7 @@ func workerInfoToPb(u store.User, baseBuildingID int64, skills []store.Skill) *w
 		Name:           u.Name,
 		Phone:          phone,
 		BaseBuildingId: baseBuildingID,
+		JobType:        u.JobType,
 	}
 	if u.MaxConcurrent > 0 {
 		info.MaxConcurrent = u.MaxConcurrent

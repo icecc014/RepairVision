@@ -9,13 +9,14 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
-const userColumns = "id, username, password, role, name, phone, building_id, status, max_concurrent"
+const userColumns = "id, username, password, role, job_type, name, phone, building_id, status, max_concurrent"
 
 type User struct {
 	ID            int64          `db:"id"`
 	Username      string         `db:"username"`
 	Password      string         `db:"password"`
 	Role          int64          `db:"role"`
+	JobType       int64          `db:"job_type"`
 	Name          string         `db:"name"`
 	Phone         sql.NullString `db:"phone"`
 	BuildingID    sql.NullInt64  `db:"building_id"`

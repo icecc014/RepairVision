@@ -142,10 +142,15 @@ func pickBestOrder(
 	countLoads map[int64]int64,
 	minuteLoads map[int64]int64,
 	wSkill, wDistance, wLoad float64,
+	requiredJobType int64,
 ) *candidateScore {
 	var best *candidateScore
 	for _, w := range workers {
 		if !workerCanTake(w, countLoads) {
+			continue
+		}
+		// V5.2 工种匹配：电类只派电工/通用，水类只派水工/通用
+		if !jobTypeAllowed(w.JobType, requiredJobType) {
 			continue
 		}
 		score := scoreWorkerForOrder(w, buildings, current, faultName, minuteLoads, wSkill, wDistance, wLoad)
@@ -174,4 +179,12 @@ func faultTypeNameMap(ctx context.Context, svcCtx *svc.ServiceContext) (map[stri
 // loadMinutesByWorkers 返回每个工人在途单的预计工时总量（分钟），无字段时按 30 分钟兜底。
 func loadMinutesByWorkers(ctx context.Context, conn sqlx.Session, workerIDs []int64) (map[int64]int64, error) {
 	return store.CountWorkloadByWorkers(ctx, conn, workerIDs)
+}
+
+// jobTypeAllowed 工种匹配：required 1=电工 2=水工 0=不限；工人 0 表示通用可接两类。
+func jobTypeAllowed(workerJobType, required int64) bool {
+	if required <= 0 || workerJobType <= 0 {
+		return true
+	}
+	return workerJobType == required
 }

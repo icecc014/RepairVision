@@ -46,7 +46,7 @@ func TestPickBestOrderSkipsOffAndOverload(t *testing.T) {
 	}
 	off := &workerclient.WorkerInfo{Id: 1, MaxConcurrent: 3, TodayShift: "OFF", BaseBuildingId: 1}
 	best := pickBestOrder([]*workerclient.WorkerInfo{off}, buildings, buildings[0], "电维修",
-		map[int64]int64{}, map[int64]int64{}, 1, 0, 0)
+		map[int64]int64{}, map[int64]int64{}, 1, 0, 0, 0)
 	if best != nil {
 		t.Fatalf("expected no pick, got %+v", best)
 	}

@@ -435,6 +435,7 @@ type WorkerInfo struct {
 	Skills         []*SkillInfo           `protobuf:"bytes,6,rep,name=skills,proto3" json:"skills,omitempty"`
 	MaxConcurrent  int64                  `protobuf:"varint,7,opt,name=max_concurrent,json=maxConcurrent,proto3" json:"max_concurrent,omitempty"`
 	TodayShift     string                 `protobuf:"bytes,8,opt,name=today_shift,json=todayShift,proto3" json:"today_shift,omitempty"`
+	JobType        int64                  `protobuf:"varint,9,opt,name=job_type,json=jobType,proto3" json:"job_type,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -523,6 +524,13 @@ func (x *WorkerInfo) GetTodayShift() string {
 		return x.TodayShift
 	}
 	return ""
+}
+
+func (x *WorkerInfo) GetJobType() int64 {
+	if x != nil {
+		return x.JobType
+	}
+	return 0
 }
 
 type BuildingWorkersResponse struct {
@@ -1858,7 +1866,7 @@ const file_worker_proto_rawDesc = "" +
 	"\twork_date\x18\x02 \x01(\tR\bworkDate\"A\n" +
 	"\tSkillInfo\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
-	"\vproficiency\x18\x02 \x01(\x03R\vproficiency\"\xff\x01\n" +
+	"\vproficiency\x18\x02 \x01(\x03R\vproficiency\"\x9a\x02\n" +
 	"\n" +
 	"WorkerInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
@@ -1869,7 +1877,8 @@ const file_worker_proto_rawDesc = "" +
 	"\x06skills\x18\x06 \x03(\v2\x11.worker.SkillInfoR\x06skills\x12%\n" +
 	"\x0emax_concurrent\x18\a \x01(\x03R\rmaxConcurrent\x12\x1f\n" +
 	"\vtoday_shift\x18\b \x01(\tR\n" +
-	"todayShift\"G\n" +
+	"todayShift\x12\x19\n" +
+	"\bjob_type\x18\t \x01(\x03R\ajobType\"G\n" +
 	"\x17BuildingWorkersResponse\x12,\n" +
 	"\aworkers\x18\x01 \x03(\v2\x12.worker.WorkerInfoR\aworkers\"\"\n" +
 	"\x0eUserIdsRequest\x12\x10\n" +

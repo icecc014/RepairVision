@@ -96,6 +96,14 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	// V5.2 工种与派单治理：category 为 other 或该类型未开启自动派单时，
 	// 工单置为待管理员处置，跳过自动派单，由管理员协商派单或寻求外援。
 	manualReview := faultType.Category == "other" || faultType.AutoDispatch == 0
+	// 工种匹配：电类 → 电工(1)，水类 → 水工(2)，其他不限
+	requiredJobType := int64(0)
+	switch faultType.Category {
+	case "electric":
+		requiredJobType = 1
+	case "water":
+		requiredJobType = 2
+	}
 
 	// F17 加权派单候选
 	if err := validateRoomForBuilding(req.Room, floor, currentBuilding); err != nil {
@@ -137,7 +145,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			return nil, errs.Internal(err)
 		}
 		best = pickBestOrder(workerResp.Workers, buildingResp.Buildings, currentBuilding, faultType.Name,
-			countLoads, minuteLoads, skillW, distW, loadW)
+			countLoads, minuteLoads, skillW, distW, loadW, requiredJobType)
 	}
 
 	var orderID int64
