@@ -30,6 +30,7 @@ export interface FaultType {
   id: number
   code: string
   name: string
+  category?: string
 }
 
 export interface OrderItem {

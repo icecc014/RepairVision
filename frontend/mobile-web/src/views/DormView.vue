@@ -113,9 +113,11 @@
       </div>
       <div class="rv-sheet-body">
         <div class="rv-form-label">维修类型</div>
-        <div class="rv-chip-row">
+        <div v-for="group in faultGroups" :key="group.key" class="rv-type-group">
+          <div class="rv-type-group-title">{{ group.label }}</div>
+          <div class="rv-chip-row">
           <button
-            v-for="ft in faultTypes"
+            v-for="ft in group.items"
             :key="ft.code"
             class="rv-filter-chip"
             :class="{ active: createForm.faultType === ft.code }"
@@ -124,6 +126,8 @@
             {{ ft.name }}
           </button>
         </div>
+        </div>
+        <p class="rv-type-tip">电维修派给电工、水维修派给水工；「其他」由管理员协商或外援处理</p>
 
         <div class="rv-form-label">房间号</div>
         <input v-model="createForm.room" class="rv-form-field" placeholder="只需填房间号，如 401 / 301" />
@@ -239,6 +243,17 @@ const previewFloor = computed(() => {
   if (!room) return 0
   const n = Number(room.charAt(0))
   return n >= 1 && n <= 9 ? n : 0
+})
+
+const faultGroups = computed(() => {
+  const order: Array<{ key: string; label: string }> = [
+    { key: 'electric', label: '电维修' },
+    { key: 'water', label: '水维修' },
+    { key: 'other', label: '其他' },
+  ]
+  return order
+    .map((g) => ({ ...g, items: faultTypes.value.filter((ft) => (ft.category || 'other') === g.key) }))
+    .filter((g) => g.items.length > 0)
 })
 const pendingCount = computed(() => orders.value.filter((o) => o.status === 1 || o.status === 2).length)
 const workingCount = computed(() => orders.value.filter((o) => o.status === 3).length)
@@ -423,6 +438,21 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.rv-type-group {
+  margin-bottom: 8px;
+}
+.rv-type-group-title {
+  margin: 6px 0 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rv-type-tip {
+  margin: 4px 0 10px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.5;
+}
 .sheet-head {
   display: flex;
   align-items: center;
