@@ -1,7 +1,11 @@
 <template>
   <div class="campus-wrap">
     <div v-if="!layout" class="campus-empty">
-      {{ loading ? '正在加载校园概览…' : '管理员尚未绘制区域概览' }}
+      <template v-if="loading">正在加载校园概览…</template>
+      <template v-else>
+        <span>{{ errorMsg ? ('加载失败：' + errorMsg) : '管理员尚未绘制区域概览' }}</span>
+        <button class="campus-retry" @click="load">重试</button>
+      </template>
     </div>
     <template v-else>
       <svg class="campus-svg" :viewBox="`0 0 ${layout.cols} ${layout.rows}`" preserveAspectRatio="xMidYMid meet">
@@ -68,6 +72,7 @@ const props = defineProps<{
 }>()
 
 const loading = ref(false)
+const errorMsg = ref('')
 const layout = ref<{ cols: number; rows: number; blocks: CampusBlock[] } | null>(null)
 
 const KIND_TEXT: Record<string, string> = {
@@ -129,7 +134,7 @@ async function load() {
   try {
     const data = await apiCampusMap()
     const raw = data.layoutJson ? JSON.parse(data.layoutJson) : null
-    if (raw && Array.isArray(raw.blocks) && raw.blocks.length > 0) {
+    if (raw && Array.isArray(raw.blocks)) {  // 有图元就渲染；blocks 为空时也渲染空白画布，避免误报"未绘制"
       layout.value = {
         cols: Number(raw.cols) || 40,
         rows: Number(raw.rows) || 30,
@@ -138,14 +143,16 @@ async function load() {
     } else {
       layout.value = null
     }
-  } catch {
+  } catch (err) {
     layout.value = null
+    errorMsg.value = (err as Error).message || '加载失败'
   } finally {
     loading.value = false
   }
 }
 
 function reload() {
+  errorMsg.value = ''
   if (props.autoLoad !== false) load()
 }
 
@@ -198,4 +205,13 @@ defineExpose({ load })
 .lg.road { background: #efe8da; border: 1px solid #c3b598; }
 .lg.green { background: #ddf0e3; border: 1px solid #7fb894; }
 .lg.gate { background: #f7e3ef; border: 1px solid #c084a5; }
+.campus-retry {
+  margin-left: 8px;
+  padding: 2px 10px;
+  border: 1px solid #c8d5ea;
+  border-radius: 999px;
+  background: #fff;
+  color: #2462d9;
+  font-size: 12px;
+}
 </style>

@@ -130,15 +130,18 @@ function scaleBounds() {
     maxY = Math.max(maxY, b.posY + b.height / 2)
   }
   const pad = 40
-  return {
-    minX,
-    minY,
-    rangeX: Math.max(maxX - minX, 1),
-    rangeY: Math.max(maxY - minY, 1),
-    pad,
-    cw: stageWidth - pad * 2,
-    ch: stageHeight - pad * 2,
-  }
+  // 固定可视范围：即使只有一栋楼有工单，也按最小世界范围渲染，
+  // 避免"只有一栋有活"时被放大占满整个画布，多栋/单栋比例保持一致。
+  const MIN_RANGE_X = 640
+  const MIN_RANGE_Y = 420
+  const rawRangeX = Math.max(maxX - minX, 1)
+  const rawRangeY = Math.max(maxY - minY, 1)
+  const rangeX = Math.max(rawRangeX, MIN_RANGE_X)
+  const rangeY = Math.max(rawRangeY, MIN_RANGE_Y)
+  // 内容居中：把多出的空间平均分到两侧
+  minX -= (rangeX - rawRangeX) / 2
+  minY -= (rangeY - rawRangeY) / 2
+  return { minX, minY, rangeX, rangeY, pad, cw: stageWidth - pad * 2, ch: stageHeight - pad * 2 }
 }
 
 const buildingShapes = computed(() => {
