@@ -26,6 +26,7 @@ func userToPbWithBuildings(u store.User, buildingIDs []int64) *worker.User {
 		Id:            u.ID,
 		Username:      u.Username,
 		Role:          u.Role,
+		JobType:       u.JobType,
 		Name:          u.Name,
 		Phone:         phone,
 		BuildingId:    buildingID,
