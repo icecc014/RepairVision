@@ -1,5 +1,11 @@
 <template>
   <div class="campus-wrap">
+    <div class="campus-zoom">
+      <button class="campus-retry" @click="zoomOut">－ 缩小</button>
+      <span class="campus-scale">{{ Math.round(zoom * 100) }}%</span>
+      <button class="campus-retry" @click="zoomIn">＋ 放大</button>
+      <button class="campus-retry" @click="zoomReset">重置</button>
+    </div>
     <div v-if="!layout" class="campus-empty">
       <template v-if="loading">正在加载校园概览…</template>
       <template v-else>
@@ -8,7 +14,7 @@
       </template>
     </div>
     <template v-else>
-      <svg class="campus-svg" :viewBox="`0 0 ${layout.cols} ${layout.rows}`" preserveAspectRatio="xMidYMid meet">
+      <svg class="campus-svg" :style="svgStyle" :viewBox="`0 0 ${layout.cols} ${layout.rows}`" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="campusBg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#f2f6fb" />
@@ -73,6 +79,11 @@ const props = defineProps<{
 
 const loading = ref(false)
 const errorMsg = ref('')
+const zoom = ref(1)
+const svgStyle = computed(() => ({ transform: 'scale(' + zoom.value + ')', transformOrigin: 'top left' }))
+function zoomIn() { zoom.value = Math.min(4, Math.round((zoom.value + 0.25) * 100) / 100) }
+function zoomOut() { zoom.value = Math.max(0.5, Math.round((zoom.value - 0.25) * 100) / 100) }
+function zoomReset() { zoom.value = 1 }
 const layout = ref<{ cols: number; rows: number; blocks: CampusBlock[] } | null>(null)
 
 const KIND_TEXT: Record<string, string> = {
@@ -213,5 +224,17 @@ defineExpose({ load })
   background: #fff;
   color: #2462d9;
   font-size: 12px;
+}
+.campus-wrap {
+  overflow: auto;
+}
+.campus-zoom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #64748b;
 }
 </style>

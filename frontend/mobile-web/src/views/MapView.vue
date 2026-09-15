@@ -144,43 +144,68 @@ function scaleBounds() {
   return { minX, minY, rangeX, rangeY, pad, cw: stageWidth - pad * 2, ch: stageHeight - pad * 2 }
 }
 
-const buildingShapes = computed(() => {
-  const s = scaleBounds()
-  return map.buildings.map((b) => ({
-    id: b.id,
-    config: {
-      x: s.pad + ((b.posX - b.width / 2 - s.minX) / s.rangeX) * s.cw,
-      y: s.pad + ((b.posY - b.height / 2 - s.minY) / s.rangeY) * s.ch,
-      width: Math.max((b.width / s.rangeX) * s.cw, 18),
-      height: Math.max((b.height / s.rangeY) * s.ch, 14),
-      fill: selectedBuilding.value?.id === b.id ? '#60a5fa' : '#bfdbfe',
-      stroke: selectedBuilding.value?.id === b.id ? '#2563eb' : '#93c5fd',
-      strokeWidth: selectedBuilding.value?.id === b.id ? 3 : 1.5,
-      cornerRadius: 6,
-      shadowColor: '#2563eb',
-      shadowBlur: selectedBuilding.value?.id === b.id ? 12 : 0,
-      onClick: () => select(b),
-    },
-  }))
-})
+const maxBuildingWidth = computed(() => Math.max(1, ...map.buildings.map((b) => b.width || 1)))
 
-const labelShapes = computed(() => {
-  const s = scaleBounds()
-  return map.buildings.map((b) => ({
-    id: 'label' + b.id,
-    config: {
-      x: s.pad + ((b.posX - s.minX) / s.rangeX) * s.cw - 30,
-      y: s.pad + ((b.posY - b.height / 2 - s.minY) / s.rangeY) * s.ch - 12,
-      width: 60,
-      text: b.code,
-      fontSize: 11,
-      fontStyle: 'bold',
-      fill: '#1e3a8a',
-      align: 'center',
-    },
-  }))
-})
+// 柱状布局：每栋楼一行等高条形（宽度受限），不再按坐标比例缩放，
+// 这样即使只有一栋楼有工单也不会被放大占满，多栋时列宽依旧受限、观感统一。
+function barMetrics() {
+  const n = Math.max(1, map.buildings.length)
+  const avail = Math.max(160, stageHeight - 60)
+  const h = n > 5 ? Math.max(20, Math.floor(avail / n) - 8) : 46
+  const gap = n > 5 ? 8 : 14
+  return { h, gap }
+}
 
+function barRect(b: WorkerMapBuilding) {
+  const s = scaleBounds()
+  const { h, gap } = barMetrics()
+  const index = Math.max(0, map.buildings.findIndex((x) => x.id === b.id))
+  const ratio = Math.max(0.2, Math.min(1, (b.width || 1) / maxBuildingWidth.value))
+  const minW = s.cw * 0.4
+  const maxW = s.cw * 0.92
+  return { x: s.pad, y: s.pad + index * (h + gap), width: minW + (maxW - minW) * ratio, height: h }
+}
+
+const buildingShapes = computed(() =>
+  map.buildings.map((b) => {
+    const r = barRect(b)
+    return {
+      id: b.id,
+      config: {
+        x: r.x,
+        y: r.y,
+        width: r.width,
+        height: r.height,
+        fill: selectedBuilding.value?.id === b.id ? '#60a5fa' : '#bfdbfe',
+        stroke: selectedBuilding.value?.id === b.id ? '#2563eb' : '#93c5fd',
+        strokeWidth: selectedBuilding.value?.id === b.id ? 3 : 1.5,
+        cornerRadius: 8,
+        shadowColor: '#2563eb',
+        shadowBlur: selectedBuilding.value?.id === b.id ? 12 : 0,
+        onClick: () => select(b),
+      },
+    }
+  }),
+)
+
+const labelShapes = computed(() =>
+  map.buildings.map((b) => {
+    const r = barRect(b)
+    return {
+      id: 'label' + b.id,
+      config: {
+        x: r.x + 12,
+        y: r.y + r.height / 2 - 7,
+        width: Math.max(60, r.width - 70),
+        text: `${b.code} ${b.name}`,
+        fontSize: Math.max(10, Math.min(14, Math.round(r.height / 3))),
+        fontStyle: 'bold',
+        fill: '#1e3a8a',
+        align: 'left',
+      },
+    }
+  }),
+)
 function badgePos(b: WorkerMapBuilding) {
   const s = scaleBounds()
   return {
