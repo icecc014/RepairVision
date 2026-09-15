@@ -143,7 +143,14 @@ function displayLabel(b: CampusBlock) {
 async function load() {
   loading.value = true
   try {
-    const data = await apiCampusMap()
+    let data = await apiCampusMap()
+    if (!data.layoutJson || data.layoutJson.length < 10) {
+      // 自愈：首次返回空布局时自动重取一次
+      console.warn('[campus] 首次返回空布局，300ms 后自动重取', data)
+      await new Promise((r) => setTimeout(r, 300))
+      data = await apiCampusMap()
+      console.info('[campus] 重取后 layoutJson 长度 =', (data.layoutJson || '').length)
+    }
     const raw = data.layoutJson ? JSON.parse(data.layoutJson) : null
     if (raw && Array.isArray(raw.blocks)) {  // 有图元就渲染；blocks 为空时也渲染空白画布，避免误报"未绘制"
       layout.value = {

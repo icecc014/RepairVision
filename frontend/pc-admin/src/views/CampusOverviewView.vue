@@ -617,7 +617,14 @@ function clearAll() {
 async function load() {
   loading.value = true
   try {
-    const data = await apiAdminCampusLayout()
+    let data = await apiAdminCampusLayout()
+    if (!data.layoutJson || data.layoutJson.length < 10) {
+      // 自愈：极少数情况下首次返回为空布局（浏览器/网络侧旧响应），自动重取一次
+      console.warn('[campus] 首次返回空布局，300ms 后自动重取', data)
+      await new Promise((r) => setTimeout(r, 300))
+      data = await apiAdminCampusLayout()
+      console.info('[campus] 重取后 layoutJson 长度 =', (data.layoutJson || '').length)
+    }
     name.value = data.name || '校园总览'
     cols.value = data.cols || 40
     rows.value = data.rows || 30
