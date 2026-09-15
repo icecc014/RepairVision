@@ -12,7 +12,7 @@ import (
 
 func StartOrderHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.OrderIdRequest
+		var req types.StartOrderRequest
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, errs.BadRequest(err.Error()))
 			return

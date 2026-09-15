@@ -251,6 +251,57 @@ type AdminOrderListRequest {
 	Size       int64 `form:"size,optional"`
 }
 
+type WorkSettingsItem {
+	RestDaysPerWeek   int64  `json:"restDaysPerWeek"`
+	RestMode          string `json:"restMode"`
+	FixedRestWeekdays string `json:"fixedRestWeekdays"`
+	MorningStart      string `json:"morningStart"`
+	MorningEnd        string `json:"morningEnd"`
+	AfternoonStart    string `json:"afternoonStart"`
+	AfternoonEnd      string `json:"afternoonEnd"`
+	AllowForceStart   int64  `json:"allowForceStart"`
+}
+
+type WorkSettingsUpdateRequest {
+	RestDaysPerWeek   int64  `json:"restDaysPerWeek,optional"`
+	RestMode          string `json:"restMode,optional"`
+	FixedRestWeekdays string `json:"fixedRestWeekdays,optional"`
+	MorningStart      string `json:"morningStart,optional"`
+	MorningEnd        string `json:"morningEnd,optional"`
+	AfternoonStart    string `json:"afternoonStart,optional"`
+	AfternoonEnd      string `json:"afternoonEnd,optional"`
+	AllowForceStart   int64  `json:"allowForceStart,optional"`
+}
+
+type DutyStatusItem {
+	WorkerId     int64  `json:"workerId"`
+	Name         string `json:"name"`
+	OnDuty       bool   `json:"onDuty"`
+	ShiftType    string `json:"shiftType"`
+	InWorkPeriod bool   `json:"inWorkPeriod"`
+	OnLeave      bool   `json:"onLeave"`
+	Enabled      bool   `json:"enabled"`
+	Reason       string `json:"reason"`
+	Morning      string `json:"morning"`
+	Afternoon    string `json:"afternoon"`
+}
+
+type DutyOverviewResponse {
+	OnDutyCount int64            `json:"onDutyCount"`
+	Total       int64            `json:"total"`
+	Morning     string           `json:"morning"`
+	Afternoon   string           `json:"afternoon"`
+	List        []DutyStatusItem `json:"list"`
+}
+
+type StartOrderRequest {
+	Id    int64 `path:"id"`
+	Force bool  `json:"force,optional"`
+}
+
+type StartOrderResponse {
+	Warning string `json:"warning,optional"`
+}
 type OrderIdRequest {
 	Id int64 `path:"id"`
 }
@@ -659,10 +710,22 @@ service order-api {
 	post /api/dorm/orders/:id/cancel (OrderIdRequest) returns (EmptyResponse)
 
 	@handler WorkerOrdersHandler
-	get /api/worker/orders (OrderListRequest) returns (OrderListResponse)
+		@handler WorkerDutyStatusHandler
+	get /api/worker/duty-status returns (DutyStatusItem)
+
+	@handler AdminDutyOverviewHandler
+	get /api/admin/duty-overview returns (DutyOverviewResponse)
+
+	@handler AdminWorkSettingsHandler
+	get /api/admin/work-settings returns (WorkSettingsItem)
+
+	@handler AdminWorkSettingsUpdateHandler
+	post /api/admin/work-settings (WorkSettingsUpdateRequest) returns (WorkSettingsItem)
+
+get /api/worker/orders (OrderListRequest) returns (OrderListResponse)
 
 	@handler StartOrderHandler
-	post /api/worker/orders/:id/start (OrderIdRequest) returns (EmptyResponse)
+	post /api/worker/orders/:id/start (StartOrderRequest) returns (StartOrderResponse)
 
 	@handler CompleteOrderHandler
 	post /api/worker/orders/:id/complete (OrderIdRequest) returns (EmptyResponse)

@@ -10,6 +10,7 @@ import (
 	"order/internal/svc"
 	"order/internal/types"
 	"order/internal/ws"
+	"worker/workerclient"
 )
 
 type StartOrderLogic struct {
@@ -26,11 +27,26 @@ func NewStartOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *StartO
 	}
 }
 
-func (l *StartOrderLogic) StartOrder(req *types.OrderIdRequest) (resp *types.EmptyResponse, err error) {
+// StartOrder 工人开工。派单与工单生成不受工作时段限制，但开工动作受时段约束：
+// 非工作时段默认提示并拦截，工人确认后带 force=true 可强制开工（是否允许由配置决定）。
+func (l *StartOrderLogic) StartOrder(req *types.StartOrderRequest) (resp *types.StartOrderResponse, err error) {
 	identity, ok := auth.IdentityFromContext(l.ctx)
 	if !ok {
 		return nil, errs.Unauthorized("登录状态无效")
 	}
+
+	warning := ""
+	if status, serr := l.svcCtx.WorkerRpc.GetDutyStatus(l.ctx, &workerclient.DutyStatusRequest{WorkerId: identity.UID}); serr == nil && status != nil && !status.OnDuty {
+		period := status.Morning + " / " + status.Afternoon
+		if !req.Force {
+			return nil, errs.Conflict("当前不在工作时段（" + period + "）：" + status.Reason + "；确认后仍可强制开工")
+		}
+		if s, err := l.svcCtx.WorkerRpc.GetWorkSettings(l.ctx, &workerclient.GetWorkSettingsRequest{}); err == nil && s.GetSettings().GetAllowForceStart() == 0 {
+			return nil, errs.Conflict("系统已禁止非工作时段开工：" + status.Reason)
+		}
+		warning = "已在非工作时段强制开工（" + status.Reason + "）"
+	}
+
 	affected, err := store.StartOrder(l.ctx, l.svcCtx.DB, req.Id, identity.UID)
 	if err != nil {
 		return nil, errs.Internal(err)
@@ -50,5 +66,5 @@ func (l *StartOrderLogic) StartOrder(req *types.OrderIdRequest) (resp *types.Emp
 		notifyUsers(l.ctx, l.svcCtx, recipients, "start",
 			"工单已开工 "+order.OrderNo, order.Room+"室 工人已开工", order.ID)
 	}
-	return &types.EmptyResponse{}, nil
+	return &types.StartOrderResponse{Warning: warning}, nil
 }

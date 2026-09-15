@@ -552,3 +552,54 @@ type WorkerMapDataResponse struct {
 	Buildings []WorkerMapBuilding `json:"buildings"`
 	Orders    []OrderItem         `json:"orders"`
 }
+type WorkSettingsItem struct {
+	RestDaysPerWeek   int64  `json:"restDaysPerWeek"`
+	RestMode          string `json:"restMode"`
+	FixedRestWeekdays string `json:"fixedRestWeekdays"`
+	MorningStart      string `json:"morningStart"`
+	MorningEnd        string `json:"morningEnd"`
+	AfternoonStart    string `json:"afternoonStart"`
+	AfternoonEnd      string `json:"afternoonEnd"`
+	AllowForceStart   int64  `json:"allowForceStart"`
+}
+
+type WorkSettingsUpdateRequest struct {
+	RestDaysPerWeek   int64  `json:"restDaysPerWeek,optional"`
+	RestMode          string `json:"restMode,optional"`
+	FixedRestWeekdays string `json:"fixedRestWeekdays,optional"`
+	MorningStart      string `json:"morningStart,optional"`
+	MorningEnd        string `json:"morningEnd,optional"`
+	AfternoonStart    string `json:"afternoonStart,optional"`
+	AfternoonEnd      string `json:"afternoonEnd,optional"`
+	AllowForceStart   int64  `json:"allowForceStart,optional"`
+}
+
+type DutyStatusItem struct {
+	WorkerId     int64  `json:"workerId"`
+	Name         string `json:"name"`
+	OnDuty       bool   `json:"onDuty"`
+	ShiftType    string `json:"shiftType"`
+	InWorkPeriod bool   `json:"inWorkPeriod"`
+	OnLeave      bool   `json:"onLeave"`
+	Enabled      bool   `json:"enabled"`
+	Reason       string `json:"reason"`
+	Morning      string `json:"morning"`
+	Afternoon    string `json:"afternoon"`
+}
+
+type DutyOverviewResponse struct {
+	OnDutyCount int64            `json:"onDutyCount"`
+	Total       int64            `json:"total"`
+	Morning     string           `json:"morning"`
+	Afternoon   string           `json:"afternoon"`
+	List        []DutyStatusItem `json:"list"`
+}
+
+type StartOrderRequest struct {
+	Id    int64 `path:"id"`
+	Force bool  `json:"force,optional"`
+}
+
+type StartOrderResponse struct {
+	Warning string `json:"warning,optional"`
+}
