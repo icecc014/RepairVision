@@ -139,7 +139,7 @@ func InsertOrder(ctx context.Context, conn sqlx.Session, o *Order) (int64, error
 	result, err := conn.ExecCtx(ctx,
 		`insert into orders(order_no, title, description, building_id, room, floor, fault_type,
             priority, expect_minutes, status, is_merged, manual_review, main_order_id, worker_id, reporter_id, source)
-         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		o.OrderNo, o.Title, o.Description, o.BuildingID, o.Room, o.Floor, o.FaultType,
 		o.Priority, o.ExpectMinutes, o.Status, o.IsMerged, o.ManualReview, nullableInt64(o.MainOrderID),
 		nullableInt64(o.WorkerID), o.ReporterID, o.Source)

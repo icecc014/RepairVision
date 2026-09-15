@@ -93,6 +93,10 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		return nil, errs.BadRequest("楼栋尚未初始化")
 	}
 
+	// V5.2 工种与派单治理：category 为 other 或该类型未开启自动派单时，
+	// 工单置为待管理员处置，跳过自动派单，由管理员协商派单或寻求外援。
+	manualReview := faultType.Category == "other" || faultType.AutoDispatch == 0
+
 	// F17 加权派单候选
 	if err := validateRoomForBuilding(req.Room, floor, currentBuilding); err != nil {
 		return nil, err
@@ -123,7 +127,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 	}
 
 	var best *candidateScore
-	if autoDispatch && len(workerResp.Workers) > 0 {
+	if autoDispatch && !manualReview && len(workerResp.Workers) > 0 {
 		countLoads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
 		if err != nil {
 			return nil, errs.Internal(err)
@@ -150,6 +154,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			ExpectMinutes: 30,
 			Status:        store.StatusPending,
 			IsMerged:      0,
+			ManualReview:  boolToInt64(manualReview),
 			ReporterID:    identity.UID,
 			Source:        "dormitory",
 		}
@@ -193,6 +198,13 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		"新工单 "+orderNo,
 		currentBuilding.Name+" "+room+"室 "+faultType.Name, orderID)
 	return &types.CreateOrderResponse{OrderId: orderID, OrderNo: orderNo}, nil
+}
+
+func boolToInt64(v bool) int64 {
+	if v {
+		return 1
+	}
+	return 0
 }
 
 func workerIDs(workers []*workerclient.WorkerInfo) []int64 {

@@ -299,6 +299,7 @@ type OrderItem struct {
 	Rating          int64   `json:"rating,optional"`
 	FeedbackComment string  `json:"feedbackComment,optional"`
 	StatusText      string  `json:"statusText"`
+	ManualReview    int64   `json:"manualReview,optional"`
 	WorkerId        int64   `json:"workerId,optional"`
 	WorkerName      string  `json:"workerName,optional"`
 	WorkerPhone     string  `json:"workerPhone,optional"`
