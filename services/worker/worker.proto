@@ -113,6 +113,50 @@ message ResetPasswordRequest {
   string password = 2;
 }
 
+message WorkSettings {
+  int64 rest_days_per_week = 1;
+  string rest_mode = 2;
+  string fixed_rest_weekdays = 3;
+  string morning_start = 4;
+  string morning_end = 5;
+  string afternoon_start = 6;
+  string afternoon_end = 7;
+  int64 allow_force_start = 8;
+}
+
+message GetWorkSettingsRequest {
+}
+
+message WorkSettingsResponse {
+  WorkSettings settings = 1;
+}
+
+message UpdateWorkSettingsRequest {
+  int64 rest_days_per_week = 1;
+  string rest_mode = 2;
+  string fixed_rest_weekdays = 3;
+  string morning_start = 4;
+  string morning_end = 5;
+  string afternoon_start = 6;
+  string afternoon_end = 7;
+  int64 allow_force_start = 8;
+}
+
+message DutyStatusRequest {
+  int64 worker_id = 1;
+  string at = 2;
+}
+
+message DutyStatusResponse {
+  bool on_duty = 1;
+  string shift_type = 2;
+  bool in_work_period = 3;
+  bool on_leave = 4;
+  bool enabled = 5;
+  string reason = 6;
+  string morning = 7;
+  string afternoon = 8;
+}
 service Worker {
   rpc Ping(Request) returns(Response);
   rpc Login(LoginRequest) returns(LoginResponse);
@@ -127,6 +171,9 @@ service Worker {
   rpc ListSchedules(ScheduleListRequest) returns(ScheduleListResponse);
   rpc SaveSchedules(SaveSchedulesRequest) returns(ScheduleListResponse);
   rpc GenerateWeekly(GenerateScheduleRequest) returns(ScheduleListResponse);
+  rpc GetWorkSettings(GetWorkSettingsRequest) returns(WorkSettingsResponse);
+  rpc UpdateWorkSettings(UpdateWorkSettingsRequest) returns(WorkSettingsResponse);
+  rpc GetDutyStatus(DutyStatusRequest) returns(DutyStatusResponse);
   rpc SubmitLeave(SubmitLeaveRequest) returns(LeaveItem);
   rpc ListLeaves(ListLeavesRequest) returns(ListLeavesResponse);
   rpc ReviewLeave(ReviewLeaveRequest) returns(LeaveItem);

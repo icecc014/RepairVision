@@ -18,6 +18,12 @@ type (
 	BuildingWorkersRequest  = worker.BuildingWorkersRequest
 	BuildingWorkersResponse = worker.BuildingWorkersResponse
 	CreateUserRequest       = worker.CreateUserRequest
+	DutyStatusRequest       = worker.DutyStatusRequest
+	DutyStatusResponse      = worker.DutyStatusResponse
+	GetWorkSettingsRequest  = worker.GetWorkSettingsRequest
+	UpdateWorkSettingsRequest = worker.UpdateWorkSettingsRequest
+	WorkSettings            = worker.WorkSettings
+	WorkSettingsResponse    = worker.WorkSettingsResponse
 	IdRequest               = worker.IdRequest
 	ListUsersRequest        = worker.ListUsersRequest
 	ListUsersResponse       = worker.ListUsersResponse
@@ -58,6 +64,9 @@ type (
 		ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 		SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 		GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+		GetWorkSettings(ctx context.Context, in *GetWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error)
+		UpdateWorkSettings(ctx context.Context, in *UpdateWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error)
+		GetDutyStatus(ctx context.Context, in *DutyStatusRequest, opts ...grpc.CallOption) (*DutyStatusResponse, error)
 		SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
 		ListLeaves(ctx context.Context, in *ListLeavesRequest, opts ...grpc.CallOption) (*ListLeavesResponse, error)
 		ReviewLeave(ctx context.Context, in *ReviewLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
@@ -138,6 +147,21 @@ func (m *defaultWorker) SaveSchedules(ctx context.Context, in *SaveSchedulesRequ
 func (m *defaultWorker) GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error) {
 	client := worker.NewWorkerClient(m.cli.Conn())
 	return client.GenerateWeekly(ctx, in, opts...)
+}
+
+func (m *defaultWorker) GetWorkSettings(ctx context.Context, in *GetWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.GetWorkSettings(ctx, in, opts...)
+}
+
+func (m *defaultWorker) UpdateWorkSettings(ctx context.Context, in *UpdateWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.UpdateWorkSettings(ctx, in, opts...)
+}
+
+func (m *defaultWorker) GetDutyStatus(ctx context.Context, in *DutyStatusRequest, opts ...grpc.CallOption) (*DutyStatusResponse, error) {
+	client := worker.NewWorkerClient(m.cli.Conn())
+	return client.GetDutyStatus(ctx, in, opts...)
 }
 
 func (m *defaultWorker) SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error) {

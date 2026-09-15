@@ -88,6 +88,20 @@ func (s *WorkerServer) GenerateWeekly(ctx context.Context, in *worker.GenerateSc
 	return l.GenerateWeekly(in)
 }
 
+func (s *WorkerServer) GetWorkSettings(ctx context.Context, in *worker.GetWorkSettingsRequest) (*worker.WorkSettingsResponse, error) {
+	l := logic.NewGetWorkSettingsLogic(ctx, s.svcCtx)
+	return l.GetWorkSettings(in)
+}
+
+func (s *WorkerServer) UpdateWorkSettings(ctx context.Context, in *worker.UpdateWorkSettingsRequest) (*worker.WorkSettingsResponse, error) {
+	l := logic.NewUpdateWorkSettingsLogic(ctx, s.svcCtx)
+	return l.UpdateWorkSettings(in)
+}
+
+func (s *WorkerServer) GetDutyStatus(ctx context.Context, in *worker.DutyStatusRequest) (*worker.DutyStatusResponse, error) {
+	l := logic.NewGetDutyStatusLogic(ctx, s.svcCtx)
+	return l.GetDutyStatus(in)
+}
 func (s *WorkerServer) SubmitLeave(ctx context.Context, in *worker.SubmitLeaveRequest) (*worker.LeaveItem, error) {
 	l := logic.NewSubmitLeaveLogic(ctx, s.svcCtx)
 	return l.SubmitLeave(in)

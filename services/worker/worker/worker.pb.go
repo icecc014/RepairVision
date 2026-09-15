@@ -1125,6 +1125,438 @@ func (x *ResetPasswordRequest) GetPassword() string {
 	return ""
 }
 
+type WorkSettings struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	RestDaysPerWeek   int64                  `protobuf:"varint,1,opt,name=rest_days_per_week,json=restDaysPerWeek,proto3" json:"rest_days_per_week,omitempty"`
+	RestMode          string                 `protobuf:"bytes,2,opt,name=rest_mode,json=restMode,proto3" json:"rest_mode,omitempty"`
+	FixedRestWeekdays string                 `protobuf:"bytes,3,opt,name=fixed_rest_weekdays,json=fixedRestWeekdays,proto3" json:"fixed_rest_weekdays,omitempty"`
+	MorningStart      string                 `protobuf:"bytes,4,opt,name=morning_start,json=morningStart,proto3" json:"morning_start,omitempty"`
+	MorningEnd        string                 `protobuf:"bytes,5,opt,name=morning_end,json=morningEnd,proto3" json:"morning_end,omitempty"`
+	AfternoonStart    string                 `protobuf:"bytes,6,opt,name=afternoon_start,json=afternoonStart,proto3" json:"afternoon_start,omitempty"`
+	AfternoonEnd      string                 `protobuf:"bytes,7,opt,name=afternoon_end,json=afternoonEnd,proto3" json:"afternoon_end,omitempty"`
+	AllowForceStart   int64                  `protobuf:"varint,8,opt,name=allow_force_start,json=allowForceStart,proto3" json:"allow_force_start,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *WorkSettings) Reset() {
+	*x = WorkSettings{}
+	mi := &file_worker_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkSettings) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkSettings) ProtoMessage() {}
+
+func (x *WorkSettings) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkSettings.ProtoReflect.Descriptor instead.
+func (*WorkSettings) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *WorkSettings) GetRestDaysPerWeek() int64 {
+	if x != nil {
+		return x.RestDaysPerWeek
+	}
+	return 0
+}
+
+func (x *WorkSettings) GetRestMode() string {
+	if x != nil {
+		return x.RestMode
+	}
+	return ""
+}
+
+func (x *WorkSettings) GetFixedRestWeekdays() string {
+	if x != nil {
+		return x.FixedRestWeekdays
+	}
+	return ""
+}
+
+func (x *WorkSettings) GetMorningStart() string {
+	if x != nil {
+		return x.MorningStart
+	}
+	return ""
+}
+
+func (x *WorkSettings) GetMorningEnd() string {
+	if x != nil {
+		return x.MorningEnd
+	}
+	return ""
+}
+
+func (x *WorkSettings) GetAfternoonStart() string {
+	if x != nil {
+		return x.AfternoonStart
+	}
+	return ""
+}
+
+func (x *WorkSettings) GetAfternoonEnd() string {
+	if x != nil {
+		return x.AfternoonEnd
+	}
+	return ""
+}
+
+func (x *WorkSettings) GetAllowForceStart() int64 {
+	if x != nil {
+		return x.AllowForceStart
+	}
+	return 0
+}
+
+type GetWorkSettingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkSettingsRequest) Reset() {
+	*x = GetWorkSettingsRequest{}
+	mi := &file_worker_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkSettingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkSettingsRequest) ProtoMessage() {}
+
+func (x *GetWorkSettingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkSettingsRequest.ProtoReflect.Descriptor instead.
+func (*GetWorkSettingsRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{19}
+}
+
+type WorkSettingsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Settings      *WorkSettings          `protobuf:"bytes,1,opt,name=settings,proto3" json:"settings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkSettingsResponse) Reset() {
+	*x = WorkSettingsResponse{}
+	mi := &file_worker_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkSettingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkSettingsResponse) ProtoMessage() {}
+
+func (x *WorkSettingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkSettingsResponse.ProtoReflect.Descriptor instead.
+func (*WorkSettingsResponse) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *WorkSettingsResponse) GetSettings() *WorkSettings {
+	if x != nil {
+		return x.Settings
+	}
+	return nil
+}
+
+type UpdateWorkSettingsRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	RestDaysPerWeek   int64                  `protobuf:"varint,1,opt,name=rest_days_per_week,json=restDaysPerWeek,proto3" json:"rest_days_per_week,omitempty"`
+	RestMode          string                 `protobuf:"bytes,2,opt,name=rest_mode,json=restMode,proto3" json:"rest_mode,omitempty"`
+	FixedRestWeekdays string                 `protobuf:"bytes,3,opt,name=fixed_rest_weekdays,json=fixedRestWeekdays,proto3" json:"fixed_rest_weekdays,omitempty"`
+	MorningStart      string                 `protobuf:"bytes,4,opt,name=morning_start,json=morningStart,proto3" json:"morning_start,omitempty"`
+	MorningEnd        string                 `protobuf:"bytes,5,opt,name=morning_end,json=morningEnd,proto3" json:"morning_end,omitempty"`
+	AfternoonStart    string                 `protobuf:"bytes,6,opt,name=afternoon_start,json=afternoonStart,proto3" json:"afternoon_start,omitempty"`
+	AfternoonEnd      string                 `protobuf:"bytes,7,opt,name=afternoon_end,json=afternoonEnd,proto3" json:"afternoon_end,omitempty"`
+	AllowForceStart   int64                  `protobuf:"varint,8,opt,name=allow_force_start,json=allowForceStart,proto3" json:"allow_force_start,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *UpdateWorkSettingsRequest) Reset() {
+	*x = UpdateWorkSettingsRequest{}
+	mi := &file_worker_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateWorkSettingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateWorkSettingsRequest) ProtoMessage() {}
+
+func (x *UpdateWorkSettingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateWorkSettingsRequest.ProtoReflect.Descriptor instead.
+func (*UpdateWorkSettingsRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *UpdateWorkSettingsRequest) GetRestDaysPerWeek() int64 {
+	if x != nil {
+		return x.RestDaysPerWeek
+	}
+	return 0
+}
+
+func (x *UpdateWorkSettingsRequest) GetRestMode() string {
+	if x != nil {
+		return x.RestMode
+	}
+	return ""
+}
+
+func (x *UpdateWorkSettingsRequest) GetFixedRestWeekdays() string {
+	if x != nil {
+		return x.FixedRestWeekdays
+	}
+	return ""
+}
+
+func (x *UpdateWorkSettingsRequest) GetMorningStart() string {
+	if x != nil {
+		return x.MorningStart
+	}
+	return ""
+}
+
+func (x *UpdateWorkSettingsRequest) GetMorningEnd() string {
+	if x != nil {
+		return x.MorningEnd
+	}
+	return ""
+}
+
+func (x *UpdateWorkSettingsRequest) GetAfternoonStart() string {
+	if x != nil {
+		return x.AfternoonStart
+	}
+	return ""
+}
+
+func (x *UpdateWorkSettingsRequest) GetAfternoonEnd() string {
+	if x != nil {
+		return x.AfternoonEnd
+	}
+	return ""
+}
+
+func (x *UpdateWorkSettingsRequest) GetAllowForceStart() int64 {
+	if x != nil {
+		return x.AllowForceStart
+	}
+	return 0
+}
+
+type DutyStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId      int64                  `protobuf:"varint,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	At            string                 `protobuf:"bytes,2,opt,name=at,proto3" json:"at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DutyStatusRequest) Reset() {
+	*x = DutyStatusRequest{}
+	mi := &file_worker_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DutyStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DutyStatusRequest) ProtoMessage() {}
+
+func (x *DutyStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DutyStatusRequest.ProtoReflect.Descriptor instead.
+func (*DutyStatusRequest) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *DutyStatusRequest) GetWorkerId() int64 {
+	if x != nil {
+		return x.WorkerId
+	}
+	return 0
+}
+
+func (x *DutyStatusRequest) GetAt() string {
+	if x != nil {
+		return x.At
+	}
+	return ""
+}
+
+type DutyStatusResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OnDuty        bool                   `protobuf:"varint,1,opt,name=on_duty,json=onDuty,proto3" json:"on_duty,omitempty"`
+	ShiftType     string                 `protobuf:"bytes,2,opt,name=shift_type,json=shiftType,proto3" json:"shift_type,omitempty"`
+	InWorkPeriod  bool                   `protobuf:"varint,3,opt,name=in_work_period,json=inWorkPeriod,proto3" json:"in_work_period,omitempty"`
+	OnLeave       bool                   `protobuf:"varint,4,opt,name=on_leave,json=onLeave,proto3" json:"on_leave,omitempty"`
+	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	Reason        string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	Morning       string                 `protobuf:"bytes,7,opt,name=morning,proto3" json:"morning,omitempty"`
+	Afternoon     string                 `protobuf:"bytes,8,opt,name=afternoon,proto3" json:"afternoon,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DutyStatusResponse) Reset() {
+	*x = DutyStatusResponse{}
+	mi := &file_worker_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DutyStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DutyStatusResponse) ProtoMessage() {}
+
+func (x *DutyStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_worker_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DutyStatusResponse.ProtoReflect.Descriptor instead.
+func (*DutyStatusResponse) Descriptor() ([]byte, []int) {
+	return file_worker_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *DutyStatusResponse) GetOnDuty() bool {
+	if x != nil {
+		return x.OnDuty
+	}
+	return false
+}
+
+func (x *DutyStatusResponse) GetShiftType() string {
+	if x != nil {
+		return x.ShiftType
+	}
+	return ""
+}
+
+func (x *DutyStatusResponse) GetInWorkPeriod() bool {
+	if x != nil {
+		return x.InWorkPeriod
+	}
+	return false
+}
+
+func (x *DutyStatusResponse) GetOnLeave() bool {
+	if x != nil {
+		return x.OnLeave
+	}
+	return false
+}
+
+func (x *DutyStatusResponse) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *DutyStatusResponse) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *DutyStatusResponse) GetMorning() string {
+	if x != nil {
+		return x.Morning
+	}
+	return ""
+}
+
+func (x *DutyStatusResponse) GetAfternoon() string {
+	if x != nil {
+		return x.Afternoon
+	}
+	return ""
+}
+
 type ScheduleItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkerId      int64                  `protobuf:"varint,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
@@ -1137,7 +1569,7 @@ type ScheduleItem struct {
 
 func (x *ScheduleItem) Reset() {
 	*x = ScheduleItem{}
-	mi := &file_worker_proto_msgTypes[18]
+	mi := &file_worker_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1149,7 +1581,7 @@ func (x *ScheduleItem) String() string {
 func (*ScheduleItem) ProtoMessage() {}
 
 func (x *ScheduleItem) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[18]
+	mi := &file_worker_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1162,7 +1594,7 @@ func (x *ScheduleItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScheduleItem.ProtoReflect.Descriptor instead.
 func (*ScheduleItem) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{18}
+	return file_worker_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ScheduleItem) GetWorkerId() int64 {
@@ -1204,7 +1636,7 @@ type ScheduleListRequest struct {
 
 func (x *ScheduleListRequest) Reset() {
 	*x = ScheduleListRequest{}
-	mi := &file_worker_proto_msgTypes[19]
+	mi := &file_worker_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1216,7 +1648,7 @@ func (x *ScheduleListRequest) String() string {
 func (*ScheduleListRequest) ProtoMessage() {}
 
 func (x *ScheduleListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[19]
+	mi := &file_worker_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1229,7 +1661,7 @@ func (x *ScheduleListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScheduleListRequest.ProtoReflect.Descriptor instead.
 func (*ScheduleListRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{19}
+	return file_worker_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ScheduleListRequest) GetWorkerId() int64 {
@@ -1263,7 +1695,7 @@ type ScheduleListResponse struct {
 
 func (x *ScheduleListResponse) Reset() {
 	*x = ScheduleListResponse{}
-	mi := &file_worker_proto_msgTypes[20]
+	mi := &file_worker_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1275,7 +1707,7 @@ func (x *ScheduleListResponse) String() string {
 func (*ScheduleListResponse) ProtoMessage() {}
 
 func (x *ScheduleListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[20]
+	mi := &file_worker_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1288,7 +1720,7 @@ func (x *ScheduleListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScheduleListResponse.ProtoReflect.Descriptor instead.
 func (*ScheduleListResponse) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{20}
+	return file_worker_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ScheduleListResponse) GetItems() []*ScheduleItem {
@@ -1314,7 +1746,7 @@ type SaveSchedulesRequest struct {
 
 func (x *SaveSchedulesRequest) Reset() {
 	*x = SaveSchedulesRequest{}
-	mi := &file_worker_proto_msgTypes[21]
+	mi := &file_worker_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1326,7 +1758,7 @@ func (x *SaveSchedulesRequest) String() string {
 func (*SaveSchedulesRequest) ProtoMessage() {}
 
 func (x *SaveSchedulesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[21]
+	mi := &file_worker_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1339,7 +1771,7 @@ func (x *SaveSchedulesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveSchedulesRequest.ProtoReflect.Descriptor instead.
 func (*SaveSchedulesRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{21}
+	return file_worker_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *SaveSchedulesRequest) GetItems() []*ScheduleItem {
@@ -1360,7 +1792,7 @@ type GenerateScheduleRequest struct {
 
 func (x *GenerateScheduleRequest) Reset() {
 	*x = GenerateScheduleRequest{}
-	mi := &file_worker_proto_msgTypes[22]
+	mi := &file_worker_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1372,7 +1804,7 @@ func (x *GenerateScheduleRequest) String() string {
 func (*GenerateScheduleRequest) ProtoMessage() {}
 
 func (x *GenerateScheduleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[22]
+	mi := &file_worker_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1385,7 +1817,7 @@ func (x *GenerateScheduleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateScheduleRequest.ProtoReflect.Descriptor instead.
 func (*GenerateScheduleRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{22}
+	return file_worker_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GenerateScheduleRequest) GetWeekStart() string {
@@ -1426,7 +1858,7 @@ type LeaveItem struct {
 
 func (x *LeaveItem) Reset() {
 	*x = LeaveItem{}
-	mi := &file_worker_proto_msgTypes[23]
+	mi := &file_worker_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1438,7 +1870,7 @@ func (x *LeaveItem) String() string {
 func (*LeaveItem) ProtoMessage() {}
 
 func (x *LeaveItem) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[23]
+	mi := &file_worker_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1451,7 +1883,7 @@ func (x *LeaveItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveItem.ProtoReflect.Descriptor instead.
 func (*LeaveItem) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{23}
+	return file_worker_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *LeaveItem) GetId() int64 {
@@ -1529,7 +1961,7 @@ type SubmitLeaveRequest struct {
 
 func (x *SubmitLeaveRequest) Reset() {
 	*x = SubmitLeaveRequest{}
-	mi := &file_worker_proto_msgTypes[24]
+	mi := &file_worker_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1541,7 +1973,7 @@ func (x *SubmitLeaveRequest) String() string {
 func (*SubmitLeaveRequest) ProtoMessage() {}
 
 func (x *SubmitLeaveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[24]
+	mi := &file_worker_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1554,7 +1986,7 @@ func (x *SubmitLeaveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitLeaveRequest.ProtoReflect.Descriptor instead.
 func (*SubmitLeaveRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{24}
+	return file_worker_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *SubmitLeaveRequest) GetWorkerId() int64 {
@@ -1598,7 +2030,7 @@ type ListLeavesRequest struct {
 
 func (x *ListLeavesRequest) Reset() {
 	*x = ListLeavesRequest{}
-	mi := &file_worker_proto_msgTypes[25]
+	mi := &file_worker_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1610,7 +2042,7 @@ func (x *ListLeavesRequest) String() string {
 func (*ListLeavesRequest) ProtoMessage() {}
 
 func (x *ListLeavesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[25]
+	mi := &file_worker_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1623,7 +2055,7 @@ func (x *ListLeavesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLeavesRequest.ProtoReflect.Descriptor instead.
 func (*ListLeavesRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{25}
+	return file_worker_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListLeavesRequest) GetWorkerId() int64 {
@@ -1671,7 +2103,7 @@ type ListLeavesResponse struct {
 
 func (x *ListLeavesResponse) Reset() {
 	*x = ListLeavesResponse{}
-	mi := &file_worker_proto_msgTypes[26]
+	mi := &file_worker_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1683,7 +2115,7 @@ func (x *ListLeavesResponse) String() string {
 func (*ListLeavesResponse) ProtoMessage() {}
 
 func (x *ListLeavesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[26]
+	mi := &file_worker_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1696,7 +2128,7 @@ func (x *ListLeavesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLeavesResponse.ProtoReflect.Descriptor instead.
 func (*ListLeavesResponse) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{26}
+	return file_worker_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ListLeavesResponse) GetTotal() int64 {
@@ -1725,7 +2157,7 @@ type ReviewLeaveRequest struct {
 
 func (x *ReviewLeaveRequest) Reset() {
 	*x = ReviewLeaveRequest{}
-	mi := &file_worker_proto_msgTypes[27]
+	mi := &file_worker_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1737,7 +2169,7 @@ func (x *ReviewLeaveRequest) String() string {
 func (*ReviewLeaveRequest) ProtoMessage() {}
 
 func (x *ReviewLeaveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[27]
+	mi := &file_worker_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1750,7 +2182,7 @@ func (x *ReviewLeaveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviewLeaveRequest.ProtoReflect.Descriptor instead.
 func (*ReviewLeaveRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{27}
+	return file_worker_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ReviewLeaveRequest) GetId() int64 {
@@ -1791,7 +2223,7 @@ type LeaveIdRequest struct {
 
 func (x *LeaveIdRequest) Reset() {
 	*x = LeaveIdRequest{}
-	mi := &file_worker_proto_msgTypes[28]
+	mi := &file_worker_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1803,7 +2235,7 @@ func (x *LeaveIdRequest) String() string {
 func (*LeaveIdRequest) ProtoMessage() {}
 
 func (x *LeaveIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_worker_proto_msgTypes[28]
+	mi := &file_worker_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1816,7 +2248,7 @@ func (x *LeaveIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveIdRequest.ProtoReflect.Descriptor instead.
 func (*LeaveIdRequest) Descriptor() ([]byte, []int) {
-	return file_worker_proto_rawDescGZIP(), []int{28}
+	return file_worker_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *LeaveIdRequest) GetId() int64 {
@@ -1919,7 +2351,43 @@ const file_worker_proto_rawDesc = "" +
 	"\x03ids\x18\x01 \x03(\x03R\x03ids\"B\n" +
 	"\x14ResetPasswordRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"{\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xc8\x02\n" +
+	"\fWorkSettings\x12+\n" +
+	"\x12rest_days_per_week\x18\x01 \x01(\x03R\x0frestDaysPerWeek\x12\x1b\n" +
+	"\trest_mode\x18\x02 \x01(\tR\brestMode\x12.\n" +
+	"\x13fixed_rest_weekdays\x18\x03 \x01(\tR\x11fixedRestWeekdays\x12#\n" +
+	"\rmorning_start\x18\x04 \x01(\tR\fmorningStart\x12\x1f\n" +
+	"\vmorning_end\x18\x05 \x01(\tR\n" +
+	"morningEnd\x12'\n" +
+	"\x0fafternoon_start\x18\x06 \x01(\tR\x0eafternoonStart\x12#\n" +
+	"\rafternoon_end\x18\a \x01(\tR\fafternoonEnd\x12*\n" +
+	"\x11allow_force_start\x18\b \x01(\x03R\x0fallowForceStart\"\x18\n" +
+	"\x16GetWorkSettingsRequest\"H\n" +
+	"\x14WorkSettingsResponse\x120\n" +
+	"\bsettings\x18\x01 \x01(\v2\x14.worker.WorkSettingsR\bsettings\"\xd5\x02\n" +
+	"\x19UpdateWorkSettingsRequest\x12+\n" +
+	"\x12rest_days_per_week\x18\x01 \x01(\x03R\x0frestDaysPerWeek\x12\x1b\n" +
+	"\trest_mode\x18\x02 \x01(\tR\brestMode\x12.\n" +
+	"\x13fixed_rest_weekdays\x18\x03 \x01(\tR\x11fixedRestWeekdays\x12#\n" +
+	"\rmorning_start\x18\x04 \x01(\tR\fmorningStart\x12\x1f\n" +
+	"\vmorning_end\x18\x05 \x01(\tR\n" +
+	"morningEnd\x12'\n" +
+	"\x0fafternoon_start\x18\x06 \x01(\tR\x0eafternoonStart\x12#\n" +
+	"\rafternoon_end\x18\a \x01(\tR\fafternoonEnd\x12*\n" +
+	"\x11allow_force_start\x18\b \x01(\x03R\x0fallowForceStart\"@\n" +
+	"\x11DutyStatusRequest\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\x03R\bworkerId\x12\x0e\n" +
+	"\x02at\x18\x02 \x01(\tR\x02at\"\xf7\x01\n" +
+	"\x12DutyStatusResponse\x12\x17\n" +
+	"\aon_duty\x18\x01 \x01(\bR\x06onDuty\x12\x1d\n" +
+	"\n" +
+	"shift_type\x18\x02 \x01(\tR\tshiftType\x12$\n" +
+	"\x0ein_work_period\x18\x03 \x01(\bR\finWorkPeriod\x12\x19\n" +
+	"\bon_leave\x18\x04 \x01(\bR\aonLeave\x12\x18\n" +
+	"\aenabled\x18\x05 \x01(\bR\aenabled\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason\x12\x18\n" +
+	"\amorning\x18\a \x01(\tR\amorning\x12\x1c\n" +
+	"\tafternoon\x18\b \x01(\tR\tafternoon\"{\n" +
 	"\fScheduleItem\x12\x1b\n" +
 	"\tworker_id\x18\x01 \x01(\x03R\bworkerId\x12\x1b\n" +
 	"\twork_date\x18\x02 \x01(\tR\bworkDate\x12\x1d\n" +
@@ -1979,7 +2447,8 @@ const file_worker_proto_rawDesc = "" +
 	"reviewNote\"=\n" +
 	"\x0eLeaveIdRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
-	"\tworker_id\x18\x02 \x01(\x03R\bworkerId2\xe2\b\n" +
+	"\tworker_id\x18\x02 \x01(\x03R\bworkerId2\xd2\n" +
+	"\n" +
 	"\x06Worker\x12)\n" +
 	"\x04Ping\x12\x0f.worker.Request\x1a\x10.worker.Response\x124\n" +
 	"\x05Login\x12\x14.worker.LoginRequest\x1a\x15.worker.LoginResponse\x12X\n" +
@@ -1995,7 +2464,10 @@ const file_worker_proto_rawDesc = "" +
 	"\x14ListManagedBuildings\x12\x11.worker.IdRequest\x1a\x1b.worker.BuildingIdsResponse\x12J\n" +
 	"\rListSchedules\x12\x1b.worker.ScheduleListRequest\x1a\x1c.worker.ScheduleListResponse\x12K\n" +
 	"\rSaveSchedules\x12\x1c.worker.SaveSchedulesRequest\x1a\x1c.worker.ScheduleListResponse\x12O\n" +
-	"\x0eGenerateWeekly\x12\x1f.worker.GenerateScheduleRequest\x1a\x1c.worker.ScheduleListResponse\x12<\n" +
+	"\x0eGenerateWeekly\x12\x1f.worker.GenerateScheduleRequest\x1a\x1c.worker.ScheduleListResponse\x12O\n" +
+	"\x0fGetWorkSettings\x12\x1e.worker.GetWorkSettingsRequest\x1a\x1c.worker.WorkSettingsResponse\x12U\n" +
+	"\x12UpdateWorkSettings\x12!.worker.UpdateWorkSettingsRequest\x1a\x1c.worker.WorkSettingsResponse\x12F\n" +
+	"\rGetDutyStatus\x12\x19.worker.DutyStatusRequest\x1a\x1a.worker.DutyStatusResponse\x12<\n" +
 	"\vSubmitLeave\x12\x1a.worker.SubmitLeaveRequest\x1a\x11.worker.LeaveItem\x12C\n" +
 	"\n" +
 	"ListLeaves\x12\x19.worker.ListLeavesRequest\x1a\x1a.worker.ListLeavesResponse\x12<\n" +
@@ -2015,37 +2487,43 @@ func file_worker_proto_rawDescGZIP() []byte {
 	return file_worker_proto_rawDescData
 }
 
-var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_worker_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_worker_proto_goTypes = []any{
-	(*Request)(nil),                 // 0: worker.Request
-	(*Response)(nil),                // 1: worker.Response
-	(*LoginRequest)(nil),            // 2: worker.LoginRequest
-	(*User)(nil),                    // 3: worker.User
-	(*LoginResponse)(nil),           // 4: worker.LoginResponse
-	(*BuildingWorkersRequest)(nil),  // 5: worker.BuildingWorkersRequest
-	(*SkillInfo)(nil),               // 6: worker.SkillInfo
-	(*WorkerInfo)(nil),              // 7: worker.WorkerInfo
-	(*BuildingWorkersResponse)(nil), // 8: worker.BuildingWorkersResponse
-	(*UserIdsRequest)(nil),          // 9: worker.UserIdsRequest
-	(*UsersResponse)(nil),           // 10: worker.UsersResponse
-	(*ListUsersRequest)(nil),        // 11: worker.ListUsersRequest
-	(*ListUsersResponse)(nil),       // 12: worker.ListUsersResponse
-	(*CreateUserRequest)(nil),       // 13: worker.CreateUserRequest
-	(*UpdateUserRequest)(nil),       // 14: worker.UpdateUserRequest
-	(*IdRequest)(nil),               // 15: worker.IdRequest
-	(*BuildingIdsResponse)(nil),     // 16: worker.BuildingIdsResponse
-	(*ResetPasswordRequest)(nil),    // 17: worker.ResetPasswordRequest
-	(*ScheduleItem)(nil),            // 18: worker.ScheduleItem
-	(*ScheduleListRequest)(nil),     // 19: worker.ScheduleListRequest
-	(*ScheduleListResponse)(nil),    // 20: worker.ScheduleListResponse
-	(*SaveSchedulesRequest)(nil),    // 21: worker.SaveSchedulesRequest
-	(*GenerateScheduleRequest)(nil), // 22: worker.GenerateScheduleRequest
-	(*LeaveItem)(nil),               // 23: worker.LeaveItem
-	(*SubmitLeaveRequest)(nil),      // 24: worker.SubmitLeaveRequest
-	(*ListLeavesRequest)(nil),       // 25: worker.ListLeavesRequest
-	(*ListLeavesResponse)(nil),      // 26: worker.ListLeavesResponse
-	(*ReviewLeaveRequest)(nil),      // 27: worker.ReviewLeaveRequest
-	(*LeaveIdRequest)(nil),          // 28: worker.LeaveIdRequest
+	(*Request)(nil),                   // 0: worker.Request
+	(*Response)(nil),                  // 1: worker.Response
+	(*LoginRequest)(nil),              // 2: worker.LoginRequest
+	(*User)(nil),                      // 3: worker.User
+	(*LoginResponse)(nil),             // 4: worker.LoginResponse
+	(*BuildingWorkersRequest)(nil),    // 5: worker.BuildingWorkersRequest
+	(*SkillInfo)(nil),                 // 6: worker.SkillInfo
+	(*WorkerInfo)(nil),                // 7: worker.WorkerInfo
+	(*BuildingWorkersResponse)(nil),   // 8: worker.BuildingWorkersResponse
+	(*UserIdsRequest)(nil),            // 9: worker.UserIdsRequest
+	(*UsersResponse)(nil),             // 10: worker.UsersResponse
+	(*ListUsersRequest)(nil),          // 11: worker.ListUsersRequest
+	(*ListUsersResponse)(nil),         // 12: worker.ListUsersResponse
+	(*CreateUserRequest)(nil),         // 13: worker.CreateUserRequest
+	(*UpdateUserRequest)(nil),         // 14: worker.UpdateUserRequest
+	(*IdRequest)(nil),                 // 15: worker.IdRequest
+	(*BuildingIdsResponse)(nil),       // 16: worker.BuildingIdsResponse
+	(*ResetPasswordRequest)(nil),      // 17: worker.ResetPasswordRequest
+	(*WorkSettings)(nil),              // 18: worker.WorkSettings
+	(*GetWorkSettingsRequest)(nil),    // 19: worker.GetWorkSettingsRequest
+	(*WorkSettingsResponse)(nil),      // 20: worker.WorkSettingsResponse
+	(*UpdateWorkSettingsRequest)(nil), // 21: worker.UpdateWorkSettingsRequest
+	(*DutyStatusRequest)(nil),         // 22: worker.DutyStatusRequest
+	(*DutyStatusResponse)(nil),        // 23: worker.DutyStatusResponse
+	(*ScheduleItem)(nil),              // 24: worker.ScheduleItem
+	(*ScheduleListRequest)(nil),       // 25: worker.ScheduleListRequest
+	(*ScheduleListResponse)(nil),      // 26: worker.ScheduleListResponse
+	(*SaveSchedulesRequest)(nil),      // 27: worker.SaveSchedulesRequest
+	(*GenerateScheduleRequest)(nil),   // 28: worker.GenerateScheduleRequest
+	(*LeaveItem)(nil),                 // 29: worker.LeaveItem
+	(*SubmitLeaveRequest)(nil),        // 30: worker.SubmitLeaveRequest
+	(*ListLeavesRequest)(nil),         // 31: worker.ListLeavesRequest
+	(*ListLeavesResponse)(nil),        // 32: worker.ListLeavesResponse
+	(*ReviewLeaveRequest)(nil),        // 33: worker.ReviewLeaveRequest
+	(*LeaveIdRequest)(nil),            // 34: worker.LeaveIdRequest
 }
 var file_worker_proto_depIdxs = []int32{
 	3,  // 0: worker.LoginResponse.user:type_name -> worker.User
@@ -2053,48 +2531,55 @@ var file_worker_proto_depIdxs = []int32{
 	7,  // 2: worker.BuildingWorkersResponse.workers:type_name -> worker.WorkerInfo
 	3,  // 3: worker.UsersResponse.users:type_name -> worker.User
 	3,  // 4: worker.ListUsersResponse.users:type_name -> worker.User
-	18, // 5: worker.ScheduleListResponse.items:type_name -> worker.ScheduleItem
-	18, // 6: worker.SaveSchedulesRequest.items:type_name -> worker.ScheduleItem
-	23, // 7: worker.ListLeavesResponse.items:type_name -> worker.LeaveItem
-	0,  // 8: worker.Worker.Ping:input_type -> worker.Request
-	2,  // 9: worker.Worker.Login:input_type -> worker.LoginRequest
-	5,  // 10: worker.Worker.ListWorkersByBuilding:input_type -> worker.BuildingWorkersRequest
-	9,  // 11: worker.Worker.GetUsers:input_type -> worker.UserIdsRequest
-	11, // 12: worker.Worker.ListUsers:input_type -> worker.ListUsersRequest
-	13, // 13: worker.Worker.CreateUser:input_type -> worker.CreateUserRequest
-	14, // 14: worker.Worker.UpdateUser:input_type -> worker.UpdateUserRequest
-	17, // 15: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
-	15, // 16: worker.Worker.DisableUser:input_type -> worker.IdRequest
-	15, // 17: worker.Worker.ListManagedBuildings:input_type -> worker.IdRequest
-	19, // 18: worker.Worker.ListSchedules:input_type -> worker.ScheduleListRequest
-	21, // 19: worker.Worker.SaveSchedules:input_type -> worker.SaveSchedulesRequest
-	22, // 20: worker.Worker.GenerateWeekly:input_type -> worker.GenerateScheduleRequest
-	24, // 21: worker.Worker.SubmitLeave:input_type -> worker.SubmitLeaveRequest
-	25, // 22: worker.Worker.ListLeaves:input_type -> worker.ListLeavesRequest
-	27, // 23: worker.Worker.ReviewLeave:input_type -> worker.ReviewLeaveRequest
-	28, // 24: worker.Worker.CancelLeave:input_type -> worker.LeaveIdRequest
-	1,  // 25: worker.Worker.Ping:output_type -> worker.Response
-	4,  // 26: worker.Worker.Login:output_type -> worker.LoginResponse
-	8,  // 27: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
-	10, // 28: worker.Worker.GetUsers:output_type -> worker.UsersResponse
-	12, // 29: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
-	10, // 30: worker.Worker.CreateUser:output_type -> worker.UsersResponse
-	10, // 31: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
-	1,  // 32: worker.Worker.ResetPassword:output_type -> worker.Response
-	1,  // 33: worker.Worker.DisableUser:output_type -> worker.Response
-	16, // 34: worker.Worker.ListManagedBuildings:output_type -> worker.BuildingIdsResponse
-	20, // 35: worker.Worker.ListSchedules:output_type -> worker.ScheduleListResponse
-	20, // 36: worker.Worker.SaveSchedules:output_type -> worker.ScheduleListResponse
-	20, // 37: worker.Worker.GenerateWeekly:output_type -> worker.ScheduleListResponse
-	23, // 38: worker.Worker.SubmitLeave:output_type -> worker.LeaveItem
-	26, // 39: worker.Worker.ListLeaves:output_type -> worker.ListLeavesResponse
-	23, // 40: worker.Worker.ReviewLeave:output_type -> worker.LeaveItem
-	23, // 41: worker.Worker.CancelLeave:output_type -> worker.LeaveItem
-	25, // [25:42] is the sub-list for method output_type
-	8,  // [8:25] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	18, // 5: worker.WorkSettingsResponse.settings:type_name -> worker.WorkSettings
+	24, // 6: worker.ScheduleListResponse.items:type_name -> worker.ScheduleItem
+	24, // 7: worker.SaveSchedulesRequest.items:type_name -> worker.ScheduleItem
+	29, // 8: worker.ListLeavesResponse.items:type_name -> worker.LeaveItem
+	0,  // 9: worker.Worker.Ping:input_type -> worker.Request
+	2,  // 10: worker.Worker.Login:input_type -> worker.LoginRequest
+	5,  // 11: worker.Worker.ListWorkersByBuilding:input_type -> worker.BuildingWorkersRequest
+	9,  // 12: worker.Worker.GetUsers:input_type -> worker.UserIdsRequest
+	11, // 13: worker.Worker.ListUsers:input_type -> worker.ListUsersRequest
+	13, // 14: worker.Worker.CreateUser:input_type -> worker.CreateUserRequest
+	14, // 15: worker.Worker.UpdateUser:input_type -> worker.UpdateUserRequest
+	17, // 16: worker.Worker.ResetPassword:input_type -> worker.ResetPasswordRequest
+	15, // 17: worker.Worker.DisableUser:input_type -> worker.IdRequest
+	15, // 18: worker.Worker.ListManagedBuildings:input_type -> worker.IdRequest
+	25, // 19: worker.Worker.ListSchedules:input_type -> worker.ScheduleListRequest
+	27, // 20: worker.Worker.SaveSchedules:input_type -> worker.SaveSchedulesRequest
+	28, // 21: worker.Worker.GenerateWeekly:input_type -> worker.GenerateScheduleRequest
+	19, // 22: worker.Worker.GetWorkSettings:input_type -> worker.GetWorkSettingsRequest
+	21, // 23: worker.Worker.UpdateWorkSettings:input_type -> worker.UpdateWorkSettingsRequest
+	22, // 24: worker.Worker.GetDutyStatus:input_type -> worker.DutyStatusRequest
+	30, // 25: worker.Worker.SubmitLeave:input_type -> worker.SubmitLeaveRequest
+	31, // 26: worker.Worker.ListLeaves:input_type -> worker.ListLeavesRequest
+	33, // 27: worker.Worker.ReviewLeave:input_type -> worker.ReviewLeaveRequest
+	34, // 28: worker.Worker.CancelLeave:input_type -> worker.LeaveIdRequest
+	1,  // 29: worker.Worker.Ping:output_type -> worker.Response
+	4,  // 30: worker.Worker.Login:output_type -> worker.LoginResponse
+	8,  // 31: worker.Worker.ListWorkersByBuilding:output_type -> worker.BuildingWorkersResponse
+	10, // 32: worker.Worker.GetUsers:output_type -> worker.UsersResponse
+	12, // 33: worker.Worker.ListUsers:output_type -> worker.ListUsersResponse
+	10, // 34: worker.Worker.CreateUser:output_type -> worker.UsersResponse
+	10, // 35: worker.Worker.UpdateUser:output_type -> worker.UsersResponse
+	1,  // 36: worker.Worker.ResetPassword:output_type -> worker.Response
+	1,  // 37: worker.Worker.DisableUser:output_type -> worker.Response
+	16, // 38: worker.Worker.ListManagedBuildings:output_type -> worker.BuildingIdsResponse
+	26, // 39: worker.Worker.ListSchedules:output_type -> worker.ScheduleListResponse
+	26, // 40: worker.Worker.SaveSchedules:output_type -> worker.ScheduleListResponse
+	26, // 41: worker.Worker.GenerateWeekly:output_type -> worker.ScheduleListResponse
+	20, // 42: worker.Worker.GetWorkSettings:output_type -> worker.WorkSettingsResponse
+	20, // 43: worker.Worker.UpdateWorkSettings:output_type -> worker.WorkSettingsResponse
+	23, // 44: worker.Worker.GetDutyStatus:output_type -> worker.DutyStatusResponse
+	29, // 45: worker.Worker.SubmitLeave:output_type -> worker.LeaveItem
+	32, // 46: worker.Worker.ListLeaves:output_type -> worker.ListLeavesResponse
+	29, // 47: worker.Worker.ReviewLeave:output_type -> worker.LeaveItem
+	29, // 48: worker.Worker.CancelLeave:output_type -> worker.LeaveItem
+	29, // [29:49] is the sub-list for method output_type
+	9,  // [9:29] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_worker_proto_init() }
@@ -2108,7 +2593,7 @@ func file_worker_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_worker_proto_rawDesc), len(file_worker_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   29,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

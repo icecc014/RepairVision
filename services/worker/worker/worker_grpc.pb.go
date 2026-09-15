@@ -32,6 +32,9 @@ const (
 	Worker_ListSchedules_FullMethodName         = "/worker.Worker/ListSchedules"
 	Worker_SaveSchedules_FullMethodName         = "/worker.Worker/SaveSchedules"
 	Worker_GenerateWeekly_FullMethodName        = "/worker.Worker/GenerateWeekly"
+	Worker_GetWorkSettings_FullMethodName       = "/worker.Worker/GetWorkSettings"
+	Worker_UpdateWorkSettings_FullMethodName    = "/worker.Worker/UpdateWorkSettings"
+	Worker_GetDutyStatus_FullMethodName         = "/worker.Worker/GetDutyStatus"
 	Worker_SubmitLeave_FullMethodName           = "/worker.Worker/SubmitLeave"
 	Worker_ListLeaves_FullMethodName            = "/worker.Worker/ListLeaves"
 	Worker_ReviewLeave_FullMethodName           = "/worker.Worker/ReviewLeave"
@@ -55,6 +58,9 @@ type WorkerClient interface {
 	ListSchedules(ctx context.Context, in *ScheduleListRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 	SaveSchedules(ctx context.Context, in *SaveSchedulesRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
 	GenerateWeekly(ctx context.Context, in *GenerateScheduleRequest, opts ...grpc.CallOption) (*ScheduleListResponse, error)
+	GetWorkSettings(ctx context.Context, in *GetWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error)
+	UpdateWorkSettings(ctx context.Context, in *UpdateWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error)
+	GetDutyStatus(ctx context.Context, in *DutyStatusRequest, opts ...grpc.CallOption) (*DutyStatusResponse, error)
 	SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
 	ListLeaves(ctx context.Context, in *ListLeavesRequest, opts ...grpc.CallOption) (*ListLeavesResponse, error)
 	ReviewLeave(ctx context.Context, in *ReviewLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error)
@@ -199,6 +205,36 @@ func (c *workerClient) GenerateWeekly(ctx context.Context, in *GenerateScheduleR
 	return out, nil
 }
 
+func (c *workerClient) GetWorkSettings(ctx context.Context, in *GetWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkSettingsResponse)
+	err := c.cc.Invoke(ctx, Worker_GetWorkSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) UpdateWorkSettings(ctx context.Context, in *UpdateWorkSettingsRequest, opts ...grpc.CallOption) (*WorkSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkSettingsResponse)
+	err := c.cc.Invoke(ctx, Worker_UpdateWorkSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) GetDutyStatus(ctx context.Context, in *DutyStatusRequest, opts ...grpc.CallOption) (*DutyStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DutyStatusResponse)
+	err := c.cc.Invoke(ctx, Worker_GetDutyStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *workerClient) SubmitLeave(ctx context.Context, in *SubmitLeaveRequest, opts ...grpc.CallOption) (*LeaveItem, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LeaveItem)
@@ -256,6 +292,9 @@ type WorkerServer interface {
 	ListSchedules(context.Context, *ScheduleListRequest) (*ScheduleListResponse, error)
 	SaveSchedules(context.Context, *SaveSchedulesRequest) (*ScheduleListResponse, error)
 	GenerateWeekly(context.Context, *GenerateScheduleRequest) (*ScheduleListResponse, error)
+	GetWorkSettings(context.Context, *GetWorkSettingsRequest) (*WorkSettingsResponse, error)
+	UpdateWorkSettings(context.Context, *UpdateWorkSettingsRequest) (*WorkSettingsResponse, error)
+	GetDutyStatus(context.Context, *DutyStatusRequest) (*DutyStatusResponse, error)
 	SubmitLeave(context.Context, *SubmitLeaveRequest) (*LeaveItem, error)
 	ListLeaves(context.Context, *ListLeavesRequest) (*ListLeavesResponse, error)
 	ReviewLeave(context.Context, *ReviewLeaveRequest) (*LeaveItem, error)
@@ -308,6 +347,15 @@ func (UnimplementedWorkerServer) SaveSchedules(context.Context, *SaveSchedulesRe
 }
 func (UnimplementedWorkerServer) GenerateWeekly(context.Context, *GenerateScheduleRequest) (*ScheduleListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GenerateWeekly not implemented")
+}
+func (UnimplementedWorkerServer) GetWorkSettings(context.Context, *GetWorkSettingsRequest) (*WorkSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkSettings not implemented")
+}
+func (UnimplementedWorkerServer) UpdateWorkSettings(context.Context, *UpdateWorkSettingsRequest) (*WorkSettingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateWorkSettings not implemented")
+}
+func (UnimplementedWorkerServer) GetDutyStatus(context.Context, *DutyStatusRequest) (*DutyStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDutyStatus not implemented")
 }
 func (UnimplementedWorkerServer) SubmitLeave(context.Context, *SubmitLeaveRequest) (*LeaveItem, error) {
 	return nil, status.Error(codes.Unimplemented, "method SubmitLeave not implemented")
@@ -576,6 +624,60 @@ func _Worker_GenerateWeekly_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Worker_GetWorkSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).GetWorkSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_GetWorkSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).GetWorkSettings(ctx, req.(*GetWorkSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_UpdateWorkSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateWorkSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).UpdateWorkSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_UpdateWorkSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).UpdateWorkSettings(ctx, req.(*UpdateWorkSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_GetDutyStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DutyStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).GetDutyStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Worker_GetDutyStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).GetDutyStatus(ctx, req.(*DutyStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Worker_SubmitLeave_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SubmitLeaveRequest)
 	if err := dec(in); err != nil {
@@ -706,6 +808,18 @@ var Worker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateWeekly",
 			Handler:    _Worker_GenerateWeekly_Handler,
+		},
+		{
+			MethodName: "GetWorkSettings",
+			Handler:    _Worker_GetWorkSettings_Handler,
+		},
+		{
+			MethodName: "UpdateWorkSettings",
+			Handler:    _Worker_UpdateWorkSettings_Handler,
+		},
+		{
+			MethodName: "GetDutyStatus",
+			Handler:    _Worker_GetDutyStatus_Handler,
 		},
 		{
 			MethodName: "SubmitLeave",

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -32,20 +34,29 @@ const (
 	maxMinPerBuilding  = 5
 )
 
-// GenerateWeekly 生成一周精细排班：
-//  1. 已批准请假先固定为 OFF，并占用「每周休息天数」配额（避免请假后又排轮休导致在岗天数过低）；
-//  2. 剩余休息名额按「错峰 + 保证每栋楼最少在岗人数」的代价函数分配到非请假日；
-//  3. 每日每栋楼按在岗人数分配 MORNING / AFTERNOON，人数不足时保持全天班优先保证覆盖；
-//  4. 某栋楼当天在岗人数低于 minPerBuilding 时写入 warnings 返回给管理员。
+// GenerateWeekly 生成一周排班（V5.3 双休白班）：
+//  1. 读取 work_settings：每周休息天数（默认 2）、休息模式（错峰轮休 / 固定休息日）、工作时段；
+//  2. 已批准请假先固定为 OFF，并占用「每周休息天数」配额；
+//  3. 错峰模式：剩余休息名额按「错峰 + 保证每栋楼最少在岗人数」代价函数分配；
+//     固定模式：直接按配置的星期号休息，保证作息统一；
+//  4. 非休息日统一排 DAY（白班），不再拆分午班/晚班；
+//  5. 某栋楼当天在岗人数低于 minPerBuilding 时写入 warnings 返回给管理员。
 func (l *GenerateWeeklyLogic) GenerateWeekly(in *worker.GenerateScheduleRequest) (*worker.ScheduleListResponse, error) {
 	weekStart, err := time.ParseInLocation("2006-01-02", in.WeekStart, time.Local)
 	if err != nil || weekStart.Weekday() != time.Monday {
 		return nil, errDate("请提供周一的日期，格式 YYYY-MM-DD")
 	}
+	settings, err := store.GetWorkSettings(l.ctx, l.svcCtx.DB)
+	if err != nil {
+		return nil, err
+	}
 
 	restDays := int(in.RestDaysPerWeek)
 	if restDays <= 0 {
-		restDays = 1
+		restDays = int(settings.RestDaysPerWeek)
+	}
+	if restDays < 0 {
+		restDays = 0
 	}
 	if restDays > maxRestDaysPerWeek {
 		restDays = maxRestDaysPerWeek
@@ -81,16 +92,21 @@ func (l *GenerateWeeklyLogic) GenerateWeekly(in *worker.GenerateScheduleRequest)
 		return nil, err
 	}
 
-	weekSeed := int(weekStart.Unix()/86400) % 7
-	if weekSeed < 0 {
-		weekSeed += 7
+	var offSets map[int64]map[int]bool
+	if settings.RestMode == "fixed" {
+		offSets = assignFixedOffDays(workerIDs, settings.FixedRestWeekdays, leaveDays)
+	} else {
+		weekSeed := int(weekStart.Unix()/86400) % 7
+		if weekSeed < 0 {
+			weekSeed += 7
+		}
+		offSets = assignOffDays(workerIDs, buildingsByWorker, weekSeed, leaveDays, restDays, minPerBuilding)
 	}
-	offSets := assignOffDays(workerIDs, buildingsByWorker, weekSeed, leaveDays, restDays, minPerBuilding)
 
 	items := make([]*worker.ScheduleItem, 0, len(workerIDs)*7)
 	warnings := make([]string, 0)
 	for day := 0; day < 7; day++ {
-		shiftByWorker := assignShiftsForDay(workerIDs, buildingsByWorker, offSets, day, minPerBuilding)
+		shiftByWorker := shiftsForDay(workerIDs, offSets, day)
 		date := weekStart.AddDate(0, 0, day).Format("2006-01-02")
 		for _, workerID := range workerIDs {
 			shift := shiftByWorker[workerID]
@@ -98,7 +114,7 @@ func (l *GenerateWeeklyLogic) GenerateWeekly(in *worker.GenerateScheduleRequest)
 				WorkerId:  workerID,
 				WorkDate:  date,
 				ShiftType: shift,
-				Note:      noteForShift(shift, offSets[workerID][day], leaveDays[workerID][day]),
+				Note:      noteForShift(shift, offSets[workerID][day], leaveDays[workerID][day], settings),
 			})
 		}
 		warnings = append(warnings, coverageWarnings(workerIDs, buildingsByWorker, shiftByWorker, day, weekStart, minPerBuilding)...)
@@ -148,6 +164,33 @@ func (l *GenerateWeeklyLogic) loadLeaveDays(workerIDs []int64, weekStart time.Ti
 		}
 	}
 	return result, nil
+}
+
+// assignFixedOffDays 固定休息日模式：所有工人在配置的星期号统一休息（1=周一 … 7=周日）。
+func assignFixedOffDays(workerIDs []int64, fixedWeekdays string, leaveDays map[int64]map[int]bool) map[int64]map[int]bool {
+	days := make(map[int]bool)
+	for _, part := range strings.Split(fixedWeekdays, ",") {
+		n, err := strconv.Atoi(strings.TrimSpace(part))
+		if err == nil && n >= 1 && n <= 7 {
+			days[n-1] = true
+		}
+	}
+	if len(days) == 0 {
+		days[5] = true // 周六
+		days[6] = true // 周日
+	}
+	off := make(map[int64]map[int]bool, len(workerIDs))
+	for _, id := range workerIDs {
+		set := make(map[int]bool, len(days)+1)
+		for day := range days {
+			set[day] = true
+		}
+		for day := range leaveDays[id] {
+			set[day] = true
+		}
+		off[id] = set
+	}
+	return off
 }
 
 // assignOffDays 分配休息日：请假先占名额，剩余名额用「错峰 + 楼栋最少在岗」代价函数挑选。
@@ -223,9 +266,8 @@ func buildBuildingWorkers(workerIDs []int64, buildingsByWorker map[int64][]int64
 	return result
 }
 
-// assignShiftsForDay 计算某天各工人班次：每栋楼按在岗人数分配午班/晚班/全天。
-func assignShiftsForDay(workerIDs []int64, buildingsByWorker map[int64][]int64,
-	off map[int64]map[int]bool, day, minPerBuilding int) map[int64]string {
+// shiftsForDay 某天各工人班次：只有白班（DAY）与休息（OFF）两种。
+func shiftsForDay(workerIDs []int64, off map[int64]map[int]bool, day int) map[int64]string {
 	result := make(map[int64]string, len(workerIDs))
 	for _, id := range workerIDs {
 		if off[id][day] {
@@ -233,37 +275,6 @@ func assignShiftsForDay(workerIDs []int64, buildingsByWorker map[int64][]int64,
 		} else {
 			result[id] = "DAY"
 		}
-	}
-	workersOfBuilding := buildBuildingWorkers(workerIDs, buildingsByWorker)
-	groups := make([][]int64, 0, len(workersOfBuilding))
-	for _, group := range workersOfBuilding {
-		onDuty := make([]int64, 0, len(group))
-		for _, id := range group {
-			if result[id] != "OFF" {
-				onDuty = append(onDuty, id)
-			}
-		}
-		groups = append(groups, onDuty)
-	}
-	// 先处理人少的楼栋，保证只剩 1~2 人的楼栋保持全天班（不被其它楼栋改写成半天班）。
-	sort.Slice(groups, func(i, j int) bool { return len(groups[i]) < len(groups[j]) })
-	for _, onDuty := range groups {
-		// 在岗人数不足以拆分半天班时保持全天班，优先保证覆盖
-		if len(onDuty) < max(2, minPerBuilding) {
-			continue
-		}
-		candidates := make([]int64, 0, len(onDuty))
-		for _, id := range onDuty {
-			if result[id] == "DAY" {
-				candidates = append(candidates, id)
-			}
-		}
-		if len(candidates) < 2 {
-			continue
-		}
-		offset := day % len(candidates)
-		result[candidates[offset]] = "MORNING"
-		result[candidates[(offset+1)%len(candidates)]] = "AFTERNOON"
 	}
 	return result
 }
@@ -289,18 +300,12 @@ func coverageWarnings(workerIDs []int64, buildingsByWorker map[int64][]int64,
 	return warnings
 }
 
-func noteForShift(shift string, isOff, isLeave bool) string {
-	switch shift {
-	case "OFF":
+func noteForShift(shift string, isOff, isLeave bool, settings *store.WorkSettings) string {
+	if shift == "OFF" {
 		if isLeave {
 			return "已批准请假"
 		}
-		return "周模板轮休"
-	case "MORNING":
-		return "午班 08:00-14:00"
-	case "AFTERNOON":
-		return "晚班 14:00-20:00"
-	default:
-		return "全天班"
+		return "周休"
 	}
+	return "白班 " + workPeriodText(settings)
 }
