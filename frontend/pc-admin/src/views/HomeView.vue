@@ -82,6 +82,7 @@
             >
               {{ row.externalMark === 1 ? '外援处理' : '待管理员处置' }}
             </el-tag>
+            <el-tag v-if="row.dispatchLocked === 1" type="warning" effect="dark" size="small" class="manual-tag">🔒 已锁定</el-tag>
             <div v-if="row.status === 1 && row.pendingReason" class="pending-reason">{{ row.pendingReason }}</div>
           </template>
         </el-table-column>
@@ -101,9 +102,13 @@
         </el-table-column>
         <el-table-column prop="reporterName" label="报修宿管" width="110" />
         <el-table-column prop="createdAt" label="创建时间" width="170" />
-        <el-table-column label="操作" width="310" fixed="right">
+        <el-table-column label="操作" width="430" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">详情</el-button>
+            <el-button size="small" type="warning" plain @click="toggleLock(row)">
+              {{ row.dispatchLocked === 1 ? '解锁' : '锁定' }}
+            </el-button>
+            <el-button v-if="row.status === 1 || row.status === 2" size="small" plain @click="editPriority(row)">优先级</el-button>
             <el-button v-if="row.status === 1" size="small" type="primary" plain @click="openAssign(row)">
               手动派单
             </el-button>
@@ -196,6 +201,8 @@ import {
   apiAdminBatchDispatch,
   apiAdminDispatchGuard,
   apiAdminOrderExternal,
+  apiAdminOrderLock,
+  apiAdminOrderPriority,
   apiAdminOrderReassign,
   apiAdminOrders,
   apiAdminStats,
@@ -334,7 +341,45 @@ function openDetail(row: OrderItem) {
   detailRow.value = row
   detailVisible.value = true
 }
-function rowClassName({ row }: { row: OrderItem }) {
+async function toggleLock(row: OrderItem) {
+  const lock = row.dispatchLocked === 1 ? 0 : 1
+  try {
+    await ElMessageBox.confirm(
+      lock ? `锁定工单 ${row.orderNo}？锁定后不参与自动派单与批量派单。` : `解锁工单 ${row.orderNo}？解锁后会重新进入自动派单队列。`,
+      lock ? '锁定工单' : '解锁工单',
+    )
+  } catch {
+    return
+  }
+  try {
+    await apiAdminOrderLock(row.id, lock)
+    ElMessage.success(lock ? '已锁定' : '已解锁')
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+
+async function editPriority(row: OrderItem) {
+  let input: string
+  try {
+    const res = await ElMessageBox.prompt('优先级 1（最低）~ 5（最高），待派队列按优先级倒序取单', '调整优先级', {
+      inputValue: String(row.priority || 1),
+      inputPattern: /^[1-5]$/,
+      inputErrorMessage: '请输入 1~5 的整数',
+    })
+    input = res.value
+  } catch {
+    return
+  }
+  try {
+    await apiAdminOrderPriority(row.id, Number(input))
+    ElMessage.success('优先级已更新')
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}function rowClassName({ row }: { row: OrderItem }) {
   return row.manualReview === 1 ? 'row-manual' : ''
 }
 

@@ -27,6 +27,8 @@ export interface OrderItem {
   pendingReason?: string
   manualReview?: number
   externalMark?: number
+  dispatchLocked?: number
+  priority?: number
   workerId?: number
   workerName?: string
   workerPhone?: string
@@ -359,6 +361,13 @@ export function apiAdminOrderReassign(id: number, workerId: number): Promise<unk
   return http.post(`/admin/orders/${id}/reassign`, { workerId })
 }
 
+export function apiAdminOrderLock(id: number, locked: number): Promise<unknown> {
+  return http.post(`/admin/orders/${id}/lock`, { locked })
+}
+
+export function apiAdminOrderPriority(id: number, priority: number): Promise<unknown> {
+  return http.post(`/admin/orders/${id}/priority`, { priority })
+}
 export function apiAdminOrderExternal(id: number): Promise<unknown> {
   return http.post(`/admin/orders/${id}/external`, {})
 }
