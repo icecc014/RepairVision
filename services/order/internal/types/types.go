@@ -311,6 +311,8 @@ type OrderItem struct {
 	StatusText      string  `json:"statusText"`
 	ManualReview    int64   `json:"manualReview,optional"`
 	ExternalMark    int64   `json:"externalMark,optional"`
+	DispatchLocked  int64   `json:"dispatchLocked,optional"`
+	Priority        int64   `json:"priority"`
 	WorkerId        int64   `json:"workerId,optional"`
 	WorkerName      string  `json:"workerName,optional"`
 	WorkerPhone     string  `json:"workerPhone,optional"`
@@ -625,4 +627,13 @@ type DispatchGuardResponse struct {
 	Mode               string  `json:"mode"`
 	Message            string  `json:"message"`
 	WaitText           string  `json:"waitText"`
+}
+type AdminOrderLockRequest struct {
+	Id     int64 `path:"id"`
+	Locked int64 `json:"locked"`
+}
+
+type AdminOrderPriorityRequest struct {
+	Id       int64 `path:"id"`
+	Priority int64 `json:"priority"`
 }

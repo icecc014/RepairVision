@@ -31,6 +31,7 @@ type Order struct {
 	IsMerged      int64         `db:"is_merged"`
 	ManualReview  int64         `db:"manual_review"`
 	ExternalMark  int64         `db:"external_mark"`
+DispatchLocked int64        `db:"dispatch_locked"`
 	MainOrderID   sql.NullInt64 `db:"main_order_id"`
 	WorkerID      sql.NullInt64 `db:"worker_id"`
 	DispatchedAt  sql.NullTime  `db:"dispatched_at"`
@@ -48,7 +49,7 @@ type WorkerLoad struct {
 }
 
 const orderColumns = `id, order_no, title, description, building_id, room, floor, fault_type,
-    priority, expect_minutes, status, is_merged, manual_review, external_mark, main_order_id, worker_id,
+    priority, expect_minutes, status, is_merged, manual_review, external_mark, dispatch_locked, main_order_id, worker_id,
     dispatched_at, started_at, completed_at, reporter_id, source, created_at, updated_at`
 const orderBase = "select " + orderColumns + " from orders "
 

@@ -9,7 +9,7 @@ import (
 
 // ListPendingOrders 返回待派单队列，limit<=0 时不限制。
 func ListPendingOrders(ctx context.Context, conn sqlx.Session, limit int64) ([]Order, error) {
-	query := orderBase + "where status = ? and manual_review = 0 order by priority desc, id asc"
+	query := orderBase + "where status = ? and manual_review = 0 and dispatch_locked = 0 and external_mark = 0 order by priority desc, id asc"
 	args := []any{StatusPending}
 	if limit > 0 {
 		query += " limit ?"
@@ -24,7 +24,7 @@ func ListPendingOrders(ctx context.Context, conn sqlx.Session, limit int64) ([]O
 
 // ListPendingOrdersByBuilding 返回指定楼栋的待派队列。
 func ListPendingOrdersByBuilding(ctx context.Context, conn sqlx.Session, buildingID, limit int64) ([]Order, error) {
-	query := orderBase + "where building_id = ? and status = ? and manual_review = 0 order by priority desc, id asc"
+	query := orderBase + "where building_id = ? and status = ? and manual_review = 0 and dispatch_locked = 0 and external_mark = 0 order by priority desc, id asc"
 	args := []any{buildingID, StatusPending}
 	if limit > 0 {
 		query += " limit ?"

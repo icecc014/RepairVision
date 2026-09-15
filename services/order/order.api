@@ -308,6 +308,15 @@ type DispatchGuardResponse {
 	Message            string  `json:"message"`
 	WaitText           string  `json:"waitText"`
 }
+type AdminOrderLockRequest {
+	Id     int64 `path:"id"`
+	Locked int64 `json:"locked"`
+}
+
+type AdminOrderPriorityRequest {
+	Id       int64 `path:"id"`
+	Priority int64 `json:"priority"`
+}
 type StartOrderRequest {
 	Id    int64 `path:"id"`
 	Force bool  `json:"force,optional"`
@@ -830,6 +839,12 @@ get /api/worker/orders (OrderListRequest) returns (OrderListResponse)
 
 	@handler AdminOrderExternalHandler
 	post /api/admin/orders/:id/external (OrderIdRequest) returns (EmptyResponse)
+
+	@handler AdminOrderLockHandler
+	post /api/admin/orders/:id/lock (AdminOrderLockRequest) returns (EmptyResponse)
+
+	@handler AdminOrderPriorityHandler
+	post /api/admin/orders/:id/priority (AdminOrderPriorityRequest) returns (EmptyResponse)
 
 	@handler AdminWorkerBoardHandler
 	get /api/admin/worker-board returns (AdminWorkerBoardResponse)
