@@ -93,7 +93,7 @@
           <template #default="{ row }">
             <el-tooltip
               v-if="row.dispatchScore !== undefined && row.dispatchScore > 0"
-              :content="`技能 ${row.skillScore} · 距离 ${row.distanceScore} · 负载 ${row.loadScore}`"
+              :content="`技能 ${row.skillScore} · 路网距离 ${row.distanceScore} · 负载 ${row.loadScore}`"
             >
               <span class="score-text">{{ row.dispatchScore }}</span>
             </el-tooltip>
@@ -185,8 +185,37 @@
         <el-descriptions-item label="故障描述">{{ detailRow.description }}</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ detailRow.createdAt }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ detailRow.updatedAt }}</el-descriptions-item>
-        <el-descriptions-item v-if="detailRow.dispatchScore !== undefined && detailRow.dispatchScore > 0" label="派单评分">
-          {{ detailRow.dispatchScore }}（技能 {{ detailRow.skillScore }} · 距离 {{ detailRow.distanceScore }} · 负载 {{ detailRow.loadScore }}）
+        <el-descriptions-item v-if="detailRow.dispatchScore !== undefined && detailRow.dispatchScore > 0" label="派单解释">
+          <div class="score-explain">
+            <div class="score-line">
+              <span class="score-key">综合得分</span>
+              <el-progress :percentage="Math.round((detailRow.dispatchScore || 0) * 100)" :stroke-width="10" />
+              <span class="score-val">{{ detailRow.dispatchScore }}</span>
+            </div>
+            <div class="score-line">
+              <span class="score-key">技能 40%</span>
+              <el-progress :percentage="Math.round((detailRow.skillScore || 0) * 100)" :stroke-width="8" color="#2563eb" />
+              <span class="score-val">{{ detailRow.skillScore }}</span>
+            </div>
+            <div class="score-line">
+              <span class="score-key">路网距离 30%</span>
+              <el-progress :percentage="Math.round((detailRow.distanceScore || 0) * 100)" :stroke-width="8" color="#16a34a" />
+              <span class="score-val">{{ detailRow.distanceScore }}</span>
+            </div>
+            <div class="score-line">
+              <span class="score-key">负载 30%</span>
+              <el-progress :percentage="Math.round((detailRow.loadScore || 0) * 100)" :stroke-width="8" color="#d97706" />
+              <span class="score-val">{{ detailRow.loadScore }}</span>
+            </div>
+            <p class="score-tip">
+              权重默认 技能 40% / 距离 30% / 负载 30%（可在「派单规则」调整）；距离按校园路网最短路计算，
+              建筑未接入路网时回退楼栋坐标欧氏距离；工人负载高于人均 1.2 倍会在总分中额外扣分（最多 0.5）。
+            </p>
+            <p class="score-tip">
+              当前派单模式：{{ guard.mode === 'manual' ? '人工处置（保护线已触发，自动派单暂停）' : '自动派单' }}
+              · 在岗 {{ guard.onDutyCount }} 人 · 待派 {{ guard.pendingCount }} 单
+            </p>
+          </div>
         </el-descriptions-item>
       </el-descriptions>
     </el-drawer>
@@ -647,6 +676,37 @@ onUnmounted(() => {
 .guard-meta {
   color: #5a6a85;
   font-size: 12px;
+}
+.score-explain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.score-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.score-key {
+  width: 82px;
+  color: #5a6a85;
+  font-size: 12px;
+}
+.score-line :deep(.el-progress) {
+  flex: 1;
+}
+.score-val {
+  width: 52px;
+  color: #2b3445;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+.score-tip {
+  margin: 4px 0 0;
+  color: #8a97ad;
+  font-size: 12px;
+  line-height: 1.6;
 }
 .pager {
   display: flex;
