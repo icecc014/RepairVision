@@ -487,6 +487,14 @@ export interface WorkerBoardItem {
   activeOrders: number
   todayCompleted: number
   available: boolean
+  onDuty?: boolean
+  dutyReason?: string
+  jobType?: number
+  jobTypeText?: string
+  loadMinutes?: number
+  loadDeviation?: number
+  currentBuildingName?: string
+  currentOrderNo?: string
 }
 
 export async function apiAdminWorkerBoard(): Promise<WorkerBoardItem[]> {

@@ -2,8 +2,8 @@
   <AdminShell title="调度看板" subtitle="实时掌握每名工人的班次、并发与当日产出">
     <section class="board-grid">
       <div class="board-card">
-        <div class="board-num">{{ list.length }}</div>
-        <div class="board-label">在岗工人（启用）</div>
+        <div class="board-num">{{ onDutyCount }}</div>
+        <div class="board-label">当前在岗 / 启用 {{ list.length }}</div>
       </div>
       <div class="board-card">
         <div class="board-num" style="color: #16a34a">{{ availableCount }}</div>
@@ -39,7 +39,32 @@
             <el-tag :type="shiftTagType(row.todayShift)" size="small">{{ shiftText(row.todayShift) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="可派状态" width="100" align="center">
+        <el-table-column label="工种" width="90" align="center">
+          <template #default="{ row }">{{ row.jobTypeText || '通用' }}</template>
+        </el-table-column>
+        <el-table-column label="在岗" width="110" align="center">
+          <template #default="{ row }">
+            <el-tooltip :content="row.dutyReason || ''" placement="top">
+              <el-tag :type="row.onDuty ? 'success' : 'info'" size="small">{{ row.onDuty ? '在岗' : '不在岗' }}</el-tag>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column label="在途工时" width="120" align="center">
+          <template #default="{ row }">
+            {{ row.loadMinutes || 0 }} 分
+            <div class="load-text" :class="{ 'is-high': (row.loadDeviation || 0) > 0.2 }">
+              偏离 {{ formatDeviation(row.loadDeviation) }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="当前所在" min-width="180">
+          <template #default="{ row }">
+            <template v-if="row.currentOrderNo">
+              {{ row.currentBuildingName || '—' }} · {{ row.currentOrderNo }}
+            </template>
+            <span v-else class="load-text">空闲</span>
+          </template>
+        </el-table-column>        <el-table-column label="可派状态" width="100" align="center">
           <template #default="{ row }">
             <span class="status-dot" :class="row.available ? 'ok' : 'no'"></span>
             {{ row.available ? '可派' : '暂停' }}
@@ -75,6 +100,7 @@ const loading = ref(false)
 const revealed = ref(false)
 
 const availableCount = computed(() => list.value.filter((w) => w.available).length)
+const onDutyCount = computed(() => list.value.filter((w) => w.onDuty).length)
 const activeSum = computed(() => list.value.reduce((sum, w) => sum + w.activeOrders, 0))
 const doneSum = computed(() => list.value.reduce((sum, w) => sum + w.todayCompleted, 0))
 
@@ -93,6 +119,11 @@ async function load() {
   revealed.value = true
 }
 
+function formatDeviation(v?: number) {
+  if (v === undefined || v === null || Number.isNaN(v)) return '—'
+  const pct = Math.round(v * 100)
+  return (pct > 0 ? '+' : '') + pct + '%'
+}
 function shiftText(shift: string) {
   switch (shift) {
     case 'DAY':
@@ -118,6 +149,10 @@ onMounted(load)
 </script>
 
 <style scoped>
+.load-text.is-high {
+  color: #b34568;
+  font-weight: 700;
+}
 .board-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
