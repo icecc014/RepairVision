@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"database/sql"
 	"errors"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"order/internal/auth"
 	"order/internal/errs"
+	"map/mapclient"
 	"order/internal/store"
 	"order/internal/svc"
 	"order/internal/ws"
@@ -114,9 +116,62 @@ func (l *CampusLayoutLogic) SaveCampusLayout(req *types.CampusLayoutSaveRequest)
 		ID: row.ID, Name: name, IsDefault: 1, Cols: cols, Rows: rows,
 		LayoutJson: sql.NullString{String: layoutJson, Valid: true}, UpdatedAt: time.Now(),
 	}
+	// 方案 1：区域概览 → 建筑信息管理 单向同步（把图元中心格换算为建筑 2D 坐标）
+	if err := l.syncBuildingPositions(layoutJson); err != nil {
+		logx.WithContext(l.ctx).Errorf("sync building positions failed: %v", err)
+	}
 	// V5.1+：区域概览保存后广播，宿管端 / 工人端可就地刷新（无需手动重进页面）
 	l.svcCtx.WS.PublishOrder(ws.OrderEvent{
 		Type: "campus_changed", OrderId: 0, OrderNo: "", BuildingId: 0, Status: 0,
 	})
 	return campusToResponse(updated), nil
+}
+
+// syncBuildingPositions 把区域概览中"关联楼栋"图元的中心格换算成建筑 2D 坐标写回建筑信息管理。
+// 约定：1 格 = 10 米，pos_x = (col + colSpan/2) × 10，pos_y = (row + rowSpan/2) × 10；
+// 这样 V4 的欧氏距离与 V5 的路网距离使用同一套地理基准。
+func (l *CampusLayoutLogic) syncBuildingPositions(raw string) error {
+	var layout campusLayoutJSON
+	if err := json.Unmarshal([]byte(raw), &layout); err != nil {
+		return err
+	}
+	if len(layout.Blocks) == 0 {
+		return nil
+	}
+	resp, err := l.svcCtx.MapRpc.ListBuildings(l.ctx, &mapclient.ListBuildingsRequest{})
+	if err != nil {
+		return err
+	}
+	byID := make(map[int64]*mapclient.Building, len(resp.Buildings))
+	for _, b := range resp.Buildings {
+		byID[b.Id] = b
+	}
+	for _, blk := range layout.Blocks {
+		if blk.Kind != "building" || blk.BuildingID <= 0 {
+			continue
+		}
+		b := byID[blk.BuildingID]
+		if b == nil {
+			continue
+		}
+		rowSpan, colSpan := blk.RowSpan, blk.ColSpan
+		if rowSpan <= 0 {
+			rowSpan = 1
+		}
+		if colSpan <= 0 {
+			colSpan = 1
+		}
+		posX := (float64(blk.Col) + float64(colSpan)/2) * defaultGridMeters
+		posY := (float64(blk.Row) + float64(rowSpan)/2) * defaultGridMeters
+		if _, err := l.svcCtx.MapRpc.UpdateBuilding(l.ctx, &mapclient.SaveBuildingRequest{
+			Building: &mapclient.Building{
+				Id: b.Id, Code: b.Code, Name: b.Name, PosX: posX, PosY: posY,
+				Width: b.Width, Height: b.Height, Floors: b.Floors,
+				FloorHeight: b.FloorHeight, RoomsPerFloor: b.RoomsPerFloor, LayoutJson: b.LayoutJson,
+			},
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
