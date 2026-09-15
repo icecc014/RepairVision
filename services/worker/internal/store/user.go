@@ -118,7 +118,7 @@ func SetUserBaseBuildingIfEmpty(ctx context.Context, conn sqlx.Session, id, buil
 }
 func InsertUser(ctx context.Context, conn sqlx.Session, u *User) (int64, error) {
 	if u.MaxConcurrent <= 0 {
-		u.MaxConcurrent = 3
+		u.MaxConcurrent = 8
 	}
 	result, err := conn.ExecCtx(ctx,
 		"insert into users(username, password, role, name, phone, building_id, status, max_concurrent, job_type) values(?,?,?,?,?,?,?,?,?)",

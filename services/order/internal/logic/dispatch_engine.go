@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultMaxConcurrent = int64(3)
+	defaultMaxConcurrent = int64(8) // 规模扩展：并发上限默认 8
 	shiftOff             = "OFF"
 )
 

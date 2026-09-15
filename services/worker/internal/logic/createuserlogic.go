@@ -47,8 +47,8 @@ func (l *CreateUserLogic) CreateUser(in *worker.CreateUserRequest) (*worker.User
 	if in.Role == 2 && len(in.BuildingIds) == 0 {
 		return nil, errors.New("工人工号必须至少管辖一栋楼")
 	}
-	if in.MaxConcurrent != 0 && (in.MaxConcurrent < 1 || in.MaxConcurrent > 10) {
-		return nil, errors.New("最大并发数需在1-10之间")
+	if in.MaxConcurrent != 0 && (in.MaxConcurrent < 1 || in.MaxConcurrent > 20) {
+		return nil, errors.New("最大并发数需在1-20之间")
 	}
 	if in.JobType < 0 || in.JobType > 2 {
 		return nil, errors.New("工种不合法")
@@ -74,7 +74,7 @@ func (l *CreateUserLogic) CreateUser(in *worker.CreateUserRequest) (*worker.User
 		JobType:       jobTypeFor(in.Role, in.JobType),
 	}
 	if u.MaxConcurrent <= 0 {
-		u.MaxConcurrent = 3
+		u.MaxConcurrent = 8
 	}
 	phone := strings.TrimSpace(in.Phone)
 	if phone != "" {
