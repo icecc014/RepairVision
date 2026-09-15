@@ -41,6 +41,8 @@ func (l *AdminScheduleGenerateLogic) AdminScheduleGenerate(req *types.ScheduleGe
 	if len(warnings) > 0 {
 		warnings = l.replaceBuildingNames(warnings)
 	}
+	// V5.4 事件驱动：排班变化后触发一次防抖重算
+	TriggerDispatchRecheck(l.svcCtx)
 	return &types.ScheduleListResponse{
 		List:     schedulePbListToTypes(out.Items),
 		Warnings: warnings,

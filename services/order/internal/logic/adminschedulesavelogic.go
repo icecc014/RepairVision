@@ -32,5 +32,7 @@ func (l *AdminScheduleSaveLogic) AdminScheduleSave(req *types.ScheduleSaveReques
 	if err != nil {
 		return nil, rpcBizError(err)
 	}
+	// V5.4 事件驱动：排班/请假变化后触发一次防抖重算
+	TriggerDispatchRecheck(l.svcCtx)
 	return &types.ScheduleListResponse{List: schedulePbListToTypes(out.Items)}, nil
 }

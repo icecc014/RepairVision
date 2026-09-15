@@ -59,5 +59,7 @@ func (l *AdminLeaveCreateLogic) AdminLeaveCreate(req *types.AdminLeaveCreateRequ
 	}
 	notifyUsers(l.ctx, l.svcCtx, []int64{req.WorkerId}, "leave",
 		"管理员已为你登记请假", out.StartDate+" 至 "+out.EndDate+"："+out.Reason, 0)
+	// V5.4 事件驱动：排班/请假变化后触发一次防抖重算
+	TriggerDispatchRecheck(l.svcCtx)
 	return &out, nil
 }

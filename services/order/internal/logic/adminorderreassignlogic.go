@@ -148,5 +148,7 @@ func (l *AdminOrderReassignLogic) AdminOrderReassign(req *types.AdminOrderReassi
 		Type: "order_changed", OrderId: order.ID, OrderNo: order.OrderNo,
 		BuildingId: order.BuildingID, WorkerId: req.WorkerId, Status: store.StatusDispatched,
 	})
+	// V5.4 事件驱动：在岗/排班/指派变化后触发一次防抖重算
+	TriggerDispatchRecheck(l.svcCtx)
 	return &types.EmptyResponse{}, nil
 }

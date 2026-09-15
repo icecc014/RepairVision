@@ -32,5 +32,7 @@ func (l *AdminLeaveCancelLogic) AdminLeaveCancel(req *types.LeaveIdRequest) (*ty
 	}
 	notifyUsers(l.ctx, l.svcCtx, []int64{item.WorkerId}, "leave",
 		"请假已被管理员撤销", item.StartDate+" 至 "+item.EndDate, 0)
+	// V5.4 事件驱动：在岗/排班/指派变化后触发一次防抖重算
+	TriggerDispatchRecheck(l.svcCtx)
 	return &types.EmptyResponse{}, nil
 }
