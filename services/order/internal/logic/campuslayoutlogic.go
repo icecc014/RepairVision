@@ -13,6 +13,7 @@ import (
 	"order/internal/errs"
 	"order/internal/store"
 	"order/internal/svc"
+	"order/internal/ws"
 	"order/internal/types"
 )
 
@@ -113,5 +114,9 @@ func (l *CampusLayoutLogic) SaveCampusLayout(req *types.CampusLayoutSaveRequest)
 		ID: row.ID, Name: name, IsDefault: 1, Cols: cols, Rows: rows,
 		LayoutJson: sql.NullString{String: layoutJson, Valid: true}, UpdatedAt: time.Now(),
 	}
+	// V5.1+：区域概览保存后广播，宿管端 / 工人端可就地刷新（无需手动重进页面）
+	l.svcCtx.WS.PublishOrder(ws.OrderEvent{
+		Type: "campus_changed", OrderId: 0, OrderNo: "", BuildingId: 0, Status: 0,
+	})
 	return campusToResponse(updated), nil
 }

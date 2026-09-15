@@ -19,7 +19,8 @@ type RepairRecordFilter struct {
 }
 
 const repairRecordColumns = `o.id, o.order_no, o.title, o.description, o.building_id, o.room, o.floor,
-	o.fault_type, o.priority, o.expect_minutes, o.status, o.is_merged, o.main_order_id, o.worker_id,
+	o.fault_type, o.priority, o.expect_minutes, o.status, o.is_merged, o.manual_review, o.external_mark,
+	o.dispatch_locked, o.main_order_id, o.worker_id,
 	o.dispatched_at, o.started_at, o.completed_at, o.reporter_id, o.source, o.created_at, o.updated_at`
 
 // repairRecordWhere 生成筛选条件；withStatus=false 时忽略状态条件（用于按状态汇总）。
