@@ -7,17 +7,10 @@
       <button class="campus-retry" @click="zoomReset">重置</button>
     </div>
     <div v-if="!layout" class="campus-empty">
-      <template v-if="!started">
-        <span>是否加载区域示意图？</span>
-        <button class="campus-retry" @click="startLoad">加载</button>
-      </template>
-      <template v-else-if="loading">正在加载区域概览…</template>
-      <template v-else>
-        <template v-else>
-        <span>{{ errorMsg ? ('加载失败：' + errorMsg) : '管理员尚未绘制区域概览' }}</span>
-        </template>
-        <button class="campus-retry" @click="load">重试</button>
-      </template>
+      <span v-if="loading">正在加载区域概览…</span>
+      <span v-else-if="errorMsg">{{ '加载失败：' + errorMsg }}</span>
+      <span v-else>是否加载区域示意图？</span>
+      <button class="campus-retry" @click="load">{{ loading ? '加载中…' : '加载' }}</button>
     </div>
     <template v-else>
       <svg class="campus-svg" :style="svgStyle" :viewBox="`0 0 ${layout.cols} ${layout.rows}`" preserveAspectRatio="xMidYMid meet">
