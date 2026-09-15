@@ -140,6 +140,10 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 		if err != nil {
 			return nil, errs.Internal(err)
 		}
+		// V5.4 保护线：暂停自动派单期间新工单只入队，由管理员手动指派或恢复自动派单
+		if autoDispatchPaused(l.ctx, l.svcCtx) {
+			logx.WithContext(l.ctx).Infof("auto dispatch paused by guard, order queued: %s", orderNo)
+		} else {
 		best = pickBestOrder(workerResp.Workers, scoreInput{
 			buildings:   buildingResp.Buildings,
 			current:     currentBuilding,
@@ -151,6 +155,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			wDistance:   distW,
 			wLoad:       loadW,
 		}, requiredJobType)
+		}
 	}
 
 	var orderID int64

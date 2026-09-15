@@ -603,3 +603,17 @@ type StartOrderRequest struct {
 type StartOrderResponse struct {
 	Warning string `json:"warning,optional"`
 }
+type DispatchGuardResponse struct {
+	PendingCount       int64   `json:"pendingCount"`
+	OnDutyCount        int64   `json:"onDutyCount"`
+	LongestWaitMinutes int64   `json:"longestWaitMinutes"`
+	WarnRatio          float64 `json:"warnRatio"`
+	GuardRatio         float64 `json:"guardRatio"`
+	WarnHours          float64 `json:"warnHours"`
+	GuardHours         float64 `json:"guardHours"`
+	Level              string  `json:"level"`
+	Paused             bool    `json:"paused"`
+	Mode               string  `json:"mode"`
+	Message            string  `json:"message"`
+	WaitText           string  `json:"waitText"`
+}
