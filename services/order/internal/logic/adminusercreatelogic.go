@@ -41,6 +41,7 @@ func (l *AdminUserCreateLogic) AdminUserCreate(req *types.AdminUserCreateRequest
 		BuildingId:    req.BuildingId,
 		BuildingIds:   req.BuildingIds,
 		MaxConcurrent: req.MaxConcurrent,
+		JobType:       req.JobType,
 	}); err != nil {
 		return nil, rpcBizError(err)
 	}

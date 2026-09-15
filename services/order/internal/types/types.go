@@ -56,6 +56,8 @@ type AdminFaultTypeCreateRequest struct {
 	Code string `json:"code"`
 	Name string `json:"name"`
 	Sort int64  `json:"sort,optional"`
+	Category     string `json:"category,optional"`
+	AutoDispatch int64  `json:"autoDispatch,optional"`
 }
 
 type AdminFaultTypeIdRequest struct {
@@ -81,6 +83,8 @@ type AdminFaultTypeUpdateRequest struct {
 	Name   string `json:"name"`
 	Sort   int64  `json:"sort,optional"`
 	Status int64  `json:"status,optional"`
+	Category     string `json:"category,optional"`
+	AutoDispatch int64  `json:"autoDispatch,optional"`
 }
 
 type AdminBatchDispatchItem struct {
@@ -125,6 +129,7 @@ type AdminUserCreateRequest struct {
 	BuildingId    int64   `json:"buildingId,optional"`
 	BuildingIds   []int64 `json:"buildingIds,optional"`
 	MaxConcurrent int64   `json:"maxConcurrent,optional"`
+	JobType       int64   `json:"jobType,optional"`
 }
 
 type AdminUserIdRequest struct {
@@ -172,6 +177,7 @@ type AdminUserUpdateRequest struct {
 	BuildingId    int64   `json:"buildingId,optional"`
 	BuildingIds   []int64 `json:"buildingIds,optional"`
 	MaxConcurrent int64   `json:"maxConcurrent,optional"`
+	JobType       int64   `json:"jobType,optional"`
 }
 
 type BatchCompleteRequest struct {
@@ -304,6 +310,7 @@ type OrderItem struct {
 	FeedbackComment string  `json:"feedbackComment,optional"`
 	StatusText      string  `json:"statusText"`
 	ManualReview    int64   `json:"manualReview,optional"`
+	ExternalMark    int64   `json:"externalMark,optional"`
 	WorkerId        int64   `json:"workerId,optional"`
 	WorkerName      string  `json:"workerName,optional"`
 	WorkerPhone     string  `json:"workerPhone,optional"`
