@@ -31,7 +31,7 @@ func (l *AdminFaultTypesLogic) AdminFaultTypes() (resp *types.AdminFaultTypeList
 	out := &types.AdminFaultTypeListResponse{List: []types.AdminFaultTypeItem{}}
 	for _, ft := range list {
 		out.List = append(out.List, types.AdminFaultTypeItem{
-			Id: ft.ID, Code: ft.Code, Name: ft.Name, Sort: ft.Sort, Status: ft.Status,
+			Id: ft.ID, Code: ft.Code, Name: ft.Name, Category: ft.Category, AutoDispatch: ft.AutoDispatch, Sort: ft.Sort, Status: ft.Status,
 		})
 	}
 	return out, nil

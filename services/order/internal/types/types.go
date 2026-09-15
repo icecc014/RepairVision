@@ -63,11 +63,13 @@ type AdminFaultTypeIdRequest struct {
 }
 
 type AdminFaultTypeItem struct {
-	Id     int64  `json:"id"`
-	Code   string `json:"code"`
-	Name   string `json:"name"`
-	Sort   int64  `json:"sort"`
-	Status int64  `json:"status"`
+	Id           int64  `json:"id"`
+	Code         string `json:"code"`
+	Name         string `json:"name"`
+	Sort         int64  `json:"sort"`
+	Status       int64  `json:"status"`
+	Category     string `json:"category,optional"`
+	AutoDispatch int64  `json:"autoDispatch,optional"`
 }
 
 type AdminFaultTypeListResponse struct {
@@ -143,6 +145,7 @@ type AdminUserItem struct {
 	MaxConcurrent int64    `json:"maxConcurrent,optional"`
 	Buildings     []string `json:"buildings,optional"`
 	CreatedAt     string   `json:"createdAt"`
+	JobType       int64    `json:"jobType,optional"`
 }
 
 type AdminUserListRequest struct {
@@ -224,9 +227,10 @@ type EmptyResponse struct {
 }
 
 type FaultType struct {
-	Id   int64  `json:"id"`
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Id       int64  `json:"id"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Category string `json:"category,optional"`
 }
 
 type FaultTypeListResponse struct {

@@ -51,6 +51,7 @@ func (l *AdminUsersLogic) AdminUsers(req *types.AdminUserListRequest) (resp *typ
 			Phone:         u.Phone,
 			Role:          u.Role,
 			RoleText:      roleText(u.Role),
+			JobType:       u.JobType,
 			BuildingId:    u.BuildingId,
 			Status:        u.Status,
 			StatusText:    userStatusText(u.Status),

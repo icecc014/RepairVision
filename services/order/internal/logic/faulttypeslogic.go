@@ -30,7 +30,7 @@ func (l *FaultTypesLogic) FaultTypes() (resp *types.FaultTypeListResponse, err e
 	}
 	out := &types.FaultTypeListResponse{List: []types.FaultType{}}
 	for _, ft := range list {
-		out.List = append(out.List, types.FaultType{Id: ft.ID, Code: ft.Code, Name: ft.Name})
+		out.List = append(out.List, types.FaultType{Id: ft.ID, Code: ft.Code, Name: ft.Name, Category: ft.Category})
 	}
 	return out, nil
 }
