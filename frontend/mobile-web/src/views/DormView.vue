@@ -419,6 +419,7 @@ function connectWS() {
   ws.onmessage = () => {
     scheduleRefresh()
     window.dispatchEvent(new Event('rv-notify-refresh'))
+    window.dispatchEvent(new Event('rv-campus-refresh'))
   }
   ws.onclose = () => {
     ws = null

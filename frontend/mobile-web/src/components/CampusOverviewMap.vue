@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { apiCampusMap } from '../api'
 
 interface CampusBlock {
@@ -145,8 +145,18 @@ async function load() {
   }
 }
 
+function reload() {
+  if (props.autoLoad !== false) load()
+}
+
 onMounted(() => {
   if (props.autoLoad !== false) load()
+  // 管理端保存区域概览后会通过 WebSocket 广播，宿管端 / 工人端就地刷新
+  window.addEventListener('rv-campus-refresh', reload)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('rv-campus-refresh', reload)
 })
 
 defineExpose({ load })

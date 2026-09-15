@@ -291,7 +291,11 @@ function connectMapWS() {
   if (!auth.token) return
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://'
   mapWs = new WebSocket(`${proto}${location.host}/ws/orders?token=${encodeURIComponent(auth.token)}`)
-  mapWs.onmessage = () => scheduleMapRefresh()
+  mapWs.onmessage = () => {
+    scheduleMapRefresh()
+    // 管理端保存区域概览后广播，工人端就地刷新校园概览
+    window.dispatchEvent(new Event('rv-campus-refresh'))
+  }
   mapWs.onclose = () => {
     mapWs = null
     setTimeout(connectMapWS, 3000)

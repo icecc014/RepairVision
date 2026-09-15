@@ -125,6 +125,7 @@
               size="small"
               maxlength="16"
               placeholder="如：第二食堂 / 图书馆"
+              @input="setLabelLive"
               @change="setLabel"
             />
           </div>
@@ -218,7 +219,7 @@ const brushLabel = computed(() => (brush.value === 'erase' ? '擦除' : CAMPUS_K
 const needLabel = computed(() => {
   const b = selectedBlock.value
   if (!b) return false
-  if (b.kind === 'building') return !!b.customBuilding
+  // 建筑图元允许直接命名：有关联楼栋时同步楼栋名，未关联时即"自定义命名"
   return b.kind !== 'road'
 })
 const slots = computed(() => {
@@ -245,6 +246,11 @@ function syncSelection() {
   if (editingId.value && !grid.value.blocks.some((b) => b.id === editingId.value)) editingId.value = null
 }
 function labelOf(b: CampusBlock) {
+  // 关联了"建筑信息管理"里的楼栋时，名称跟随楼栋（改名后设计器/三端同步）
+  if (b.kind === 'building' && b.buildingId) {
+    const linked = buildings.value.find((x) => x.id === b.buildingId)
+    if (linked) return linked.name
+  }
   if (b.label) return b.label
   return CAMPUS_KIND_TEXT[b.kind]
 }
@@ -337,7 +343,7 @@ function setBuildingSource(source: string) {
   if (source === 'custom') {
     b.customBuilding = true
     delete b.buildingId
-    b.label = b.label || '自定义建筑'
+    if (!b.label || b.label === '新建筑') b.label = ''
   } else {
     delete b.customBuilding
     b.buildingId = buildings.value[0]?.id
@@ -351,6 +357,16 @@ function setBuilding(id: number) {
   b.buildingId = id
   b.label = buildings.value.find((x) => x.id === id)?.name || b.label
 }
+function setLabelLive(value: string) {
+  const b = selectedBlock.value
+  if (!b) return
+  const next = String(value || '').slice(0, 16)
+  if ((b.label || '') === next) return
+  b.label = next
+  // 建筑图元手动改名即视为"自定义命名"，避免仍被当作待关联楼栋
+  if (b.kind === 'building' && !b.buildingId) b.customBuilding = true
+}
+
 function setLabel(value: string) {
   const b = selectedBlock.value
   if (!b) return
@@ -358,6 +374,7 @@ function setLabel(value: string) {
   if ((b.label || '') === next) return
   pushHistory()
   b.label = next
+  if (b.kind === 'building' && !b.buildingId) b.customBuilding = true
 }
 function setProp(field: 'row' | 'col' | 'rowSpan' | 'colSpan', value: number) {
   const b = selectedBlock.value
