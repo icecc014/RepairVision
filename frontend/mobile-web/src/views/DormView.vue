@@ -243,6 +243,8 @@ const faultGroups = computed(() => {
   const order: Array<{ key: string; label: string }> = [
     { key: 'electric', label: '电维修' },
     { key: 'water', label: '水维修' },
+    { key: 'masonry', label: '泥瓦维修' },
+    { key: 'wood', label: '木维修' },
     { key: 'other', label: '其他' },
   ]
   return order

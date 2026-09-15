@@ -71,28 +71,27 @@ export function emptyCampus(cols = 40, rows = 30): CampusGrid {
 }
 
 // 示例布局：两排建筑 + 中间主路 + 两条支路 + 校门 + 广场（便于管理员快速起步）
+// 示例布局（V6 规模）：16 栋宿舍楼（A1~A8 / B1~B8）+ 主干道 2 条 + 纵向支路 6 条 + 广场 + 校门
 export function defaultCampus(cols = 40, rows = 30): CampusGrid {
   const grid = emptyCampus(cols, rows)
   const push = (kind: CampusKind, row: number, col: number, rowSpan = 1, colSpan = 1, label = '') => {
     const block = makeCampusBlock(kind, row, col, rowSpan, colSpan, label)
     if (campusInBounds(grid, block) && campusAreaFree(grid, block)) grid.blocks.push(block)
   }
-  // 主干道（横向）+ 两条支路（纵向）
-  push('road', 13, 0, 2, cols)
-  push('road', 0, 18, rows, 2)
-  // 上排建筑
-  push('building', 4, 4, 5, 8, '1号宿舍楼')
-  push('building', 4, 22, 5, 8, '2号宿舍楼')
-  // 下排建筑
-  push('building', 19, 4, 5, 6, '第二食堂')
-  push('building', 19, 14, 5, 6, '图书馆')
-  push('building', 19, 24, 5, 8, '体育馆')
-  // 广场绿地 + 校门
-  push('green', 4, 14, 5, 4, '中心广场')
-  push('gate', 0, 8, 1, 3, '北门')
+  push('road', 12, 0, 2, cols)
+  push('road', 26, 0, 2, cols)
+  for (let k = 0; k < 6; k++) {
+    push('road', 0, 3 + k * 7, rows, 1)
+  }
+  for (let n = 0; n < 8; n++) {
+    const col = 4 + n * 4
+    push('building', 3, col, 5, 3, `A${n + 1} 宿舍楼`)
+    push('building', 17, col, 5, 3, `B${n + 1} 宿舍楼`)
+  }
+  push('green', 3, 36, 5, 3, '中心广场')
+  push('gate', 0, 6, 1, 3, '北门')
   return grid
 }
-
 export function parseCampus(json?: string | null): CampusGrid | null {
   if (!json) return null
   try {

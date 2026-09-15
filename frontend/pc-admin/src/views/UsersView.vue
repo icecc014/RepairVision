@@ -96,7 +96,9 @@
           <el-select v-model="form.jobType" style="width: 100%">
             <el-option label="电工（只接电类工单）" :value="1" />
             <el-option label="水工（只接水类工单）" :value="2" />
-            <el-option label="通用（电、水都可接）" :value="0" />
+            <el-option label="泥瓦工（只接泥瓦类工单）" :value="3" />
+            <el-option label="木工（只接木类工单）" :value="4" />
+            <el-option label="通用（各类都可接）" :value="0" />
           </el-select>
         </el-form-item>
             </el-form>
@@ -317,6 +319,8 @@ async function enable(row: AdminUser) {
 function jobTypeText(jobType?: number) {
   if (jobType === 1) return '电工'
   if (jobType === 2) return '水工'
+  if (jobType === 3) return '泥瓦工'
+  if (jobType === 4) return '木工'
   return '通用'
 }
 

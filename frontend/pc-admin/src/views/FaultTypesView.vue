@@ -56,6 +56,8 @@
           <el-select v-model="form.category" style="width: 100%">
             <el-option label="电维修（派给电工）" value="electric" />
             <el-option label="水维修（派给水工）" value="water" />
+            <el-option label="泥瓦维修（派给泥瓦工）" value="masonry" />
+            <el-option label="木维修（派给木工）" value="wood" />
             <el-option label="其他（不自动派单）" value="other" />
           </el-select>
           <div class="form-tip">电 / 水类工单自动派给对应工种</div>
@@ -173,12 +175,16 @@ async function enable(row: AdminFaultType) {
 function categoryText(category?: string) {
   if (category === 'electric') return '电维修'
   if (category === 'water') return '水维修'
+  if (category === 'masonry') return '泥瓦维修'
+  if (category === 'wood') return '木维修'
   return '其他'
 }
 
 function categoryTagType(category?: string) {
   if (category === 'electric') return 'warning'
   if (category === 'water') return 'primary'
+  if (category === 'masonry') return 'success'
+  if (category === 'wood') return 'info'
   return 'info'
 }
 onMounted(load)
