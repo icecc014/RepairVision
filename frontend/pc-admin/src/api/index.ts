@@ -404,6 +404,31 @@ export interface DutyOverview {
   list: DutyStatusItem[]
 }
 
+export interface CampusDistanceBuilding {
+  buildingId: number
+  name: string
+  entryCount: number
+  connected: boolean
+  maxMeters: number
+}
+
+export interface CampusDistancePair {
+  fromId: number
+  toId: number
+  meters: number
+}
+
+export interface CampusDistance {
+  gridMeters: number
+  maxMeters: number
+  roadCells: number
+  buildings: CampusDistanceBuilding[]
+  pairs: CampusDistancePair[]
+}
+
+export async function apiAdminCampusDistances(): Promise<CampusDistance> {
+  return http.get('/admin/campus-layout/distances')
+}
 export async function apiAdminWorkSettings(): Promise<WorkSettings> {
   return http.get('/admin/work-settings')
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="map-page">
     <div class="map-toolbar">
-      <span class="map-title">2D 楼栋总览</span>
+      <span class="map-title">我的维修楼栋（按实际派单）</span>
       <div class="day-chips">
         <button
           v-for="d in dayOptions"
@@ -19,7 +19,7 @@
 
     <div class="campus-card">
       <div class="campus-head">
-        <span class="campus-title">校园概览</span>
+        <span class="campus-title">校园概览（我在哪 / 楼与楼多远）</span>
         <button class="mini-btn" @click="showCampus = !showCampus">{{ showCampus ? '收起' : '展开' }}</button>
       </div>
       <CampusOverviewMap v-if="showCampus" :buildings="map.buildings" :highlight-building-id="selectedBuilding?.id" />
@@ -50,7 +50,7 @@
     </div>
     <div v-else-if="!loading" class="rv-empty">
       <div class="rv-empty-icon">🗺️</div>
-      <div class="rv-empty-text">暂无可管理的楼栋</div>
+      <div class="rv-empty-text">当前没有派给你的工单，暂无需要前往的楼栋</div>
     </div>
 
     <div v-if="selectedBuilding" class="detail-card">
@@ -104,7 +104,7 @@ const dayOptions = [1, 3, 7, 30]
 const days = ref(Number(localStorage.getItem('rv-days') || 3))
 const selectedBuilding = ref<WorkerMapBuilding | null>(null)
 const show3D = ref(false)
-const showCampus = ref(false)
+const showCampus = ref(true)
 const actingType = ref('')
 
 const stageWidth = Math.max(Math.min((window.innerWidth || 390) - 28, 420), 300)

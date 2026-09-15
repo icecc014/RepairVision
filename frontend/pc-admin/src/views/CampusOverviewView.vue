@@ -94,6 +94,37 @@
         </div>
       </section>
 
+      <section class="panel distances">
+        <div class="panel-title">路网与距离</div>
+        <p class="dist-tip">
+          比例尺：1 格 = {{ distances.gridMeters }} 米 · 道路格 {{ distances.roadCells }} 个 ·
+          最远建筑间距 {{ distances.maxMeters }} 米（派单距离即按路网最短路计算）
+        </p>
+        <el-table :data="distances.buildings" size="small" border>
+          <el-table-column prop="name" label="建筑" min-width="130" />
+          <el-table-column label="接入路网" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.connected ? 'success' : 'info'" size="small">{{ row.connected ? '已接入' : '未接入' }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="entryCount" label="入口格" width="90" align="center" />
+          <el-table-column label="最远通勤" width="110" align="center">
+            <template #default="{ row }">{{ row.connected ? row.maxMeters + ' 米' : '回退欧氏' }}</template>
+          </el-table-column>
+        </el-table>
+        <p v-if="distances.pairs.length" class="dist-tip" style="margin-top: 10px">建筑间路网距离（米）</p>
+        <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border>
+          <el-table-column label="起点" min-width="120">
+            <template #default="{ row }">{{ nameOfBuilding(row.fromId) }}</template>
+          </el-table-column>
+          <el-table-column label="终点" min-width="120">
+            <template #default="{ row }">{{ nameOfBuilding(row.toId) }}</template>
+          </el-table-column>
+          <el-table-column label="路网距离" width="110" align="center">
+            <template #default="{ row }">{{ row.meters }} 米</template>
+          </el-table-column>
+        </el-table>
+      </section>
       <section class="panel props">
         <div class="panel-title">图元属性</div>
         <template v-if="selectedBlock">
@@ -176,8 +207,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { AdminBuilding } from '../api'
-import { apiAdminBuildings, apiAdminCampusLayout, apiSaveCampusLayout } from '../api'
+import type { AdminBuilding, CampusDistance } from '../api'
+import {
+  apiAdminBuildings,
+  apiAdminCampusDistances,
+  apiAdminCampusLayout,
+  apiSaveCampusLayout,
+} from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import {
   CAMPUS_KINDS,
@@ -213,6 +249,25 @@ const buildings = ref<AdminBuilding[]>([])
 const saving = ref(false)
 const undoStack = ref<CampusBlock[][]>([])
 const redoStack = ref<CampusBlock[][]>([])
+const distances = ref<CampusDistance>({
+  gridMeters: 10,
+  maxMeters: 0,
+  roadCells: 0,
+  buildings: [],
+  pairs: [],
+})
+
+async function loadDistances() {
+  try {
+    distances.value = await apiAdminCampusDistances()
+  } catch {
+    // 路网距离面板失败不阻塞设计器
+  }
+}
+
+function nameOfBuilding(id: number) {
+  return distances.value.buildings.find((b) => b.buildingId === id)?.name || `#${id}`
+}
 
 const selectedBlock = computed(() => grid.value.blocks.find((b) => b.id === selectedId.value) || null)
 const brushLabel = computed(() => (brush.value === 'erase' ? '擦除' : CAMPUS_KIND_TEXT[brush.value as CampusKind] || ''))
@@ -579,6 +634,7 @@ async function save() {
       layoutJson: serializeCampus(grid.value),
     })
     ElMessage.success('区域概览已保存，宿管端与工人端可查看')
+    loadDistances()
   } catch (err) {
     ElMessage.error((err as Error).message)
   } finally {
@@ -587,6 +643,7 @@ async function save() {
 }
 onMounted(async () => {
   window.addEventListener('pointerup', endDrag)
+  loadDistances()
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('keydown', onKeyDown)
   try {
@@ -604,6 +661,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.distances {
+  margin-top: 16px;
+}
+.dist-tip {
+  margin: 0 0 10px;
+  color: #5a6a85;
+  font-size: 12px;
+  line-height: 1.6;
+}
 .panel {
   padding: 16px 18px;
   margin-bottom: 16px;
