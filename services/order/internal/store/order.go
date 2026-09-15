@@ -29,6 +29,7 @@ type Order struct {
 	Priority      int64         `db:"priority"`
 	ExpectMinutes int64         `db:"expect_minutes"`
 	IsMerged      int64         `db:"is_merged"`
+	ManualReview  int64         `db:"manual_review"`
 	MainOrderID   sql.NullInt64 `db:"main_order_id"`
 	WorkerID      sql.NullInt64 `db:"worker_id"`
 	DispatchedAt  sql.NullTime  `db:"dispatched_at"`
@@ -46,7 +47,7 @@ type WorkerLoad struct {
 }
 
 const orderColumns = `id, order_no, title, description, building_id, room, floor, fault_type,
-    priority, expect_minutes, status, is_merged, main_order_id, worker_id,
+    priority, expect_minutes, status, is_merged, manual_review, main_order_id, worker_id,
     dispatched_at, started_at, completed_at, reporter_id, source, created_at, updated_at`
 const orderBase = "select " + orderColumns + " from orders "
 
@@ -137,10 +138,10 @@ func InsertOrder(ctx context.Context, conn sqlx.Session, o *Order) (int64, error
 	}
 	result, err := conn.ExecCtx(ctx,
 		`insert into orders(order_no, title, description, building_id, room, floor, fault_type,
-            priority, expect_minutes, status, is_merged, main_order_id, worker_id, reporter_id, source)
+            priority, expect_minutes, status, is_merged, manual_review, main_order_id, worker_id, reporter_id, source)
          values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		o.OrderNo, o.Title, o.Description, o.BuildingID, o.Room, o.Floor, o.FaultType,
-		o.Priority, o.ExpectMinutes, o.Status, o.IsMerged, nullableInt64(o.MainOrderID),
+		o.Priority, o.ExpectMinutes, o.Status, o.IsMerged, o.ManualReview, nullableInt64(o.MainOrderID),
 		nullableInt64(o.WorkerID), o.ReporterID, o.Source)
 	if err != nil {
 		return 0, err
