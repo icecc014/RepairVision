@@ -403,6 +403,28 @@ export async function apiUpdateWorkSettings(payload: Partial<WorkSettings>): Pro
   return http.post('/admin/work-settings', payload)
 }
 
+export interface DispatchGuard {
+  pendingCount: number
+  onDutyCount: number
+  longestWaitMinutes: number
+  warnRatio: number
+  guardRatio: number
+  warnHours: number
+  guardHours: number
+  level: string
+  paused: boolean
+  mode: string
+  message: string
+  waitText: string
+}
+
+export async function apiAdminDispatchGuard(): Promise<DispatchGuard> {
+  return http.get('/admin/dispatch-guard')
+}
+
+export async function apiResumeAutoDispatch(): Promise<DispatchGuard> {
+  return http.post('/admin/dispatch-guard/resume', {})
+}
 export async function apiAdminDutyOverview(): Promise<DutyOverview> {
   return http.get('/admin/duty-overview')
 }

@@ -19,6 +19,17 @@
       </div>
     </section>
 
+    <section v-if="guard.level !== 'ok' || guard.paused" class="guard-banner" :class="guard.paused ? 'is-guard' : 'is-warn'">
+      <div class="guard-text">
+        <strong>{{ guard.paused ? '人工处置模式（自动派单已暂停）' : '积压预警' }}</strong>
+        <span>{{ guard.message }}</span>
+        <span class="guard-meta">
+          待派 {{ guard.pendingCount }} 单 · 在岗 {{ guard.onDutyCount }} 人 · 最长等待 {{ guard.waitText }} ·
+          预警线 {{ guard.warnRatio }}× 在岗 / 保护线 {{ guard.guardRatio }}× 在岗
+        </span>
+      </div>
+      <el-button v-if="guard.paused" type="primary" size="small" @click="resumeDispatch">恢复自动派单</el-button>
+    </section>
     <section class="panel filter-panel">
       <div class="panel-title">筛选条件</div>
       <div class="filter-row">
@@ -38,6 +49,9 @@
         </el-radio-group>
         <el-button type="primary" @click="load">查询</el-button>
         <el-button @click="reset">重置</el-button>
+        <el-tag :type="guard.paused ? 'danger' : 'success'" effect="plain" size="small">
+          派单模式：{{ guard.mode === 'manual' ? '人工处置' : '自动派单' }}
+        </el-tag>
         <el-button type="success" plain :disabled="todoCount === 0" :loading="batching" @click="runBatchDispatch">
           批量派单（待派 {{ todoCount }}）
         </el-button>
@@ -177,8 +191,17 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { AdminUser, OrderItem } from '../api'
-import { apiAdminBatchDispatch, apiAdminOrderExternal, apiAdminOrderReassign, apiAdminOrders, apiAdminStats, apiAdminUsers } from '../api'
+import type { AdminUser, DispatchGuard, OrderItem } from '../api'
+import {
+  apiAdminBatchDispatch,
+  apiAdminDispatchGuard,
+  apiAdminOrderExternal,
+  apiAdminOrderReassign,
+  apiAdminOrders,
+  apiAdminStats,
+  apiAdminUsers,
+  apiResumeAutoDispatch,
+} from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -197,6 +220,43 @@ const assignTarget = ref<OrderItem | null>(null)
 const assignWorkerId = ref<number | null>(null)
 const detailVisible = ref(false)
 const detailRow = ref<OrderItem | null>(null)
+const guard = ref<DispatchGuard>({
+  pendingCount: 0,
+  onDutyCount: 0,
+  longestWaitMinutes: 0,
+  warnRatio: 3,
+  guardRatio: 5,
+  warnHours: 2,
+  guardHours: 4,
+  level: 'ok',
+  paused: false,
+  mode: 'auto',
+  message: '',
+  waitText: '',
+})
+
+async function loadGuard() {
+  try {
+    guard.value = await apiAdminDispatchGuard()
+  } catch {
+    // 保护状态查询失败不阻塞工单列表
+  }
+}
+
+async function resumeDispatch() {
+  try {
+    await ElMessageBox.confirm('确认已处理积压（增援 / 调班 / 外援或手动指派）并恢复自动派单？', '恢复自动派单')
+  } catch {
+    return
+  }
+  try {
+    guard.value = await apiResumeAutoDispatch()
+    ElMessage.success('已恢复自动派单')
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
 const query = reactive({ status: 0, buildingText: '', days: 3 })
 const auth = useAuthStore()
 let ws: WebSocket | null = null
@@ -339,6 +399,7 @@ function scheduleRefresh() {
   refreshTimer = setTimeout(() => {
     load()
     loadStats()
+    loadGuard()
   }, 350)
 }
 
@@ -359,6 +420,7 @@ function connectWS() {
 onMounted(() => {
   load()
   loadStats()
+  loadGuard()
   loadWorkers()
   connectWS()
 })
@@ -514,6 +576,33 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
+.guard-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+.guard-banner.is-warn {
+  background: var(--rv-grad-4);
+}
+.guard-banner.is-guard {
+  background: var(--rv-grad-2);
+}
+.guard-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #2b3445;
+  font-size: 13px;
+}
+.guard-meta {
+  color: #5a6a85;
+  font-size: 12px;
+}
 .pager {
   display: flex;
   justify-content: flex-end;
