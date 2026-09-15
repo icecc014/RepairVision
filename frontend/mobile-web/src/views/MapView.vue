@@ -1,7 +1,7 @@
 <template>
   <div class="map-page">
     <div class="map-toolbar">
-      <span class="map-title">我的维修楼栋（按实际派单）</span>
+      <span class="map-title">我的维修楼栋</span>
       <div class="day-chips">
         <button
           v-for="d in dayOptions"
@@ -19,7 +19,7 @@
 
     <div class="campus-card">
       <div class="campus-head">
-        <span class="campus-title">校园概览（我在哪 / 楼与楼多远）</span>
+        <span class="campus-title">区域概览</span>
         <button class="mini-btn" @click="showCampus = !showCampus">{{ showCampus ? '收起' : '展开' }}</button>
       </div>
       <CampusOverviewMap v-if="showCampus" :buildings="map.buildings" :highlight-building-id="selectedBuilding?.id" />

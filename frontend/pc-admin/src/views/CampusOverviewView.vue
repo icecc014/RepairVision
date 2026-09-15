@@ -73,9 +73,10 @@
                 v-for="b in grid.blocks"
                 :key="b.id"
                 class="block"
+                draggable="false"
                 :class="[`k-${b.kind}`, { selected: selectedId === b.id, editing: editingId === b.id }]"
                 :style="blockStyle(b)"
-                @pointerdown.stop="onBlockDown(b, $event)"
+                @pointerdown.stop.prevent="onBlockDown(b, $event)"
                 @dblclick.stop="enterEdit(b)"
               >
                 <span class="block-label">{{ labelOf(b) }}</span>
@@ -146,6 +147,7 @@
               <div v-if="!selectedBlock.customBuilding" class="prop-row">
                 <span class="prop-label">关联楼栋</span>
                 <el-select :model-value="selectedBlock.buildingId" size="small" style="width: 100%" @change="setBuilding">
+                <el-option v-if="buildings.length === 0" label="楼栋列表加载失败，请刷新页面重试" :value="0" disabled />
                   <el-option v-for="b in buildings" :key="b.id" :label="`${b.name}（${b.code}）`" :value="b.id" />
                 </el-select>
               </div>
@@ -162,7 +164,16 @@
               />
             </div>
             <div class="prop-row">
-              <span class="prop-label">起始格（行 / 列）</span>
+              <span class="prop-label">操作</span>
+            <div class="prop-pair">
+              <el-button size="small" @click="editingId = editingId === selectedBlock.id ? null : selectedBlock.id">
+                {{ editingId === selectedBlock.id ? '完成编辑' : '进入编辑' }}
+              </el-button>
+              <el-button size="small" type="danger" plain @click="removeSelected">删除图元</el-button>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">起始格（行 / 列）</span>
               <div class="prop-pair">
                 <el-input-number :model-value="selectedBlock.row" :min="0" :max="grid.rows - 1" size="small" @change="(v: number) => setProp('row', v)" />
                 <el-input-number :model-value="selectedBlock.col" :min="0" :max="grid.cols - 1" size="small" @change="(v: number) => setProp('col', v)" />
@@ -606,7 +617,24 @@ async function load() {
     name.value = data.name || '校园总览'
     cols.value = data.cols || 40
     rows.value = data.rows || 30
-    const parsed = parseCampus(data.layoutJson)
+    let parsed = parseCampus(data.layoutJson)
+    if (!parsed && data.layoutJson && data.layoutJson.length > 2) {
+      // 兜底：若图元相互重叠导致严格解析失败，改用宽松解析，避免整页空白
+      try {
+        const raw = JSON.parse(data.layoutJson) as { cols?: number; rows?: number; blocks?: CampusBlock[] }
+        if (raw && Array.isArray(raw.blocks)) {
+          parsed = {
+            version: 1,
+            cols: Number(raw.cols) || cols.value,
+            rows: Number(raw.rows) || rows.value,
+            blocks: raw.blocks.filter((b) => b && b.kind),
+          }
+          ElMessage.warning('概览中存在重叠图元，已按宽松模式加载（建议修正后重新保存）')
+        }
+      } catch {
+        // ignore
+      }
+    }
     grid.value = parsed || emptyCampus(cols.value, rows.value)
     selectedId.value = null
     editingId.value = null
@@ -782,6 +810,8 @@ onUnmounted(() => {
   overflow: auto;
 }
 .canvas {
+  user-select: none;
+  -webkit-user-drag: none;
   position: relative;
   width: 100%;
   min-height: 420px;
