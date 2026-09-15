@@ -106,18 +106,29 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 	type slot struct {
 		worker *workerclient.WorkerInfo
 	}
+	// V5.4：取消硬性并发上限，每个在岗工人只占一个指派槽位；
+	// 负载改由评分中的动态惩罚体现（高于人均 1.2 倍才扣分），不再因"已满"而拒派。
 	slots := make([]slot, 0)
+	seenWorker := map[int64]bool{}
 	for _, ws := range workerByBuilding {
 		for _, w := range ws {
-			if !workerCanTake(w, countLoads) {
+			if seenWorker[w.Id] || !workerCanTake(w, countLoads) {
 				continue
 			}
-			avail := maxConcurrentOf(w) - countLoads[w.Id]
-			for i := int64(0); i < avail; i++ {
+			seenWorker[w.Id] = true
+			// 软上限：并发上限 + softExtraSlots 个槽位。超过后不再拒派，
+			// 而是由评分中的动态负载惩罚降低该工人的优先级。
+			for i := int64(0); i < maxConcurrentOf(w)+softExtraSlots; i++ {
 				slots = append(slots, slot{worker: w})
 			}
 		}
 	}
+	slotWorkers := make([]*workerclient.WorkerInfo, 0, len(slots))
+	for _, s := range slots {
+		slotWorkers = append(slotWorkers, s.worker)
+	}
+	roadNet := currentRoadNet(l.ctx, l.svcCtx)
+	avgLoad := avgLoadOf(minuteLoads, slotWorkers)
 
 	type planOrder struct {
 		order    store.Order
@@ -172,8 +183,17 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 			if !containsWorker(workers, slots[c].worker.Id) {
 				continue
 			}
-			score := scoreWorkerForOrder(slots[c].worker, buildingResp.Buildings, po.building,
-				faultNames[po.order.FaultType], minuteLoads, wSkill, wDistance, wLoad)
+			score := scoreWorkerForOrder(slots[c].worker, scoreInput{
+				buildings:   buildingResp.Buildings,
+				current:     po.building,
+				faultName:   faultNames[po.order.FaultType],
+				minuteLoads: minuteLoads,
+				roadNet:     roadNet,
+				avgLoad:     avgLoad,
+				wSkill:      wSkill,
+				wDistance:   wDistance,
+				wLoad:       wLoad,
+			})
 			cost[i][c] = int64(math.Round((1 - score.totalScore) * 10000))
 		}
 	}
@@ -195,8 +215,17 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 			continue
 		}
 		worker := slots[col].worker
-		score := scoreWorkerForOrder(worker, buildingResp.Buildings, po.building,
-			faultNames[po.order.FaultType], minuteLoads, wSkill, wDistance, wLoad)
+		score := scoreWorkerForOrder(worker, scoreInput{
+			buildings:   buildingResp.Buildings,
+			current:     po.building,
+			faultName:   faultNames[po.order.FaultType],
+			minuteLoads: minuteLoads,
+			roadNet:     roadNet,
+			avgLoad:     avgLoad,
+			wSkill:      wSkill,
+			wDistance:   wDistance,
+			wLoad:       wLoad,
+		})
 		if err := l.commitAssignment(po.order, worker.Id, score); err != nil {
 			if errors.Is(err, errBatchSkip) {
 				remained++

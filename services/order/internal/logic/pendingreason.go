@@ -77,7 +77,7 @@ func enrichPendingReasons(ctx context.Context, svcCtx *svc.ServiceContext, order
 			if !autoDispatch {
 				reasonByOrder[o.ID] = "自动派单已关闭，等待管理员手动派单"
 			} else if !anyAvailable {
-				reasonByOrder[o.ID] = "工人休息或已达最大并发"
+				reasonByOrder[o.ID] = "该楼栋当日无在岗工人（轮休 / 请假）"
 			} else {
 				reasonByOrder[o.ID] = "等待调度系统处理"
 			}

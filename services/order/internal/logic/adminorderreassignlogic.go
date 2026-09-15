@@ -100,14 +100,23 @@ func (l *AdminOrderReassignLogic) AdminOrderReassign(req *types.AdminOrderReassi
 		return nil, errs.Internal(err)
 	}
 	if !workerCanTake(target, countLoads) {
-		return nil, errs.Conflict("目标工人当天休息或已达最大并发，请改派其他工人")
+		return nil, errs.Conflict("目标工人当天休息（轮休 / 请假），请改派其他工人")
 	}
 	minuteLoads, err := store.CountWorkloadByWorkers(l.ctx, l.svcCtx.DB, workerIDs)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	score := scoreWorkerForOrder(target, buildingResp.Buildings, current,
-		faultNames[order.FaultType], minuteLoads, wSkill, wDistance, wLoad)
+	score := scoreWorkerForOrder(target, scoreInput{
+		buildings:   buildingResp.Buildings,
+		current:     current,
+		faultName:   faultNames[order.FaultType],
+		minuteLoads: minuteLoads,
+		roadNet:     currentRoadNet(l.ctx, l.svcCtx),
+		avgLoad:     avgLoadOf(minuteLoads, workerResp.Workers),
+		wSkill:      wSkill,
+		wDistance:   wDistance,
+		wLoad:       wLoad,
+	})
 
 	err = l.svcCtx.DB.TransactCtx(l.ctx, func(txCtx context.Context, session sqlx.Session) error {
 		if order.WorkerID.Valid && order.WorkerID.Int64 > 0 && order.WorkerID.Int64 != req.WorkerId {

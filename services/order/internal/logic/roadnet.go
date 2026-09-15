@@ -40,6 +40,7 @@ type RoadNetwork struct {
 	entries     map[int64][]int
 	isolated    map[int64]bool
 	dist        map[int64]map[int64]float64
+	maxMeters   float64
 }
 
 func cellKey(cols, row, col int) int { return row*cols + col }
@@ -146,6 +147,11 @@ func buildRoadNetwork(layoutJSON string, gridMeters float64) *RoadNetwork {
 				row[to] = float64(best) * net.gridMeters
 			}
 		}
+		for _, d := range row {
+			if d > net.maxMeters {
+				net.maxMeters = d
+			}
+		}
 		net.dist[from] = row
 	}
 	return net
@@ -208,6 +214,14 @@ func (n *RoadNetwork) DistanceBetween(from, to int64) (float64, bool) {
 	}
 	d, ok := row[to]
 	return d, ok
+}
+
+// MaxDistance 返回距离矩阵中的最大值（米），用于归一化距离得分。
+func (n *RoadNetwork) MaxDistance() float64 {
+	if n == nil {
+		return 0
+	}
+	return n.maxMeters
 }
 
 // Buildings 返回参与路网计算的建筑 ID（含孤立建筑）。

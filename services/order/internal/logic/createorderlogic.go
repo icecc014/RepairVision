@@ -136,16 +136,21 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 
 	var best *candidateScore
 	if autoDispatch && !manualReview && len(workerResp.Workers) > 0 {
-		countLoads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
-		if err != nil {
-			return nil, errs.Internal(err)
-		}
 		minuteLoads, err := store.CountWorkloadByWorkers(l.ctx, l.svcCtx.DB, workerIDs(workerResp.Workers))
 		if err != nil {
 			return nil, errs.Internal(err)
 		}
-		best = pickBestOrder(workerResp.Workers, buildingResp.Buildings, currentBuilding, faultType.Name,
-			countLoads, minuteLoads, skillW, distW, loadW, requiredJobType)
+		best = pickBestOrder(workerResp.Workers, scoreInput{
+			buildings:   buildingResp.Buildings,
+			current:     currentBuilding,
+			faultName:   faultType.Name,
+			minuteLoads: minuteLoads,
+			roadNet:     currentRoadNet(l.ctx, l.svcCtx),
+			avgLoad:     avgLoadOf(minuteLoads, workerResp.Workers),
+			wSkill:      skillW,
+			wDistance:   distW,
+			wLoad:       loadW,
+		}, requiredJobType)
 	}
 
 	var orderID int64
