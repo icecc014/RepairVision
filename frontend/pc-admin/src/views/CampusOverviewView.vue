@@ -52,6 +52,7 @@
       </section>
 
       <section class="panel canvas-area">
+        <div v-if="loading" class="hint-line">正在加载服务器上的区域概览…</div>
         <div class="hint-line" :class="{ warn: !brush || !!editingId }">
           {{ editingId ? '编辑模式：只能调整当前图元（拖把手改尺寸 / 拖本体移动）；按 Esc 或点击空白处退出'
             : (brush === 'erase' ? '擦除模式：点击图元即可删除'
@@ -218,7 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminBuilding, CampusDistance } from '../api'
 import {
@@ -260,6 +261,7 @@ const editingId = ref<string | null>(null)
 const canvasRef = ref<HTMLElement | null>(null)
 const buildings = ref<AdminBuilding[]>([])
 const saving = ref(false)
+const loading = ref(false)
 const undoStack = ref<CampusBlock[][]>([])
 const redoStack = ref<CampusBlock[][]>([])
 const distances = ref<CampusDistance>({
@@ -612,6 +614,7 @@ function clearAll() {
   editingId.value = null
 }
 async function load() {
+  loading.value = true
   try {
     const data = await apiAdminCampusLayout()
     name.value = data.name || '校园总览'
@@ -640,8 +643,11 @@ async function load() {
     editingId.value = null
     undoStack.value = []
     redoStack.value = []
+    console.info("[campus] loaded blocks =", grid.value.blocks.length, "cols/rows =", grid.value.cols, grid.value.rows)
   } catch (err) {
-    ElMessage.error((err as Error).message)
+    ElMessage.error("加载区域概览失败：" + (err as Error).message)
+  } finally {
+    loading.value = false
   }
 }
 function reload() {
@@ -676,7 +682,6 @@ onMounted(async () => {
   window.addEventListener('pointerup', endDrag)
   window.addEventListener('pointermove', onPressMove)
   window.addEventListener('pointerup', finishPressDrag)
-  loadDistances()
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('keydown', onKeyDown)
   try {
@@ -684,7 +689,11 @@ onMounted(async () => {
   } catch {
     // 楼栋列表失败不影响绘制
   }
-  load()
+  // 先等组件完全挂载（el-input-number 等会写回 cols/rows），再加载服务器数据，
+  // 避免"挂载过程中的控件事件把刚载入的图元覆盖掉"导致首屏空白。
+  await nextTick()
+  await load()
+  loadDistances()
 })
 onUnmounted(() => {
   window.removeEventListener('pointerup', endDrag)
