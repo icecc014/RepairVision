@@ -114,6 +114,7 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 			Status:        o.Status,
 			StatusText:    statusText(o.Status),
 			ManualReview:  o.ManualReview,
+			ExternalMark:  o.ExternalMark,
 			ReporterId:    o.ReporterID,
 			ReporterName:  userNames[o.ReporterID],
 			Source:        o.Source,

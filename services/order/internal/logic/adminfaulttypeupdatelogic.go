@@ -43,7 +43,17 @@ func (l *AdminFaultTypeUpdateLogic) AdminFaultTypeUpdate(req *types.AdminFaultTy
 	if req.Status == 1 {
 		status = 1
 	}
-	if err := store.UpdateFaultType(l.ctx, l.svcCtx.DB, req.Id, req.Sort, status, name); err != nil {
+	category := normalizeFaultCategory(req.Category)
+	if strings.TrimSpace(req.Category) == "" {
+		category = normalizeFaultCategory(existing.Category)
+	}
+	autoDispatch := int64(0)
+	if req.AutoDispatch != 0 {
+		autoDispatch = 1
+	} else if strings.TrimSpace(req.Category) == "" {
+		autoDispatch = existing.AutoDispatch
+	}
+	if err := store.UpdateFaultTypeFull(l.ctx, l.svcCtx.DB, req.Id, req.Sort, status, name, category, autoDispatch); err != nil {
 		return nil, errs.Internal(err)
 	}
 	return &types.EmptyResponse{}, nil

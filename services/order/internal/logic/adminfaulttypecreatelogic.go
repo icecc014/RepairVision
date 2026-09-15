@@ -31,7 +31,16 @@ func (l *AdminFaultTypeCreateLogic) AdminFaultTypeCreate(req *types.AdminFaultTy
 	if code == "" || name == "" {
 		return nil, errs.BadRequest("编码和名称不能为空")
 	}
-	if _, err := store.CreateFaultType(l.ctx, l.svcCtx.DB, code, name, req.Sort); err != nil {
+	category := normalizeFaultCategory(req.Category)
+	autoDispatch := int64(0)
+	if req.AutoDispatch != 0 {
+		autoDispatch = 1
+	}
+	if strings.TrimSpace(req.Category) == "" {
+		// 兼容旧调用：未传类别时保持自动派单开启的历史行为
+		autoDispatch = 1
+	}
+	if _, err := store.CreateFaultTypeFull(l.ctx, l.svcCtx.DB, code, name, category, autoDispatch, req.Sort); err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			return nil, errs.Conflict("该编码已存在")
 		}
