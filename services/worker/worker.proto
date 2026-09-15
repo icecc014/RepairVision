@@ -26,6 +26,7 @@ message User {
   int64 status = 7;
   repeated int64 building_ids = 8;
   int64 max_concurrent = 9;
+  int64 job_type = 10;
 }
 
 message LoginResponse {
@@ -84,6 +85,7 @@ message CreateUserRequest {
   int64 building_id = 6;
   repeated int64 building_ids = 7;
   int64 max_concurrent = 8;
+  int64 job_type = 9;
 }
 
 message UpdateUserRequest {
@@ -95,6 +97,7 @@ message UpdateUserRequest {
   repeated int64 building_ids = 6;
   int64 status = 7;
   int64 max_concurrent = 8;
+  int64 job_type = 9;
 }
 
 message IdRequest {

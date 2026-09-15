@@ -172,6 +172,7 @@ type User struct {
 	Status        int64                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`
 	BuildingIds   []int64                `protobuf:"varint,8,rep,packed,name=building_ids,json=buildingIds,proto3" json:"building_ids,omitempty"`
 	MaxConcurrent int64                  `protobuf:"varint,9,opt,name=max_concurrent,json=maxConcurrent,proto3" json:"max_concurrent,omitempty"`
+	JobType       int64                  `protobuf:"varint,10,opt,name=job_type,json=jobType,proto3" json:"job_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -265,6 +266,13 @@ func (x *User) GetBuildingIds() []int64 {
 func (x *User) GetMaxConcurrent() int64 {
 	if x != nil {
 		return x.MaxConcurrent
+	}
+	return 0
+}
+
+func (x *User) GetJobType() int64 {
+	if x != nil {
+		return x.JobType
 	}
 	return 0
 }
@@ -763,6 +771,7 @@ type CreateUserRequest struct {
 	BuildingId    int64                  `protobuf:"varint,6,opt,name=building_id,json=buildingId,proto3" json:"building_id,omitempty"`
 	BuildingIds   []int64                `protobuf:"varint,7,rep,packed,name=building_ids,json=buildingIds,proto3" json:"building_ids,omitempty"`
 	MaxConcurrent int64                  `protobuf:"varint,8,opt,name=max_concurrent,json=maxConcurrent,proto3" json:"max_concurrent,omitempty"`
+	JobType       int64                  `protobuf:"varint,9,opt,name=job_type,json=jobType,proto3" json:"job_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -853,6 +862,13 @@ func (x *CreateUserRequest) GetMaxConcurrent() int64 {
 	return 0
 }
 
+func (x *CreateUserRequest) GetJobType() int64 {
+	if x != nil {
+		return x.JobType
+	}
+	return 0
+}
+
 type UpdateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -863,6 +879,7 @@ type UpdateUserRequest struct {
 	BuildingIds   []int64                `protobuf:"varint,6,rep,packed,name=building_ids,json=buildingIds,proto3" json:"building_ids,omitempty"`
 	Status        int64                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`
 	MaxConcurrent int64                  `protobuf:"varint,8,opt,name=max_concurrent,json=maxConcurrent,proto3" json:"max_concurrent,omitempty"`
+	JobType       int64                  `protobuf:"varint,9,opt,name=job_type,json=jobType,proto3" json:"job_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -949,6 +966,13 @@ func (x *UpdateUserRequest) GetStatus() int64 {
 func (x *UpdateUserRequest) GetMaxConcurrent() int64 {
 	if x != nil {
 		return x.MaxConcurrent
+	}
+	return 0
+}
+
+func (x *UpdateUserRequest) GetJobType() int64 {
+	if x != nil {
+		return x.JobType
 	}
 	return 0
 }
@@ -1812,7 +1836,7 @@ const file_worker_proto_rawDesc = "" +
 	"\x04pong\x18\x01 \x01(\tR\x04pong\"F\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xf3\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x8e\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
@@ -1823,7 +1847,9 @@ const file_worker_proto_rawDesc = "" +
 	"buildingId\x12\x16\n" +
 	"\x06status\x18\a \x01(\x03R\x06status\x12!\n" +
 	"\fbuilding_ids\x18\b \x03(\x03R\vbuildingIds\x12%\n" +
-	"\x0emax_concurrent\x18\t \x01(\x03R\rmaxConcurrent\"1\n" +
+	"\x0emax_concurrent\x18\t \x01(\x03R\rmaxConcurrent\x12\x19\n" +
+	"\bjob_type\x18\n" +
+	" \x01(\x03R\ajobType\"1\n" +
 	"\rLoginResponse\x12 \n" +
 	"\x04user\x18\x01 \x01(\v2\f.worker.UserR\x04user\"V\n" +
 	"\x16BuildingWorkersRequest\x12\x1f\n" +
@@ -1855,7 +1881,7 @@ const file_worker_proto_rawDesc = "" +
 	"\x06status\x18\x02 \x01(\x03R\x06status\x12\x18\n" +
 	"\akeyword\x18\x03 \x01(\tR\akeyword\"7\n" +
 	"\x11ListUsersResponse\x12\"\n" +
-	"\x05users\x18\x01 \x03(\v2\f.worker.UserR\x05users\"\xf4\x01\n" +
+	"\x05users\x18\x01 \x03(\v2\f.worker.UserR\x05users\"\x8f\x02\n" +
 	"\x11CreateUserRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x12\n" +
@@ -1865,7 +1891,8 @@ const file_worker_proto_rawDesc = "" +
 	"\vbuilding_id\x18\x06 \x01(\x03R\n" +
 	"buildingId\x12!\n" +
 	"\fbuilding_ids\x18\a \x03(\x03R\vbuildingIds\x12%\n" +
-	"\x0emax_concurrent\x18\b \x01(\x03R\rmaxConcurrent\"\xe4\x01\n" +
+	"\x0emax_concurrent\x18\b \x01(\x03R\rmaxConcurrent\x12\x19\n" +
+	"\bjob_type\x18\t \x01(\x03R\ajobType\"\xff\x01\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -1875,7 +1902,8 @@ const file_worker_proto_rawDesc = "" +
 	"buildingId\x12!\n" +
 	"\fbuilding_ids\x18\x06 \x03(\x03R\vbuildingIds\x12\x16\n" +
 	"\x06status\x18\a \x01(\x03R\x06status\x12%\n" +
-	"\x0emax_concurrent\x18\b \x01(\x03R\rmaxConcurrent\"\x1b\n" +
+	"\x0emax_concurrent\x18\b \x01(\x03R\rmaxConcurrent\x12\x19\n" +
+	"\bjob_type\x18\t \x01(\x03R\ajobType\"\x1b\n" +
 	"\tIdRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"'\n" +
 	"\x13BuildingIdsResponse\x12\x10\n" +
