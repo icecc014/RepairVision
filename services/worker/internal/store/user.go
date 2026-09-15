@@ -121,18 +121,18 @@ func InsertUser(ctx context.Context, conn sqlx.Session, u *User) (int64, error) 
 		u.MaxConcurrent = 3
 	}
 	result, err := conn.ExecCtx(ctx,
-		"insert into users(username, password, role, name, phone, building_id, status, max_concurrent) values(?,?,?,?,?,?,?,?)",
-		u.Username, u.Password, u.Role, u.Name, nullableString(u.Phone), nullableInt64(u.BuildingID), u.Status, u.MaxConcurrent)
+		"insert into users(username, password, role, name, phone, building_id, status, max_concurrent, job_type) values(?,?,?,?,?,?,?,?,?)",
+		u.Username, u.Password, u.Role, u.Name, nullableString(u.Phone), nullableInt64(u.BuildingID), u.Status, u.MaxConcurrent, u.JobType)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
 }
 
-func UpdateUserProfile(ctx context.Context, conn sqlx.Session, id int64, name, phone string, role int64, status int64, maxConcurrent int64, buildingID sql.NullInt64) error {
+func UpdateUserProfile(ctx context.Context, conn sqlx.Session, id int64, name, phone string, role int64, status int64, maxConcurrent int64, buildingID sql.NullInt64, jobType int64) error {
 	_, err := conn.ExecCtx(ctx,
-		"update users set name = ?, phone = ?, role = ?, status = ?, max_concurrent = ?, building_id = ? where id = ?",
-		name, phone, role, status, maxConcurrent, nullableInt64(buildingID), id)
+		"update users set name = ?, phone = ?, role = ?, status = ?, max_concurrent = ?, building_id = ?, job_type = ? where id = ?",
+		name, phone, role, status, maxConcurrent, nullableInt64(buildingID), jobType, id)
 	return err
 }
 

@@ -62,3 +62,14 @@ func workerInfoToPb(u store.User, baseBuildingID int64, skills []store.Skill) *w
 	}
 	return info
 }
+
+// jobTypeFor 规范化工种：仅工人角色保留工种（0 通用 / 1 电工 / 2 水工），其他角色一律归为通用。
+func jobTypeFor(role, jobType int64) int64 {
+	if role != 2 {
+		return 0
+	}
+	if jobType < 0 || jobType > 2 {
+		return 0
+	}
+	return jobType
+}
