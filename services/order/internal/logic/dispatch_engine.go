@@ -39,6 +39,7 @@ type scoreInput struct {
 	minuteLoads map[int64]int64
 	roadNet     *RoadNetwork
 	avgLoad     float64
+	onLeave     map[int64]bool
 	wSkill      float64
 	wDistance   float64
 	wLoad       float64
@@ -211,6 +212,9 @@ func pickBestOrder(
 		if !workerCanTake(w, nil) {
 			continue
 		}
+		if in.onLeave[w.Id] {
+			continue // 当日已批准请假：不参与自动派单
+		}
 		// V5.2 工种匹配：电类只派电工/通用，水类只派水工/通用
 		if !jobTypeAllowed(w.JobType, requiredJobType) {
 			continue
@@ -249,4 +253,31 @@ func jobTypeAllowed(workerJobType, required int64) bool {
 		return true
 	}
 	return workerJobType == required
+}
+
+// jobTypeText 工种中文文案。
+func jobTypeText(jobType int64) string {
+	switch jobType {
+	case 1:
+		return "电工"
+	case 2:
+		return "水工"
+	default:
+		return "通用"
+	}
+}
+
+// onLeaveWorkerIDs 批量查询候选工人的请假状态，把当日已批准请假的工人排除出候选集。
+func onLeaveWorkerIDs(ctx context.Context, svcCtx *svc.ServiceContext, workers []*workerclient.WorkerInfo) map[int64]bool {
+	result := make(map[int64]bool)
+	for _, w := range workers {
+		status, err := svcCtx.WorkerRpc.GetDutyStatus(ctx, &workerclient.DutyStatusRequest{WorkerId: w.Id})
+		if err != nil {
+			continue
+		}
+		if status.GetOnLeave() {
+			result[w.Id] = true
+		}
+	}
+	return result
 }

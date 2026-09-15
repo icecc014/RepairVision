@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -69,6 +70,36 @@ func (l *AdminWorkerBoardLogic) AdminWorkerBoard() (resp *types.AdminWorkerBoard
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
+	// V5.4：在途工时、当前所在工单/楼栋与在岗状态（白班 ∧ 时段内 ∧ 未请假 ∧ 启用）
+	loadMinutes, err := store.CountWorkloadByWorkers(l.ctx, l.svcCtx.DB, workerIDs)
+	if err != nil {
+		return nil, errs.Internal(err)
+	}
+	activeOrders, err := store.ListActiveOrdersByWorkers(l.ctx, l.svcCtx.DB, workerIDs)
+	if err != nil {
+		return nil, errs.Internal(err)
+	}
+	currentOrder := make(map[int64]store.WorkerActiveOrder)
+	for _, ao := range activeOrders {
+		if _, ok := currentOrder[ao.WorkerID]; !ok {
+			currentOrder[ao.WorkerID] = ao
+		}
+	}
+	dutyStatus := make(map[int64]*workerclient.DutyStatusResponse, len(workerIDs))
+	for _, id := range workerIDs {
+		status, err := l.svcCtx.WorkerRpc.GetDutyStatus(l.ctx, &workerclient.DutyStatusRequest{WorkerId: id})
+		if err != nil {
+			continue
+		}
+		dutyStatus[id] = status
+	}
+	avgLoad := 0.0
+	for _, u := range usersResp.Users {
+		avgLoad += float64(loadMinutes[u.Id])
+	}
+	if len(usersResp.Users) > 0 {
+		avgLoad /= float64(len(usersResp.Users))
+	}
 
 	resp = &types.AdminWorkerBoardResponse{List: make([]types.AdminWorkerBoardItem, 0, len(usersResp.Users))}
 	for _, u := range usersResp.Users {
@@ -86,7 +117,23 @@ func (l *AdminWorkerBoardLogic) AdminWorkerBoard() (resp *types.AdminWorkerBoard
 			TodayShift:     shift,
 			ActiveOrders:   active,
 			TodayCompleted: completedCounts[u.Id],
-			Available:      shift != shiftOff && active < maxConcurrent,
+			JobType:        u.JobType,
+			JobTypeText:    jobTypeText(u.JobType),
+			LoadMinutes:    loadMinutes[u.Id],
+		}
+		if avgLoad > 0 {
+			item.LoadDeviation = math.Round((float64(loadMinutes[u.Id])-avgLoad)/avgLoad*10000) / 10000
+		}
+		if status := dutyStatus[u.Id]; status != nil {
+			item.OnDuty = status.OnDuty
+			item.DutyReason = status.Reason
+		}
+		// V5.4：取消硬性并发上限，可派 = 在岗（负载只影响优先级）
+		item.Available = item.OnDuty
+		if ao, ok := currentOrder[u.Id]; ok {
+			item.CurrentBuildingId = ao.BuildingID
+			item.CurrentBuildingName = buildingNames[ao.BuildingID]
+			item.CurrentOrderNo = ao.OrderNo
 		}
 		for _, bid := range u.BuildingIds {
 			if name := buildingNames[bid]; name != "" {

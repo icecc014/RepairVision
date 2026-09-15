@@ -151,6 +151,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest) (resp *typ
 			minuteLoads: minuteLoads,
 			roadNet:     currentRoadNet(l.ctx, l.svcCtx),
 			avgLoad:     avgLoadOf(minuteLoads, workerResp.Workers),
+			onLeave:     onLeaveWorkerIDs(l.ctx, l.svcCtx, workerResp.Workers),
 			wSkill:      skillW,
 			wDistance:   distW,
 			wLoad:       loadW,

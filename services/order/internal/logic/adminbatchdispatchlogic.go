@@ -110,9 +110,14 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 	// 负载改由评分中的动态惩罚体现（高于人均 1.2 倍才扣分），不再因"已满"而拒派。
 	slots := make([]slot, 0)
 	seenWorker := map[int64]bool{}
+	allWorkers := make([]*workerclient.WorkerInfo, 0)
+	for _, ws := range workerByBuilding {
+		allWorkers = append(allWorkers, ws...)
+	}
+	leaveSet := onLeaveWorkerIDs(l.ctx, l.svcCtx, allWorkers)
 	for _, ws := range workerByBuilding {
 		for _, w := range ws {
-			if seenWorker[w.Id] || !workerCanTake(w, countLoads) {
+			if seenWorker[w.Id] || !workerCanTake(w, countLoads) || leaveSet[w.Id] {
 				continue
 			}
 			seenWorker[w.Id] = true

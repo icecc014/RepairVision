@@ -374,6 +374,15 @@ type AdminWorkerBoardItem struct {
 	ActiveOrders   int64    `json:"activeOrders"`
 	TodayCompleted int64    `json:"todayCompleted"`
 	Available      bool     `json:"available"`
+	OnDuty             bool    `json:"onDuty"`
+	DutyReason         string  `json:"dutyReason"`
+	JobType            int64   `json:"jobType"`
+	JobTypeText        string  `json:"jobTypeText"`
+	LoadMinutes        int64   `json:"loadMinutes"`
+	LoadDeviation      float64 `json:"loadDeviation"`
+	CurrentBuildingId  int64   `json:"currentBuildingId"`
+	CurrentBuildingName string `json:"currentBuildingName"`
+	CurrentOrderNo     string  `json:"currentOrderNo"`
 }
 
 type AdminWorkerBoardResponse struct {
