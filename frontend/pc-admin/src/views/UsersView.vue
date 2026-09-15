@@ -21,6 +21,9 @@
         <el-table-column prop="username" label="账号" width="130" />
         <el-table-column prop="name" label="姓名" width="130" />
         <el-table-column prop="roleText" label="角色" width="110" />
+        <el-table-column label="工种" width="110">
+          <template #default="{ row }">{{ row.role === 2 ? jobTypeText(row.jobType) : '—' }}</template>
+        </el-table-column>
         <el-table-column prop="phone" label="手机" width="130">
           <template #default="{ row }">{{ row.phone || '—' }}</template>
         </el-table-column>
@@ -58,6 +61,7 @@
         <el-form-item label="账号">
           <el-input v-model="form.username" :disabled="!!editingId" placeholder="登录账号" />
         </el-form-item>
+
         <el-form-item v-if="!editingId" label="初始密码">
           <el-input v-model="form.password" placeholder="至少6位" />
         </el-form-item>
@@ -87,6 +91,13 @@
         <el-form-item v-if="form.role === 2" label="最大并发">
           <el-input-number v-model="form.maxConcurrent" :min="1" :max="10" style="width: 100%" />
           <div class="form-tip">在途工单达到该值后不再自动派单</div>
+        </el-form-item>
+        <el-form-item v-if="form.role === 2" label="工种">
+          <el-select v-model="form.jobType" style="width: 100%">
+            <el-option label="电工（只接电类工单）" :value="1" />
+            <el-option label="水工（只接水类工单）" :value="2" />
+            <el-option label="通用（电、水都可接）" :value="0" />
+          </el-select>
         </el-form-item>
             </el-form>
       <template #footer>
@@ -139,6 +150,7 @@ const form = reactive({
   buildingId: 0,
   buildingIds: [] as number[],
   maxConcurrent: 3,
+  jobType: 0,
 })
 
 async function load() {
@@ -181,6 +193,7 @@ function openCreate() {
     buildingId: buildings.value[0]?.id || 0,
     buildingIds: [] as number[],
     maxConcurrent: 3,
+    jobType: 0,
   })
   dialogVisible.value = true
 }
@@ -197,6 +210,7 @@ function openEdit(row: AdminUser) {
     buildingId: row.buildingId || 0,
     buildingIds: row.buildingIds ? [...row.buildingIds] : [],
     maxConcurrent: row.maxConcurrent || 3,
+    jobType: row.jobType || 0,
   })
   dialogVisible.value = true
 }
@@ -218,6 +232,7 @@ async function save() {
         buildingId: form.role === 3 ? form.buildingId : 0,
         buildingIds: form.role === 2 ? form.buildingIds : [],
         maxConcurrent: form.maxConcurrent,
+        jobType: form.role === 2 ? form.jobType : 0,
       })
     } else {
       await apiCreateUser({
@@ -229,6 +244,7 @@ async function save() {
         buildingId: form.role === 3 ? form.buildingId : 0,
         buildingIds: form.role === 2 ? form.buildingIds : [],
         maxConcurrent: form.maxConcurrent,
+        jobType: form.role === 2 ? form.jobType : 0,
       })
     }
     ElMessage.success('保存成功')
@@ -289,12 +305,19 @@ async function enable(row: AdminUser) {
       buildingId: row.buildingId || 0,
       buildingIds: row.buildingIds || [],
       maxConcurrent: row.maxConcurrent || 3,
+      jobType: row.jobType || 0,
     })
     ElMessage.success('已启用')
     load()
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
+}
+
+function jobTypeText(jobType?: number) {
+  if (jobType === 1) return '电工'
+  if (jobType === 2) return '水工'
+  return '通用'
 }
 
 onMounted(() => {

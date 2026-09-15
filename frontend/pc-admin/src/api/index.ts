@@ -25,6 +25,8 @@ export interface OrderItem {
   status: number
   statusText: string
   pendingReason?: string
+  manualReview?: number
+  externalMark?: number
   workerId?: number
   workerName?: string
   workerPhone?: string
@@ -67,6 +69,8 @@ export interface AdminFaultType {
   name: string
   sort: number
   status: number
+  category: string
+  autoDispatch: number
 }
 
 export interface DispatchRule {
@@ -83,13 +87,13 @@ export async function apiAdminFaultTypes(): Promise<AdminFaultType[]> {
   return res.list || []
 }
 
-export function apiCreateFaultType(payload: { code: string; name: string; sort: number }): Promise<unknown> {
+export function apiCreateFaultType(payload: { code: string; name: string; sort: number; category?: string; autoDispatch?: number }): Promise<unknown> {
   return http.post('/admin/fault-types', payload)
 }
 
 export function apiUpdateFaultType(
   id: number,
-  payload: { name: string; sort: number; status: number },
+  payload: { name: string; sort: number; status: number; category?: string; autoDispatch?: number },
 ): Promise<unknown> {
   return http.put(`/admin/fault-types/${id}`, payload)
 }
@@ -134,6 +138,7 @@ export interface AdminUser {
 
   maxConcurrent?: number
   buildings?: string[]
+  jobType?: number
 }
 
 export interface AdminBuilding {
@@ -165,6 +170,7 @@ export function apiCreateUser(payload: {
   buildingIds?: number[]
 
   maxConcurrent?: number
+  jobType?: number
 }): Promise<unknown> {
   return http.post('/admin/users', payload)
 }
@@ -180,6 +186,7 @@ export function apiUpdateUser(
     buildingIds?: number[]
 
     maxConcurrent?: number
+    jobType?: number
   },
 ): Promise<unknown> {
   return http.put(`/admin/users/${id}`, payload)
@@ -350,6 +357,10 @@ export interface BatchDispatchResult {
 
 export function apiAdminOrderReassign(id: number, workerId: number): Promise<unknown> {
   return http.post(`/admin/orders/${id}/reassign`, { workerId })
+}
+
+export function apiAdminOrderExternal(id: number): Promise<unknown> {
+  return http.post(`/admin/orders/${id}/external`, {})
 }
 
 export function apiAdminBatchDispatch(payload?: { buildingId?: number; orderIds?: number[] }): Promise<BatchDispatchResult> {

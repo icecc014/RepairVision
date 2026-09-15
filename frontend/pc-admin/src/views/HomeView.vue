@@ -49,7 +49,7 @@
         工单列表
         <el-tag type="info" effect="plain" size="small">共 {{ visibleOrders.length }} 条</el-tag>
       </div>
-      <el-table :data="visibleOrders" v-loading="loading" border stripe>
+      <el-table :data="visibleOrders" v-loading="loading" border stripe :row-class-name="rowClassName">
         <el-table-column prop="orderNo" label="工单号" width="180" />
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
         <el-table-column label="位置" width="165">
@@ -59,6 +59,15 @@
         <el-table-column label="状态" width="105">
           <template #default="{ row }">
             <span class="status-badge" :class="'st' + row.status">{{ row.statusText }}</span>
+            <el-tag
+              v-if="row.manualReview === 1"
+              :type="row.externalMark === 1 ? 'info' : 'danger'"
+              effect="plain"
+              size="small"
+              class="manual-tag"
+            >
+              {{ row.externalMark === 1 ? '外援处理' : '待管理员处置' }}
+            </el-tag>
             <div v-if="row.status === 1 && row.pendingReason" class="pending-reason">{{ row.pendingReason }}</div>
           </template>
         </el-table-column>
@@ -78,11 +87,21 @@
         </el-table-column>
         <el-table-column prop="reporterName" label="报修宿管" width="110" />
         <el-table-column prop="createdAt" label="创建时间" width="170" />
-        <el-table-column label="操作" width="210" fixed="right">
+        <el-table-column label="操作" width="310" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">详情</el-button>
             <el-button v-if="row.status === 1" size="small" type="primary" plain @click="openAssign(row)">
               手动派单
+            </el-button>
+            <el-button
+              v-if="row.status === 1 && row.manualReview === 1 && row.externalMark !== 1"
+              size="small"
+              type="danger"
+              plain
+              :loading="externalMarking === row.id"
+              @click="markExternal(row)"
+            >
+              标记外援
             </el-button>
             <el-button v-else-if="row.status === 2" size="small" type="warning" plain @click="openAssign(row)">
               改派
@@ -108,11 +127,14 @@
       </div>
     </section>
 
-    <el-dialog append-to-body v-model="assignVisible" :title="assignTarget && assignTarget.status === 2 ? '改派工单' : '手动派单'" width="480px">
+    <el-dialog append-to-body v-model="assignVisible" :title="assignTitle" width="480px">
       <template v-if="assignTarget">
         <p class="assign-hint">
           工单 {{ assignTarget.orderNo }} · {{ assignTarget.buildingName }} {{ assignTarget.floor }}F-{{ assignTarget.room }}
           · {{ assignTarget.faultTypeName }}
+        </p>
+        <p v-if="assignTarget.manualReview === 1" class="assign-note">
+          该工单为「待管理员处置」：可协商派给内部工人，或直接标记外援处理。
         </p>
         <el-select v-model="assignWorkerId" placeholder="选择负责该楼栋的工人" style="width: 100%">
           <el-option v-for="w in assignableWorkers" :key="w.id" :label="`${w.name}（${w.username}）· 在途/并发可派`" :value="w.id" />
@@ -133,6 +155,9 @@
         <el-descriptions-item label="位置">{{ detailRow.buildingName }} · {{ detailRow.floor }} 层 {{ detailRow.room }} 室</el-descriptions-item>
         <el-descriptions-item label="类型">{{ detailRow.faultTypeName }}</el-descriptions-item>
         <el-descriptions-item label="状态">{{ detailRow.statusText }}</el-descriptions-item>
+        <el-descriptions-item v-if="detailRow.manualReview === 1" label="处置标记">
+          {{ detailRow.externalMark === 1 ? '已转外援处理' : '待管理员处置（可协商派单或外援）' }}
+        </el-descriptions-item>
         <el-descriptions-item label="报修宿管">{{ detailRow.reporterName }}</el-descriptions-item>
         <el-descriptions-item label="维修工人">
           {{ detailRow.workerName || '—' }}
@@ -153,7 +178,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminUser, OrderItem } from '../api'
-import { apiAdminBatchDispatch, apiAdminOrderReassign, apiAdminOrders, apiAdminStats, apiAdminUsers } from '../api'
+import { apiAdminBatchDispatch, apiAdminOrderExternal, apiAdminOrderReassign, apiAdminOrders, apiAdminStats, apiAdminUsers } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -166,6 +191,7 @@ const workers = ref<AdminUser[]>([])
 const loading = ref(false)
 const batching = ref(false)
 const assigning = ref(false)
+const externalMarking = ref<number | null>(null)
 const assignVisible = ref(false)
 const assignTarget = ref<OrderItem | null>(null)
 const assignWorkerId = ref<number | null>(null)
@@ -190,6 +216,11 @@ const visibleOrders = computed(() => {
 const assignableWorkers = computed(() => {
   if (!assignTarget.value) return []
   return workers.value.filter((w) => (w.buildingIds || []).includes(assignTarget.value!.buildingId))
+})
+const assignTitle = computed(() => {
+  if (!assignTarget.value) return '手动派单'
+  if (assignTarget.value.manualReview === 1) return '协商派单／手动指派'
+  return assignTarget.value.status === 2 ? '改派工单' : '手动派单'
 })
 
 async function loadStats() {
@@ -242,6 +273,27 @@ function reset() {
 function openDetail(row: OrderItem) {
   detailRow.value = row
   detailVisible.value = true
+}
+function rowClassName({ row }: { row: OrderItem }) {
+  return row.manualReview === 1 ? 'row-manual' : ''
+}
+
+async function markExternal(row: OrderItem) {
+  try {
+    await ElMessageBox.confirm(`将工单 ${row.orderNo} 标记为外援处理？标记后不再参与自动派单。`, '标记外援')
+  } catch {
+    return
+  }
+  externalMarking.value = row.id
+  try {
+    await apiAdminOrderExternal(row.id)
+    ElMessage.success('已标记外援处理')
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    externalMarking.value = null
+  }
 }
 function openAssign(row: OrderItem) {
   assignTarget.value = row
@@ -421,6 +473,20 @@ onUnmounted(() => {
   font-size: 11px;
   line-height: 1.4;
   max-width: 140px;
+}
+.row-manual :deep(td) {
+  background: rgba(255, 240, 245, 0.72) !important;
+}
+
+.manual-tag {
+  margin-top: 5px;
+  font-weight: 700;
+}
+
+.assign-note {
+  margin: -4px 0 12px;
+  color: #b34568;
+  font-size: 13px;
 }
 
 .table-empty {
