@@ -8,8 +8,9 @@
         <el-button size="small" @click="reload">放弃修改</el-button>
         <div style="flex: 1" />
         <span class="toolbar-tip">画布 {{ cols }} × {{ rows }} 格</span>
-        <el-input-number v-model="cols" :min="10" :max="80" size="small" style="width: 110px" @change="applySize" />
-        <el-input-number v-model="rows" :min="10" :max="60" size="small" style="width: 110px" @change="applySize" />
+        <el-input-number v-model="cols" :min="10" :max="80" size="small" style="width: 100px" />
+        <el-input-number v-model="rows" :min="10" :max="60" size="small" style="width: 100px" />
+        <el-button size="small" @click="applySize">应用画布尺寸</el-button>
         <el-button type="primary" :loading="saving" @click="save">保存概览</el-button>
       </div>
     </section>

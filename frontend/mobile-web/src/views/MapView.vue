@@ -209,26 +209,24 @@ const labelShapes = computed(() =>
   }),
 )
 function badgePos(b: WorkerMapBuilding) {
-  const s = scaleBounds()
-  return {
-    x: s.pad + ((b.posX + b.width / 2 - s.minX) / s.rangeX) * s.cw,
-    y: s.pad + ((b.posY - b.height / 2 - s.minY) / s.rangeY) * s.ch,
-  }
+  const r = barRect(b)
+  // 圆心固定在"该楼自己的竖条"柱顶上方，与柱底楼栋代号一一对应
+  return { x: r.x + r.width / 2, y: r.y - 22 }
 }
 
 function badgeConfig(b: WorkerMapBuilding) {
   const p = badgePos(b)
-  return { x: p.x + 8, y: p.y - 4, radius: 13, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }
+  return { x: p.x, y: p.y, radius: 12, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }
 }
 
 function badgeTextConfig(b: WorkerMapBuilding) {
   const p = badgePos(b)
   return {
-    x: p.x - 4,
-    y: p.y - 10,
-    width: 25,
+    x: p.x - 13,
+    y: p.y - 7,
+    width: 26,
     text: String(countOf(b.id)),
-    fontSize: 12,
+    fontSize: 13,
     fontStyle: 'bold',
     fill: '#fff',
     align: 'center',

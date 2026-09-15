@@ -64,7 +64,6 @@
         <el-tag type="info" effect="plain" size="small">共 {{ visibleOrders.length }} 条</el-tag>
       </div>
       <el-table :data="visibleOrders" v-loading="loading" border stripe :row-class-name="rowClassName">
-        <el-table-column prop="orderNo" label="工单号" width="180" />
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
         <el-table-column label="位置" width="165">
           <template #default="{ row }">{{ row.buildingName }} {{ row.floor }}F-{{ row.room }}</template>
