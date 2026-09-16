@@ -2,10 +2,10 @@ package logic
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"order/internal/store"
+	"order/internal/auth"
+	"order/internal/errs"
 	"order/internal/svc"
 	"order/internal/types"
 )
@@ -24,25 +24,10 @@ func NewAdminDispatchRulesLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-func (l *AdminDispatchRulesLogic) AdminDispatchRules() (resp *types.DispatchRuleListResponse, err error) {
-	list, err := store.ListDispatchRules(l.ctx, l.svcCtx.DB)
-	if err != nil {
-		return nil, err
+// AdminDispatchRules 返回分组后的派单规则（含元数据、当前值、运行态），供可视化编辑。
+func (l *AdminDispatchRulesLogic) AdminDispatchRules() (resp *types.DispatchRulesResponse, err error) {
+	if _, ok := auth.IdentityFromContext(l.ctx); !ok {
+		return nil, errs.Unauthorized("登录状态无效")
 	}
-	out := &types.DispatchRuleListResponse{List: []types.DispatchRuleItem{}}
-	for _, r := range list {
-		remark := ""
-		if r.Remark.Valid {
-			remark = r.Remark.String
-		}
-		out.List = append(out.List, types.DispatchRuleItem{
-			Id:        r.ID,
-			RuleKey:   r.RuleKey,
-			RuleValue: fmt.Sprintf("%.4f", r.RuleValue),
-			Enabled:   r.Enabled,
-			Remark:    remark,
-			UpdatedAt: r.UpdatedAt.Format("2006-01-02 15:04:05"),
-		})
-	}
-	return out, nil
+	return buildDispatchRulesResponse(l.ctx, l.svcCtx)
 }
