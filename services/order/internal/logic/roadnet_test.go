@@ -105,3 +105,20 @@ func TestBuildRoadNetworkDegraded(t *testing.T) {
 		t.Fatal("无道路图元应返回 nil（回退欧氏距离）")
 	}
 }
+// 自定义命名（未关联楼栋）的建筑也应参与路网：用合成节点 id 计算距离。
+func TestRoadNetworkCustomBuildingParticipates(t *testing.T) {
+	mini := `{"version":1,"cols":12,"rows":6,"blocks":[{"id":"r1","kind":"road","row":2,"col":0,"rowSpan":1,"colSpan":12},{"id":"b1","kind":"building","row":3,"col":1,"rowSpan":2,"colSpan":2,"label":"图书馆"},{"id":"b2","kind":"building","row":0,"col":9,"rowSpan":1,"colSpan":1,"label":"主楼"}]}`
+	net := buildRoadNetwork(mini, 10)
+	if net == nil {
+		t.Fatal("自定义建筑布局也应构建出路网")
+	}
+	if net.RoadCellCount() != 12 {
+		t.Fatalf("道路格应为 12，实际 %d", net.RoadCellCount())
+	}
+	if len(net.Buildings()) != 2 {
+		t.Fatalf("应识别 2 栋自定义建筑，实际 %v", net.Buildings())
+	}
+	if d, ok := net.DistanceBetween(net.Buildings()[0], net.Buildings()[1]); !ok || d <= 0 {
+		t.Fatalf("两栋自定义建筑之间应可计算路网距离，实际 %v (ok=%v)", d, ok)
+	}
+}

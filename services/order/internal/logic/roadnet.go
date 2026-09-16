@@ -93,11 +93,21 @@ func buildRoadNetwork(layoutJSON string, gridMeters float64) *RoadNetwork {
 
 	// 2) 建筑入口：与道路 4 邻接的建筑边界格
 	seen := map[int64]bool{}
+	synthetic := int64(0)
 	for _, b := range layout.Blocks {
-		if b.Kind != "building" || b.BuildingID <= 0 || seen[b.BuildingID] {
+		if b.Kind != "building" {
 			continue
 		}
-		seen[b.BuildingID] = true
+		// 节点 id：优先用关联楼栋 id；自定义命名（未关联）的建筑用负数合成 id，
+		// 这样"只在概览里画出来"的建筑同样参与路网与距离计算。
+		nodeID := b.BuildingID
+		if nodeID <= 0 {
+			synthetic++
+			nodeID = -synthetic
+		} else if seen[nodeID] {
+			continue
+		}
+		seen[nodeID] = true
 		rowSpan, colSpan := spanOf(b)
 		entrySet := map[int]bool{}
 		for r := b.Row; r < b.Row+rowSpan; r++ {
@@ -127,15 +137,15 @@ func buildRoadNetwork(layoutJSON string, gridMeters float64) *RoadNetwork {
 			}
 			if bestKey >= 0 {
 				entrySet[bestKey] = true
-				net.gap[b.BuildingID] = bestGap
+				net.gap[nodeID] = bestGap
 			} else {
-				net.isolated[b.BuildingID] = true
+				net.isolated[nodeID] = true
 			}
 		}
 		for k := range entrySet {
-			net.entries[b.BuildingID] = append(net.entries[b.BuildingID], k)
+			net.entries[nodeID] = append(net.entries[nodeID], k)
 		}
-		net.buildingIDs = append(net.buildingIDs, b.BuildingID)
+		net.buildingIDs = append(net.buildingIDs, nodeID)
 	}
 	if len(net.buildingIDs) == 0 {
 		return nil

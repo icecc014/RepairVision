@@ -13,8 +13,8 @@ type CampusLayout struct {
 	ID         int64          `db:"id"`
 	Name       string         `db:"name"`
 	IsDefault  int64          `db:"is_default"`
-	Cols       int64          `db:"cols"`
-	Rows       int64          `db:"rows"`
+	Cols       int64          `db:"grid_cols"`
+	Rows       int64          `db:"grid_rows"`
 	LayoutJson sql.NullString `db:"layout_json"`
 	UpdatedAt  time.Time      `db:"updated_at"`
 }

@@ -46,11 +46,18 @@ func (l *CampusDistanceLogic) CampusDistances() (resp *types.CampusDistanceRespo
 	names := map[int64]string{}
 	var raw campusLayoutJSON
 	if err := json.Unmarshal([]byte(layout.LayoutJson.String), &raw); err == nil {
+		synthetic := int64(0)
 		for _, b := range raw.Blocks {
-			if b.Kind == "building" && b.BuildingID > 0 {
-				if _, ok := names[b.BuildingID]; !ok {
-					names[b.BuildingID] = b.Label
-				}
+			if b.Kind != "building" {
+				continue
+			}
+			id := b.BuildingID
+			if id <= 0 {
+				synthetic++
+				id = -synthetic
+			}
+			if _, ok := names[id]; !ok {
+				names[id] = b.Label
 			}
 		}
 	}
