@@ -33,7 +33,7 @@
     <section class="panel filter-panel">
       <div class="panel-title">筛选条件</div>
       <div class="filter-row">
-        <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 170px">
+        <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 170px" @change="onFilterChange">
           <el-option label="待派单" :value="1" />
           <el-option label="已派单" :value="2" />
           <el-option label="维修中" :value="3" />
@@ -61,7 +61,7 @@
     <section class="panel table-panel">
       <div class="panel-title table-title">
         工单列表
-        <el-tag type="info" effect="plain" size="small">共 {{ visibleOrders.length }} 条</el-tag>
+        <el-tag type="info" effect="plain" size="small">共 {{ total }} 条</el-tag>
       </div>
       <el-table :data="visibleOrders" v-loading="loading" border stripe :row-class-name="rowClassName">
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
@@ -335,7 +335,9 @@ async function load() {
   loading.value = true
   const buildingId = Number(query.buildingText || 0)
   try {
-    const res = await apiAdminOrders(0, buildingId > 0 ? buildingId : 0, page.value, pageSize, query.days)
+    // V6.5：状态筛选交给后端（此前是前端在当前页里过滤，导致"只看到本页内的待派单"）
+    const status = Number(query.status || 0)
+    const res = await apiAdminOrders(status, buildingId > 0 ? buildingId : 0, page.value, pageSize, query.days)
     orders.value = res.list
     total.value = res.total
   } catch (err) {
@@ -345,6 +347,10 @@ async function load() {
   }
 }
 
+function onFilterChange() {
+  page.value = 1
+  load()
+}
 function onDaysChange() {
   page.value = 1
   load()
