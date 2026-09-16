@@ -21,11 +21,15 @@ func normalizePage(page, size int64) (int64, int64) {
 }
 
 // sinceForDays 返回时间窗起点；days<=0 表示不限制。
+// V6.5 修正：N 天 = 从 (N-1) 天前的 00:00 起（自然日，含今天）。
+// 旧写法用"当前时刻往前推 N-1 天"，导致选"1 天"时等于"从此刻起"，今天早些时候的单全被筛掉。
 func sinceForDays(days int64) any {
 	if days <= 0 {
 		return nil
 	}
-	return time.Now().AddDate(0, 0, -int(days)+1)
+	now := time.Now()
+	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	return startOfToday.AddDate(0, 0, -int(days)+1)
 }
 
 func CountAllOrdersFilter(ctx context.Context, conn sqlx.Session, status, buildingID, days int64) (int64, error) {

@@ -2,16 +2,13 @@ package store
 
 import (
 	"context"
-	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
+// slaSince 与工单总览共用同一时间窗口径（自然日，含今天）。
 func slaSince(days int64) any {
-	if days <= 0 {
-		return nil
-	}
-	return time.Now().AddDate(0, 0, -int(days)+1)
+	return sinceForDays(days)
 }
 
 func CountPendingOverdue(ctx context.Context, conn sqlx.Session, hours, days int64) (int64, error) {
