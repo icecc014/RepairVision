@@ -56,6 +56,8 @@ func (l *AdminDispatchGuardResumeLogic) AdminDispatchGuardResume() (resp *types.
 		return nil, errs.Internal(err)
 	}
 	logx.WithContext(l.ctx).Infof("auto dispatch resumed by admin")
+	// V6.3：恢复后立即触发一次派单重算，积压单当场派出去（不用等 60 秒兜底扫描）
+	TriggerDispatchRecheck(l.svcCtx)
 	state, err := evaluateDispatchGuard(l.ctx, l.svcCtx)
 	if err != nil {
 		return nil, errs.Internal(err)
@@ -72,7 +74,9 @@ func dispatchGuardToResponse(s *DispatchGuard) *types.DispatchGuardResponse {
 		OnDutyCount:        s.OnDutyCount,
 		LongestWaitMinutes: s.LongestWaitMinutes,
 		WarnRatio:          s.WarnRatio,
+		WarnMinOrders:      s.WarnMinOrders,
 		GuardRatio:         s.GuardRatio,
+		GuardMinOrders:     s.GuardMinOrders,
 		WarnHours:          s.WarnHours,
 		GuardHours:         s.GuardHours,
 		Level:              s.Level,

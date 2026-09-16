@@ -3,28 +3,33 @@ package logic
 import "testing"
 
 func TestGuardThresholds(t *testing.T) {
-	// 在岗 4 人，预警 3 倍 = 12，保护 5 倍 = 20；等待预警 2 小时、保护 4 小时
+	// V6.3 默认：预警 = max(在岗×5, 10) 单 或 等待 > 6 小时；
+	// 保护（暂停）= 待派 ≥ max(在岗×10, 20) 单；等待 > 12 小时则强制恢复。
 	cases := []struct {
-		name             string
-		pending          int64
-		base             int64
-		waitMinutes      int64
-		wantGuard        bool
-		wantWarn         bool
+		name        string
+		pending     int64
+		base        int64
+		waitMinutes int64
+		wantGuard   bool
+		wantWarn    bool
+		wantForce   bool
 	}{
-		{"正常", 5, 4, 30, false, false},
-		{"恰好预警线不触发", 12, 4, 120, false, false},
-		{"预警线（数量）", 13, 4, 30, false, true},
-		{"保护线（数量）", 21, 4, 30, true, true},
-		{"预警线（等待 3 小时）", 1, 4, 180, false, true},
-		{"保护线（等待 5 小时）", 1, 4, 300, true, true},
-		{"无人在岗按 1 人计：6 单即触保护线", 6, 1, 10, true, true},
+		{"正常（3 单、等待 30 分钟）", 3, 1, 30, false, false, false},
+		{"在岗 1 人、9 单不触预警", 9, 1, 30, false, false, false},
+		{"在岗 1 人、10 单只到预警线", 10, 1, 30, false, true, false},
+		{"在岗 1 人、20 单触保护线", 20, 1, 30, true, true, false},
+		{"在岗 4 人：19 单不触预警（门槛 20）", 19, 4, 30, false, false, false},
+		{"在岗 4 人：20 单触预警", 20, 4, 30, false, true, false},
+		{"在岗 4 人：40 单触保护线", 40, 4, 30, true, true, false},
+		{"等待 5 小时不触预警（门槛 6 小时）", 1, 4, 300, false, false, false},
+		{"等待 7 小时只预警、不暂停", 1, 4, 420, false, true, false},
+		{"等待 13 小时：仍不暂停，但触发强制恢复", 1, 4, 780, false, true, true},
 	}
 	for _, c := range cases {
-		guardHit, warnHit := guardThresholds(c.pending, c.base, c.waitMinutes, 3, 5, 2, 4)
-		if guardHit != c.wantGuard || warnHit != c.wantWarn {
-			t.Fatalf("%s: pending=%d base=%d wait=%d -> guard=%v warn=%v，期望 guard=%v warn=%v",
-				c.name, c.pending, c.base, c.waitMinutes, guardHit, warnHit, c.wantGuard, c.wantWarn)
+		guardHit, warnHit, forceResume := guardThresholds(c.pending, c.base, c.waitMinutes, 5, 10, 10, 20, 6, 12)
+		if guardHit != c.wantGuard || warnHit != c.wantWarn || forceResume != c.wantForce {
+			t.Fatalf("%s: pending=%d base=%d wait=%d -> guard=%v warn=%v force=%v，期望 guard=%v warn=%v force=%v",
+				c.name, c.pending, c.base, c.waitMinutes, guardHit, warnHit, forceResume, c.wantGuard, c.wantWarn, c.wantForce)
 		}
 	}
 }

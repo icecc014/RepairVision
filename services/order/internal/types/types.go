@@ -207,6 +207,7 @@ type CreateOrderResponse struct {
 
 type DispatchRuleCreateRequest struct {
 	RuleKey   string `json:"ruleKey"`
+	Type      string `json:"type,optional"`
 	RuleValue string `json:"ruleValue"`
 	Enabled   int64  `json:"enabled,optional"`
 	Remark    string `json:"remark,optional"`
@@ -617,12 +618,67 @@ type StartOrderRequest struct {
 type StartOrderResponse struct {
 	Warning string `json:"warning,optional"`
 }
+// ---------- V6.3 派单规则可视化编辑 ----------
+
+type DispatchRuleEntry struct {
+	Key          string  `json:"key"`
+	Name         string  `json:"name"`
+	Group        string  `json:"group"`
+	Type         string  `json:"type"`
+	Unit         string  `json:"unit"`
+	Min          float64 `json:"min"`
+	Max          float64 `json:"max"`
+	Step         float64 `json:"step"`
+	Precision    int     `json:"precision"`
+	Value        float64 `json:"value"`
+	DefaultValue float64 `json:"defaultValue"`
+	Enabled      int64   `json:"enabled"`
+	Remark       string  `json:"remark"`
+	Description  string  `json:"description"`
+	RuntimeOnly  bool    `json:"runtimeOnly"`
+	Registered   bool    `json:"registered"`
+	Saved        bool    `json:"saved"`
+	Custom       bool    `json:"custom"`
+	UpdatedAt    string  `json:"updatedAt"`
+}
+
+type DispatchRuleGroupItem struct {
+	Key   string              `json:"key"`
+	Label string              `json:"label"`
+	Items []DispatchRuleEntry `json:"items"`
+}
+
+type DispatchRulesResponse struct {
+	Groups       []DispatchRuleGroupItem `json:"groups"`
+	Paused       bool                    `json:"paused"`
+	PendingCount int64                   `json:"pendingCount"`
+	OnDutyCount  int64                   `json:"onDutyCount"`
+	UpdatedAt    string                  `json:"updatedAt"`
+}
+
+type DispatchRuleSaveItem struct {
+	Key     string  `json:"key"`
+	Value   float64 `json:"value"`
+	Enabled int64   `json:"enabled,optional"`
+	Remark  string  `json:"remark,optional"`
+}
+
+type DispatchRulesSaveRequest struct {
+	Items []DispatchRuleSaveItem `json:"items"`
+}
+
+type DispatchRuleKeyRequest struct {
+	Key string `path:"key"`
+}
+
 type DispatchGuardResponse struct {
 	PendingCount       int64   `json:"pendingCount"`
 	OnDutyCount        int64   `json:"onDutyCount"`
 	LongestWaitMinutes int64   `json:"longestWaitMinutes"`
 	WarnRatio          float64 `json:"warnRatio"`
+	WarnMinOrders      float64 `json:"warnMinOrders"`
 	GuardRatio         float64 `json:"guardRatio"`
+	GuardMinOrders     float64 `json:"guardMinOrders"`
 	WarnHours          float64 `json:"warnHours"`
 	GuardHours         float64 `json:"guardHours"`
 	Level              string  `json:"level"`
