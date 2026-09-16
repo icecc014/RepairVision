@@ -193,8 +193,33 @@ body::before {
   -webkit-backdrop-filter: blur(18px);
 }
 
+/* Vant 提示：纯文字 toast 默认背景透明，白字会“隐形”，这里统一给深色药丸底 */
 .van-toast {
   border-radius: 14px;
+  background: rgba(43, 52, 69, 0.94) !important;
+  color: #fff !important;
+}
+.van-toast--text {
+  min-width: 140px;
+  max-width: 76vw;
+  padding: 10px 16px;
+  line-height: 1.5;
+  background: rgba(43, 52, 69, 0.94) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+.van-toast__text {
+  color: #fff !important;
+}
+/* 确认弹窗：浅色底上保证文案与按钮可读 */
+.van-dialog,
+.van-dialog__header,
+.van-dialog__title,
+.van-dialog__message {
+  color: #2b3445 !important;
+}
+.van-dialog__cancel {
+  color: #64748b !important;
 }
 
 /* 通知 / 消息 */
