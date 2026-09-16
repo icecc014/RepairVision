@@ -59,15 +59,28 @@
             : (brush === 'erase' ? '擦除模式：点击图元即可删除'
               : (brush ? '已选择「' + brushLabel + '」：点击网格放置图元' : '请先在左侧选择图元工具，再点击网格开始绘制')) }}
         </div>
-        <div class="canvas-scroll">
-          <div ref="canvasRef" class="canvas" :style="{ '--cols': grid.cols, '--rows': grid.rows }">
+        <div class="canvas-tools">
+          <span class="toolbar-tip">画布缩放</span>
+          <el-button size="small" @click="zoomOut">－</el-button>
+          <span class="zoom-text">{{ Math.round(zoom * 100) }}%</span>
+          <el-button size="small" @click="zoomIn">＋</el-button>
+          <el-button size="small" @click="zoomReset">重置</el-button>
+          <span class="toolbar-tip">按住空白处 0.3 秒可拖动画布（未选工具时可直接拖动）</span>
+        </div>
+        <div class="canvas-scroll" ref="scrollRef">
+          <div class="canvas-stage" :style="stageStyle">
+            <div
+              ref="canvasRef"
+              class="canvas"
+              :style="{ '--cols': grid.cols, '--rows': grid.rows, width: baseW + 'px', transform: `scale(${zoom})`, transformOrigin: 'top left' }"
+            >
             <div class="slot-layer">
               <button
                 v-for="slot in slots"
                 :key="slot.key"
                 class="slot"
                 :class="{ painted: !!slot.blockId }"
-                @pointerdown.prevent="onSlotDown(slot)"
+                @pointerdown.prevent="onSlotDown(slot, $event)"
               />
             </div>
             <div class="block-layer">
@@ -93,6 +106,7 @@
                 </template>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </section>
@@ -264,6 +278,53 @@ const buildings = ref<AdminBuilding[]>([])
 const saving = ref(false)
 const loading = ref(false)
 const undoStack = ref<CampusBlock[][]>([])
+// ---------- 画布平移与缩放 ----------
+const scrollRef = ref<HTMLElement | null>(null)
+const zoom = ref(1)
+const baseW = ref(900)
+const baseH = ref(420)
+const stageStyle = computed(() => ({ width: baseW.value * zoom.value + 'px', height: baseH.value * zoom.value + 'px' }))
+const pan = reactive({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 })
+let panTimer: ReturnType<typeof setTimeout> | undefined
+
+function measureCanvas() {
+  const sc = scrollRef.value
+  if (!sc) return
+  baseW.value = Math.max(320, sc.clientWidth - 4)
+  const el = canvasRef.value
+  if (el) baseH.value = Math.max(320, el.offsetHeight || 420)
+}
+
+function zoomIn() { zoom.value = Math.min(3, Math.round((zoom.value + 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
+function zoomOut() { zoom.value = Math.max(0.4, Math.round((zoom.value - 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
+function zoomReset() { zoom.value = 1; setTimeout(measureCanvas, 0) }
+
+// 长按空白处 → 平移画布（拖动 scrollLeft/scrollTop）
+function startPan(ev: PointerEvent) {
+  const sc = scrollRef.value
+  if (!sc) return
+  pan.startX = ev.clientX
+  pan.startY = ev.clientY
+  pan.scrollLeft = sc.scrollLeft
+  pan.scrollTop = sc.scrollTop
+  if (panTimer) clearTimeout(panTimer)
+  panTimer = setTimeout(() => {
+    pan.active = true
+    ElMessage.info('平移模式：拖动查看画布，松开结束')
+  }, 300)
+}
+
+function onPanMove(ev: PointerEvent) {
+  const sc = scrollRef.value
+  if (!pan.active || !sc) return
+  sc.scrollLeft = pan.scrollLeft - (ev.clientX - pan.startX)
+  sc.scrollTop = pan.scrollTop - (ev.clientY - pan.startY)
+}
+
+function endPan() {
+  if (panTimer) { clearTimeout(panTimer); panTimer = undefined }
+  pan.active = false
+}
 const redoStack = ref<CampusBlock[][]>([])
 const distances = ref<CampusDistance>({
   gridMeters: 10,
@@ -339,7 +400,12 @@ function selectBrush(kind: Brush) {
   brush.value = brush.value === kind ? null : kind
   editingId.value = null
 }
-function onSlotDown(slot: { row: number; col: number }) {
+function onSlotDown(slot: { row: number; col: number }, ev?: PointerEvent) {
+  // 未选工具（或鼠标中键）时：长按空白处平移画布
+  if (ev && (!brush.value || ev.button === 1)) {
+    startPan(ev)
+    return
+  }
   if (editingId.value) {
     editingId.value = null
     selectedId.value = null
@@ -692,6 +758,9 @@ onMounted(async () => {
   window.addEventListener('pointerup', finishPressDrag)
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('pointermove', onPanMove)
+  window.addEventListener('pointerup', endPan)
+  window.addEventListener('resize', measureCanvas)
   try {
     buildings.value = await apiAdminBuildings()
   } catch {
@@ -701,6 +770,7 @@ onMounted(async () => {
   // 避免"挂载过程中的控件事件把刚载入的图元覆盖掉"导致首屏空白。
   await nextTick()
   await load()
+  measureCanvas()
   loadDistances()
 })
 onUnmounted(() => {
@@ -709,6 +779,9 @@ onUnmounted(() => {
   window.removeEventListener('pointerup', finishPressDrag)
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('keydown', onKeyDown)
+  window.removeEventListener('pointermove', onPanMove)
+  window.removeEventListener('pointerup', endPan)
+  window.removeEventListener('resize', measureCanvas)
 })
 // ---------- #7 长按拖动（只改位置、不改尺寸；松手时若重叠则回退） ----------
 const pressDrag = reactive({
@@ -1012,5 +1085,27 @@ function finishPressDrag() {
   color: #94a3b8;
   font-size: 11px;
   line-height: 1.7;
+}
+.canvas-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.zoom-text {
+  min-width: 46px;
+  color: #2b3445;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.canvas-stage {
+  position: relative;
+}
+.canvas-stage .canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 </style>
