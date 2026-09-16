@@ -23,7 +23,13 @@ SKIP(0): function badgePos(b: WorkerMapBuilding) {
         <span class="campus-title">区域概览</span>
         <button class="mini-btn" @click="showCampus = !showCampus">{{ showCampus ? '收起' : '展开' }}</button>
       </div>
-      <CampusOverviewMap v-if="showCampus" :buildings="map.buildings" :highlight-building-id="selectedBuilding?.id" />
+      <CampusOverviewMap
+        v-if="showCampus"
+        ref="campusRef"
+        :buildings="map.buildings"
+        :counts="orderCounts"
+        :highlight-building-id="selectedBuilding?.id"
+      />
     </div>
     <div v-if="!loading && map.buildings.length > 0" class="canvas-card">
       <v-stage :config="stageConfig">
@@ -43,7 +49,7 @@ SKIP(0): function badgePos(b: WorkerMapBuilding) {
           :key="b.id"
           class="building-chip"
           :class="{ active: selectedBuilding?.id === b.id }"
-          @click="select(b)"
+          @click="selectAndFocus(b)"
         >
           {{ b.code }} · {{ countOf(b.id) }}单
         </button>
@@ -88,7 +94,7 @@ SKIP(0): function badgePos(b: WorkerMapBuilding) {
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import type { OrderItem, WorkerMapBuilding, WorkerMapData } from '../api'
 import { apiBatchComplete, apiWorkerMapData } from '../api'
@@ -113,6 +119,22 @@ const stageHeight = 330
 
 const stageConfig = { width: stageWidth, height: stageHeight, x: 14, y: 10 }
 
+const campusRef = ref<{ focusBuilding: (id: number, openCard?: boolean) => boolean } | null>(null)
+// 每栋楼在当前时间窗内的工单数（传给区域概览的信息卡）
+const orderCounts = computed(() => {
+  const result: Record<number, number> = {}
+  for (const b of map.buildings) result[b.id] = countOf(b.id)
+  return result
+})
+// 点下方「1 · 2单」这类楼栋按钮：选中 + 展开区域概览并定位该建筑
+function selectAndFocus(b: WorkerMapBuilding) {
+  select(b)
+  if (!showCampus.value) showCampus.value = true
+  nextTick(() => {
+    const ok = campusRef.value?.focusBuilding(b.id)
+    if (!ok) showToast('区域概览里还没有这栋建筑的图元，可在管理端补画')
+  })
+}
 function countOf(buildingId: number) {
   return map.orders.filter((o) => o.buildingId === buildingId).length
 }
