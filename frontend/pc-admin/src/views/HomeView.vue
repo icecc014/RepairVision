@@ -103,34 +103,32 @@
         <el-table-column label="操作" width="600" class-name="op-cell">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">详情</el-button>
-                        <el-button
-                          v-if="row.status === 2 || row.status === 3"
-                          size="small"
-                          type="success"
-                          plain
-                          @click="completeOrder(row)"
-                        >完工</el-button>
-            <el-button size="small" type="warning" plain @click="toggleLock(row)">
+            <el-button
+              v-if="row.status === 2 || row.status === 3"
+              size="small"
+              type="success"
+              plain
+              @click="completeOrder(row)"
+            >完工</el-button>
+            <el-button v-if="row.status === 1" size="small" type="warning" plain @click="toggleLock(row)">
               {{ row.dispatchLocked === 1 ? '解锁' : '锁定' }}
             </el-button>
             <el-button v-if="row.status === 1 || row.status === 2" size="small" plain @click="editPriority(row)">优先级</el-button>
-            <el-button v-if="row.status === 1" size="small" type="primary" plain @click="openAssign(row)">
-              手动派单
-            </el-button>
             <el-button
-              v-if="row.status === 1 && row.manualReview === 1 && row.externalMark !== 1"
+              v-if="row.status === 1 || row.status === 2 || row.status === 3"
+              size="small"
+              type="primary"
+              plain
+              @click="openAssign(row)"
+            >{{ row.status === 1 ? '手动派单' : '改派' }}</el-button>
+            <el-button
+              v-if="row.manualReview === 1 && row.externalMark !== 1 && row.status !== 4"
               size="small"
               type="danger"
               plain
               :loading="externalMarking === row.id"
               @click="markExternal(row)"
-            >
-              标记外援
-            </el-button>
-            <el-button v-else-if="row.status === 2" size="small" type="warning" plain @click="openAssign(row)">
-              改派
-            </el-button>
-            <span v-else class="score-empty">—</span>
+            >标记外援</el-button>
           </template>
         </el-table-column>
       </el-table>
