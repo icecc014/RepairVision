@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"strings"
+
 	"map/mapclient"
 	"order/internal/errs"
 	"order/internal/svc"
@@ -40,7 +42,12 @@ func (l *AdminUsersLogic) AdminUsers(req *types.AdminUserListRequest) (resp *typ
 	}
 	buildingNames := make(map[int64]string)
 	for _, b := range buildingResp.Buildings {
-		buildingNames[b.Id] = b.Code + " " + b.Name
+		// 楼栋名去重：编码已包含在名称前缀时只显示名称（如 code=1 / name=1号宿舍楼）
+		if b.Code != "" && !strings.HasPrefix(b.Name, b.Code) {
+			buildingNames[b.Id] = b.Code + " " + b.Name
+		} else {
+			buildingNames[b.Id] = b.Name
+		}
 	}
 	items := make([]types.AdminUserItem, 0, len(out.Users))
 	for _, u := range out.Users {
