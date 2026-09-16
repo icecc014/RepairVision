@@ -17,6 +17,7 @@ import {
   type PlanCore,
   type PlanRoom,
 } from './floorLayout'
+import { STANDARD_FLOOR_JSON } from './standardFloor'
 
 export const LAYOUT_VERSION = 2
 
@@ -123,8 +124,37 @@ export function makeBlock(kind: BlockKind, row: number, col: number, rowSpan = 1
   return block
 }
 
-// 默认标准层：中间贯通过道 + 两侧共 16 间房 + 两端楼梯与公共区（放不下的部分自动跳过）。
-export function defaultLayout(cols = 6, rows = 10): LayoutGrid {
+// V6.1 内置标准层：直接使用「1 号宿舍楼的自定义布局」（standardFloor.ts 由脚本生成）。
+// 重新生成：导出 1 号楼 layout_json 后执行 node scripts/gen-standard-floor.mjs <layout.json>
+let standardCache: LayoutGrid | null | undefined
+
+// standardLayout 返回内置标准层（每次返回副本，避免编辑器改到缓存）。
+export function standardLayout(): LayoutGrid | null {
+  if (standardCache === undefined) {
+    const parsed = parseLayout(STANDARD_FLOOR_JSON)
+    standardCache = parsed
+      ? {
+        version: parsed.version,
+        cols: parsed.cols,
+        rows: parsed.rows,
+        blocks: parsed.blocks.map((b) => ({ ...b, id: newBlockId() })),
+      }
+      : null
+  }
+  return standardCache
+}
+
+// 默认标准层：不传尺寸 = 内置标准层（1 号楼布局）；显式传尺寸且与模板一致也用它，
+// 只有显式要求其它尺寸时才按参数生成简化模板（保留原有参数化逻辑）。
+export function defaultLayout(cols = 0, rows = 0): LayoutGrid {
+  const std = standardLayout()
+  if (cols <= 0 || rows <= 0) {
+    if (std) return std
+    cols = 6
+    rows = 10
+  } else if (std && std.cols === cols && std.rows === rows) {
+    return std
+  }
   const grid = emptyLayout(cols, rows)
   const tryPush = (kind: BlockKind, row: number, col: number, rowSpan = 1, colSpan = 1, label = '') => {
     const block = makeBlock(kind, row, col, rowSpan, colSpan, label)
@@ -356,6 +386,12 @@ export function resolveFloorPlan(floor: number, roomsPerFloor: number, layoutJso
   const grid = parseLayout(layoutJson)
   if (grid) {
     const plan = buildPlanFromLayout(grid, floor)
+    if (plan.rooms.length > 0) return plan
+  }
+  // V6.1：没有自定义布局时，用「内置标准层 = 1 号楼布局」渲染，替代旧的硬编码模板
+  const std = standardLayout()
+  if (std) {
+    const plan = buildPlanFromLayout(std, floor)
     if (plan.rooms.length > 0) return plan
   }
   if (supportsCorridorLayout(roomsPerFloor)) {
