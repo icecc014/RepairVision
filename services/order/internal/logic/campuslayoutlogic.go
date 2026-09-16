@@ -32,8 +32,8 @@ func NewCampusLayoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Camp
 const (
 	campusDefaultCols = 40
 	campusDefaultRows = 30
-	campusMaxCols     = 80
-	campusMaxRows     = 60
+	campusMaxCols     = 140
+	campusMaxRows     = 80
 )
 
 // loadDefault 读取默认区域概览，不存在时自动创建一张空白图。

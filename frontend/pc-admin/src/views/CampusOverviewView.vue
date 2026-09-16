@@ -8,8 +8,8 @@
         <el-button size="small" @click="reload">放弃修改</el-button>
         <div style="flex: 1" />
         <span class="toolbar-tip">画布 {{ cols }} × {{ rows }} 格</span>
-        <el-input-number v-model="cols" :min="10" :max="80" size="small" style="width: 100px" />
-        <el-input-number v-model="rows" :min="10" :max="60" size="small" style="width: 100px" />
+        <el-input-number v-model="cols" :min="10" :max="140" size="small" style="width: 100px" />
+        <el-input-number v-model="rows" :min="10" :max="80" size="small" style="width: 100px" />
         <el-button size="small" @click="applySize">应用画布尺寸</el-button>
         <el-button type="primary" :loading="saving" @click="save">保存概览</el-button>
       </div>
@@ -270,8 +270,8 @@ type Brush = CampusKind | 'erase'
 const HANDLES: ResizeHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
 
 const grid = ref<CampusGrid>(emptyCampus())
-const cols = ref(40)
-const rows = ref(30)
+const cols = ref(100)
+const rows = ref(40)
 const name = ref('校园总览')
 const brush = ref<Brush | null>(null)
 const selectedId = ref<string | null>(null)
@@ -700,8 +700,8 @@ function onKeyDown(ev: KeyboardEvent) {
 
 // ---------- 画布操作与保存 ----------
 function applySize() {
-  const c = Math.max(10, Math.min(80, Number(cols.value) || 40))
-  const r = Math.max(10, Math.min(60, Number(rows.value) || 30))
+  const c = Math.max(10, Math.min(140, Number(cols.value) || 40))
+  const r = Math.max(10, Math.min(80, Number(rows.value) || 30))
   const kept: CampusBlock[] = []
   for (const b of grid.value.blocks) {
     const cand: CampusBlock = { ...b }

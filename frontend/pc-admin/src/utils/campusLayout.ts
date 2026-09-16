@@ -98,7 +98,7 @@ export function parseCampus(json?: string | null): CampusGrid | null {
     const raw = JSON.parse(json) as Partial<CampusGrid>
     const cols = Math.round(Number(raw.cols))
     const rows = Math.round(Number(raw.rows))
-    if (!Number.isFinite(cols) || !Number.isFinite(rows) || cols < 4 || rows < 4 || cols > 80 || rows > 60) return null
+    if (!Number.isFinite(cols) || !Number.isFinite(rows) || cols < 4 || rows < 4 || cols > 140 || rows > 80) return null
     if (!Array.isArray(raw.blocks)) return { version: CAMPUS_VERSION, cols, rows, blocks: [] }
     const blocks: CampusBlock[] = []
     for (const item of raw.blocks as CampusBlock[]) {
