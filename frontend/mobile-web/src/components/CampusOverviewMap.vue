@@ -27,7 +27,7 @@
             :y="b.row + 0.12"
             :width="Math.max(0.2, b.colSpan - 0.24)"
             :height="Math.max(0.2, b.rowSpan - 0.24)"
-            :fill="fillOf(b.kind)"
+            :fill="b.color || fillOf(b.kind)"
             :stroke="strokeOf(b.kind)"
             :stroke-width="highlightBuildingId && b.buildingId === highlightBuildingId ? 0.5 : 0.22"
             rx="0.35"
@@ -68,6 +68,7 @@ interface CampusBlock {
   colSpan: number
   label?: string
   buildingId?: number
+  color?: string
 }
 
 const props = defineProps<{

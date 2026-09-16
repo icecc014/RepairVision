@@ -152,6 +152,18 @@
               />
             </div>
             <div class="prop-row">
+              <span class="prop-label">颜色</span>
+              <div class="prop-pair">
+                <el-color-picker
+                  :model-value="selectedBlock.color || '#dcebff'"
+                  size="small"
+                  :predefine="CAMPUS_PRESET_COLORS"
+                  @change="setColor"
+                />
+                <el-button size="small" @click="setColor('')">默认色</el-button>
+              </div>
+            </div>
+            <div class="prop-row">
               <span class="prop-label">操作</span>
             <div class="prop-pair">
               <el-button size="small" @click="editingId = editingId === selectedBlock.id ? null : selectedBlock.id">
@@ -250,6 +262,7 @@ import AdminShell from '../components/AdminShell.vue'
 import {
   CAMPUS_KINDS,
   CAMPUS_KIND_TEXT,
+  CAMPUS_PRESET_COLORS,
   campusAreaFree,
   campusCount,
   campusInBounds,
@@ -424,13 +437,28 @@ function labelOf(b: CampusBlock) {
   if (b.label) return b.label
   return CAMPUS_KIND_TEXT[b.kind]
 }
+// V6.1：自定义颜色优先；边框取同色加深，避免相邻同色图元糊在一起
+function shadeColor(hex: string, ratio = 0.32): string {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hex)
+  if (!m) return '#7c8aa5'
+  const n = parseInt(m[1], 16)
+  const r = Math.round(((n >> 16) & 255) * (1 - ratio))
+  const g = Math.round(((n >> 8) & 255) * (1 - ratio))
+  const b2 = Math.round((n & 255) * (1 - ratio))
+  return `#${((r << 16) | (g << 8) | b2).toString(16).padStart(6, '0')}`
+}
 function blockStyle(b: CampusBlock) {
-  return {
+  const style: Record<string, string> = {
     left: `${b.col * cellStep}px`,
     top: `${b.row * cellStep}px`,
     width: `${b.colSpan * CELL + (b.colSpan - 1) * CANVAS_GAP}px`,
     height: `${b.rowSpan * CELL + (b.rowSpan - 1) * CANVAS_GAP}px`,
   }
+  if (b.color) {
+    style.background = b.color
+    style.borderColor = shadeColor(b.color)
+  }
+  return style
 }
 
 // ---------- 绘制与编辑 ----------
@@ -585,6 +613,20 @@ function setProp(field: 'row' | 'col' | 'rowSpan' | 'colSpan', value: number) {
     undoStack.value.pop()
   }
 }
+// V6.1 图元自定义颜色：传空值 = 恢复类型默认色
+function setColor(value: string | null | undefined) {
+  const b = selectedBlock.value
+  if (!b) return
+  const next = (value || '').trim()
+  if (next && !/^#[0-9a-fA-F]{6}$/.test(next)) {
+    ElMessage.warning('颜色格式应为 #RRGGBB')
+    return
+  }
+  pushHistory()
+  if (next) b.color = next
+  else delete b.color
+}
+
 function expandEdge(dir: 'w' | 'e' | 'n' | 's', grow: boolean) {
   const b = selectedBlock.value
   if (!b) return

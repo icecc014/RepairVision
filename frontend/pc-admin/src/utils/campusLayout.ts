@@ -28,6 +28,8 @@ export interface CampusBlock {
   label?: string
   buildingId?: number
   customBuilding?: boolean
+  // V6.1 自定义颜色（#RRGGBB）；未设置时用类型默认色
+  color?: string
 }
 
 export interface CampusGrid {
@@ -59,6 +61,14 @@ export const CAMPUS_KIND_TEXT: Record<CampusKind, string> = {
   gate: '校门/出入口',
   custom: '自定义',
 }
+
+// 图元预设色（V6.1）：属性面板里可直接选，也可自定义 RGB
+export const CAMPUS_PRESET_COLORS: string[] = [
+  '#dcebff', '#c7dcf7', '#a8c8f0', '#7fa8e0',
+  '#ddf0e3', '#c8e6d2', '#9fd6b4', '#6fbf8f',
+  '#f7e3ef', '#f2e8ff', '#efe8da', '#ffe9c9',
+  '#ffd9d9', '#e8eef8', '#c9d4e5', '#8fa2bd',
+]
 
 export function makeCampusBlock(kind: CampusKind, row: number, col: number, rowSpan = 1, colSpan = 1, label = ''): CampusBlock {
   const block: CampusBlock = { id: newBlockId(), kind, row, col, rowSpan, colSpan }
@@ -116,6 +126,7 @@ export function parseCampus(json?: string | null): CampusGrid | null {
       if (typeof item.label === 'string' && item.label.trim()) block.label = item.label.trim()
       if (typeof item.buildingId === 'number' && item.buildingId > 0) block.buildingId = item.buildingId
       if (item.customBuilding) block.customBuilding = true
+      if (typeof item.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(item.color.trim())) block.color = item.color.trim()
       // 载入时不做重叠过滤（重叠由编辑态校验/提示负责），保证"保存后的视图"原样加载，避免整页空白
       blocks.push(block)
     }
