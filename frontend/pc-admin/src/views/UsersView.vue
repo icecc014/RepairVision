@@ -204,7 +204,7 @@ async function loadBuildings() {
 
 function buildingName(id: number) {
   const b = buildings.value.find((x) => x.id === id)
-  return b ? `${b.code} ${b.name}` : ''
+  return b ? (String(b.name).startsWith(String(b.code)) ? b.name : `${b.code} ${b.name}`) : ''
 }
 
 function openCreate() {

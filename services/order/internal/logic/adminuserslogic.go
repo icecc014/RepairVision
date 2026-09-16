@@ -65,6 +65,11 @@ func (l *AdminUsersLogic) AdminUsers(req *types.AdminUserListRequest) (resp *typ
 			BuildingIds:   u.BuildingIds,
 			MaxConcurrent: u.MaxConcurrent,
 		}
+		if u.Role == 3 && u.BuildingId > 0 {
+			if name := buildingNames[u.BuildingId]; name != "" {
+				item.Buildings = append(item.Buildings, name)
+			}
+		}
 		for _, id := range u.BuildingIds {
 			if name := buildingNames[id]; name != "" {
 				item.Buildings = append(item.Buildings, name)
