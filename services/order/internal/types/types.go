@@ -662,3 +662,16 @@ type CampusDistanceResponse struct {
 type AdminWorkerBoardRequest struct {
 	Days int64 `form:"days,optional"`
 }
+type AutoAssignWorkerItem struct {
+	WorkerId      int64   `json:"workerId"`
+	Name          string  `json:"name"`
+	JobTypeText   string  `json:"jobTypeText"`
+	BuildingCount int64   `json:"buildingCount"`
+	BuildingIds   []int64 `json:"buildingIds"`
+}
+
+type AutoAssignResponse struct {
+	Buildings int64                  `json:"buildings"`
+	Workers   int64                  `json:"workers"`
+	List      []AutoAssignWorkerItem `json:"list"`
+}

@@ -1,0 +1,14 @@
+SET NAMES utf8mb4;
+USE order_db;
+UPDATE dispatch_rule_config SET remark = '技能匹配权重' WHERE rule_key = 'skill_weight';
+UPDATE dispatch_rule_config SET remark = '距离权重（路网最短路）' WHERE rule_key = 'distance_weight';
+UPDATE dispatch_rule_config SET remark = '在途负载权重' WHERE rule_key = 'load_weight';
+UPDATE dispatch_rule_config SET remark = '创建工单后是否自动派单' WHERE rule_key = 'auto_dispatch_enabled';
+UPDATE dispatch_rule_config SET remark = '待派超时阈值(小时)' WHERE rule_key = 'pending_timeout_hours';
+UPDATE dispatch_rule_config SET remark = '已派未开工超时阈值(小时)' WHERE rule_key = 'dispatched_timeout_hours';
+UPDATE dispatch_rule_config SET remark = '预警线：待派工单数 > 在岗人数 × 该倍数' WHERE rule_key = 'backlog_warn_ratio';
+UPDATE dispatch_rule_config SET remark = '保护线：待派工单数 > 在岗人数 × 该倍数（暂停自动派单）' WHERE rule_key = 'backlog_guard_ratio';
+UPDATE dispatch_rule_config SET remark = '预警线：存在等待超过该小时数未派出的工单' WHERE rule_key = 'backlog_warn_hours';
+UPDATE dispatch_rule_config SET remark = '保护线：存在等待超过该小时数未派出的工单（暂停自动派单）' WHERE rule_key = 'backlog_guard_hours';
+UPDATE dispatch_rule_config SET remark = '1 = 已暂停自动派单（保护模式，人工处置）' WHERE rule_key = 'auto_dispatch_paused';
+SELECT rule_key, rule_value, remark FROM dispatch_rule_config ORDER BY rule_key;

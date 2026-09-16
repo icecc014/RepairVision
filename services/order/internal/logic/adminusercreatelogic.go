@@ -45,5 +45,7 @@ func (l *AdminUserCreateLogic) AdminUserCreate(req *types.AdminUserCreateRequest
 	}); err != nil {
 		return nil, rpcBizError(err)
 	}
+	// 人员变动后自动重算各工种的管辖楼栋（保证每栋楼每类工种都有人）
+	triggerAutoAssign(l.ctx, l.svcCtx)
 	return &types.EmptyResponse{}, nil
 }

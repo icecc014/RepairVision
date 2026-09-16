@@ -638,3 +638,12 @@ export function apiAdminLeaves(params: { workerId?: number; status?: number; pag
 export function apiAdminLeaveReview(id: number, status: number, reviewNote: string): Promise<unknown> {
   return http.post(`/admin/leaves/${id}/review`, { status, reviewNote })
 }
+export interface AutoAssignResult {
+  buildings: number
+  workers: number
+  list: { workerId: number; name: string; jobTypeText: string; buildingCount: number; buildingIds: number[] }[]
+}
+
+export async function apiAutoAssignBuildings(): Promise<AutoAssignResult> {
+  return http.post('/admin/worker-buildings/auto-assign', {})
+}

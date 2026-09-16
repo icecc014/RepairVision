@@ -1,5 +1,5 @@
 <template>
-  <el-popover placement="bottom-end" :width="420" trigger="click" @show="load">
+  <el-popover v-model:visible="visible" placement="bottom-end" :width="420" trigger="click" @show="load">
     <template #reference>
       <el-badge :value="unread" :hidden="unread === 0" :max="99">
         <button class="bell-btn">🔔 消息</button>
@@ -17,7 +17,7 @@
         :key="item.id"
         class="nc-item"
         :class="{ unread: item.isRead === 0 }"
-        @click="markRead(item)"
+        @click="openItem(item)"
       >
         <div class="nc-item-top">
           <span class="nc-item-title">{{ item.title }}</span>
@@ -31,6 +31,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { NotificationItem } from '../api'
 import { apiNotificationRead, apiNotificationReadAll, apiNotifications } from '../api'
@@ -57,6 +58,25 @@ async function markRead(item: NotificationItem) {
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
+}
+
+const router = useRouter()
+const visible = ref(false)
+
+// 通知类型 → 对应功能模块路由
+function targetRoute(item: NotificationItem): string {
+  const t = (item.type || '').toLowerCase()
+  if (t.includes('leave')) return '/leaves'
+  if (t.includes('dispatch') || t.includes('backlog') || t.includes('guard')) return '/dispatch-board'
+  if (t.includes('schedule')) return '/schedules'
+  if (t.includes('campus') || t.includes('building')) return '/campus'
+  return '/orders'
+}
+
+async function openItem(item: NotificationItem) {
+  await markRead(item)
+  visible.value = false
+  router.push(targetRoute(item))
 }
 
 async function readAll() {

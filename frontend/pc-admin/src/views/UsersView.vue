@@ -3,6 +3,7 @@
     <section class="panel">
       <div class="toolbar">
         <el-button type="primary" @click="openCreate">＋ 新增账号</el-button>
+        <el-button type="success" plain :loading="autoAssigning" @click="autoAssign">自动分配管辖楼栋</el-button>
         <el-select v-model="filter.role" placeholder="全部角色" clearable style="width: 150px" @change="load">
           <el-option label="管理员" :value="1" />
           <el-option label="维修工人" :value="2" />
@@ -125,6 +126,7 @@ import type { AdminBuilding, AdminUser } from '../api'
 import {
   apiAdminBuildings,
   apiAdminUsers,
+  apiAutoAssignBuildings,
   apiCreateUser,
   apiDeleteUser,
   apiResetPassword,
@@ -136,6 +138,7 @@ const list = ref<AdminUser[]>([])
 const buildings = ref<AdminBuilding[]>([])
 const loading = ref(false)
 const saving = ref(false)
+const autoAssigning = ref(false)
 const dialogVisible = ref(false)
 const resetVisible = ref(false)
 const resetTarget = ref<AdminUser | null>(null)
@@ -155,6 +158,27 @@ const form = reactive({
   jobType: 0,
 })
 
+// 按工种把全部楼栋轮转分配给在岗工人，保证每栋楼每类工种都有人
+async function autoAssign() {
+  try {
+    await ElMessageBox.confirm(
+      '将按工种（电/水/泥瓦/木）把全部楼栋重新均匀分配给在岗工人，现有管辖关系会被覆盖，是否继续？',
+      '自动分配管辖楼栋',
+    )
+  } catch {
+    return
+  }
+  autoAssigning.value = true
+  try {
+    const res = await apiAutoAssignBuildings()
+    ElMessage.success(`已为 ${res.workers} 名工人分配 ${res.buildings} 栋楼`)
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    autoAssigning.value = false
+  }
+}
 async function load() {
   loading.value = true
   try {
