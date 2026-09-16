@@ -68,7 +68,7 @@ func jobTypeFor(role, jobType int64) int64 {
 	if role != 2 {
 		return 0
 	}
-	if jobType < 0 || jobType > 2 {
+	if jobType < 0 || jobType > 4 {
 		return 0
 	}
 	return jobType

@@ -262,6 +262,10 @@ func jobTypeText(jobType int64) string {
 		return "电工"
 	case 2:
 		return "水工"
+	case 3:
+		return "泥瓦工"
+	case 4:
+		return "木工"
 	default:
 		return "通用"
 	}

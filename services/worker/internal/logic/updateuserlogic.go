@@ -58,7 +58,7 @@ func (l *UpdateUserLogic) UpdateUser(in *worker.UpdateUserRequest) (*worker.User
 	if maxConcurrent < 1 || maxConcurrent > 10 {
 		return nil, errors.New("最大并发数需在1-20之间")
 	}
-	if in.JobType < 0 || in.JobType > 2 {
+	if in.JobType < 0 || in.JobType > 4 {
 		return nil, errors.New("工种不合法")
 	}
 	buildingID := sql.NullInt64{}
