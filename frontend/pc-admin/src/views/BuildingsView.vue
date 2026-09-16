@@ -3,8 +3,18 @@
     <section class="panel">
       <div class="toolbar">
         <el-button type="primary" @click="openCreate">＋ 新增楼栋</el-button>
+        <el-input v-model="keyword" placeholder="搜索编码 / 名称" clearable style="width: 200px" />
+        <span class="toolbar-tip">排序</span>
+        <el-select v-model="sortBy" style="width: 150px">
+          <el-option label="按 ID" value="id" />
+          <el-option label="按编码" value="code" />
+          <el-option label="按名称" value="name" />
+          <el-option label="按楼层" value="floors" />
+        </el-select>
+        <el-button @click="resetFilter">重置</el-button>
+        <span class="toolbar-tip">共 {{ filteredList.length }} / {{ list.length }} 栋</span>
       </div>
-      <el-table :data="list" v-loading="loading" border stripe>
+      <el-table :data="filteredList" v-loading="loading" border stripe>
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="code" label="编码" width="100" />
         <el-table-column prop="name" label="楼栋名称" min-width="160" />
@@ -26,8 +36,9 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="360">
           <template #default="{ row }">
+            <el-button size="small" type="primary" plain @click="openEdit(row)">编辑</el-button>
             <el-button size="small" @click="openDesigner(row)">布局设计</el-button>
             <el-button size="small" type="danger" plain @click="remove(row)">删除</el-button>
           </template>
@@ -76,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminBuilding } from '../api'
 import { apiAdminBuildings, apiCreateBuilding, apiDeleteBuilding, apiUpdateBuilding } from '../api'
@@ -85,6 +96,28 @@ import LayoutDesigner from '../components/LayoutDesigner.vue'
 
 const list = ref<AdminBuilding[]>([])
 const loading = ref(false)
+const keyword = ref('')
+const sortBy = ref<'id' | 'code' | 'name' | 'floors'>('id')
+
+// 列表筛选与排序：编码/名称关键字 + 按 ID / 编码 / 名称 / 楼层排序
+const filteredList = computed(() => {
+  const kw = keyword.value.trim()
+  let arr = [...list.value]
+  if (kw) arr = arr.filter((b) => String(b.code).includes(kw) || String(b.name).includes(kw))
+  const key = sortBy.value
+  arr.sort((a, b) => {
+    if (key === 'code') return (Number(a.code) || 0) - (Number(b.code) || 0)
+    if (key === 'floors') return (Number(a.floors) || 0) - (Number(b.floors) || 0)
+    if (key === 'name') return String(a.name).localeCompare(String(b.name), 'zh-Hans-CN')
+    return a.id - b.id
+  })
+  return arr
+})
+
+function resetFilter() {
+  keyword.value = ''
+  sortBy.value = 'id'
+}
 const saving = ref(false)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
