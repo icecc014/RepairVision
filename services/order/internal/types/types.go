@@ -640,6 +640,52 @@ type AdminOrderPriorityRequest struct {
 	Id       int64 `path:"id"`
 	Priority int64 `json:"priority"`
 }
+// ---------- V6.1 区域概览「我的画布」模板 ----------
+
+type CampusTemplateItem struct {
+	Id        int64  `json:"id"`
+	Name      string `json:"name"`
+	Cols      int64  `json:"cols"`
+	Rows      int64  `json:"rows"`
+	Source    string `json:"source"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+type CampusTemplateListResponse struct {
+	List []CampusTemplateItem `json:"list"`
+}
+
+type CampusTemplateDetail struct {
+	Id         int64  `json:"id"`
+	Name       string `json:"name"`
+	Cols       int64  `json:"cols"`
+	Rows       int64  `json:"rows"`
+	Source     string `json:"source"`
+	LayoutJson string `json:"layoutJson"`
+	UpdatedAt  string `json:"updatedAt"`
+}
+
+type CampusTemplateDetailResponse struct {
+	Template CampusTemplateDetail `json:"template"`
+}
+
+type CampusTemplateSaveRequest struct {
+	Name       string `json:"name"`
+	Cols       int64  `json:"cols,optional"`
+	Rows       int64  `json:"rows,optional"`
+	LayoutJson string `json:"layoutJson,optional"`
+	Overwrite  bool   `json:"overwrite,optional"`
+}
+
+type CampusTemplateIdRequest struct {
+	Id int64 `path:"id"`
+}
+
+type CampusTemplateRenameRequest struct {
+	Id   int64  `path:"id"`
+	Name string `json:"name"`
+}
+
 type CampusDistanceBuilding struct {
 	BuildingId int64   `json:"buildingId"`
 	Name       string  `json:"name"`
