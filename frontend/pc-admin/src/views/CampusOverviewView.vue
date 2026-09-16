@@ -49,6 +49,8 @@
           <li><b>拖把手</b> 按格改尺寸</li>
           <li><b>Ctrl+Z</b> 撤销 / <b>Delete</b> 删除</li>
           <li><b>Esc</b> 退出编辑</li>
+          <li><b>+ / -</b> 鼠标在画布上时缩放</li>
+          <li><b>F</b> 适应窗口 · <b>空格+拖动</b> 平移画布</li>
         </ul>
       </section>
 
@@ -65,9 +67,10 @@
           <span class="zoom-text">{{ Math.round(zoom * 100) }}%</span>
           <el-button size="small" @click="zoomIn">＋</el-button>
           <el-button size="small" @click="zoomReset">重置</el-button>
-          <span class="toolbar-tip">按住空白处 0.3 秒可拖动画布（未选工具时可直接拖动）</span>
+          <el-button size="small" @click="fitToCanvas">适应窗口</el-button>
+          <span class="toolbar-tip">快捷键：鼠标在画布上时按 + / - 缩放，F 适应窗口，空格+拖动平移（或长按空白处 0.3 秒）</span>
         </div>
-        <div class="canvas-scroll" ref="scrollRef">
+        <div class="canvas-scroll" ref="scrollRef" @pointerenter="canvasHover = true" @pointerleave="canvasHover = false">
           <div class="canvas-stage" :style="stageStyle">
             <div
               ref="canvasRef"
@@ -285,6 +288,8 @@ const baseW = ref(900)
 const baseH = ref(420)
 const stageStyle = computed(() => ({ width: baseW.value * zoom.value + 'px', height: baseH.value * zoom.value + 'px' }))
 const pan = reactive({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 })
+const canvasHover = ref(false)
+const spacePanReady = ref(false)
 let panTimer: ReturnType<typeof setTimeout> | undefined
 
 function measureCanvas() {
@@ -295,9 +300,24 @@ function measureCanvas() {
   if (el) baseH.value = Math.max(320, el.offsetHeight || 420)
 }
 
-function zoomIn() { zoom.value = Math.min(3, Math.round((zoom.value + 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
-function zoomOut() { zoom.value = Math.max(0.4, Math.round((zoom.value - 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
+function zoomIn() { zoom.value = Math.min(4, Math.round((zoom.value + 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
+function zoomOut() { zoom.value = Math.max(0.25, Math.round((zoom.value - 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
 function zoomReset() { zoom.value = 1; setTimeout(measureCanvas, 0) }
+
+// 适应窗口：让整张画布完整落在可视区域内（高度优先，宽度不超过 100%）
+function fitToCanvas() {
+  const sc = scrollRef.value
+  if (!sc) return
+  measureCanvas()
+  const byH = sc.clientHeight > 0 ? sc.clientHeight / baseH.value : 1
+  const byW = sc.clientWidth > 0 ? sc.clientWidth / baseW.value : 1
+  const next = Math.max(0.25, Math.min(4, Math.min(byH, byW)))
+  zoom.value = Math.round(next * 100) / 100
+  setTimeout(() => {
+    measureCanvas()
+    if (scrollRef.value) { scrollRef.value.scrollLeft = 0; scrollRef.value.scrollTop = 0 }
+  }, 0)
+}
 
 // 长按空白处 → 平移画布（拖动 scrollLeft/scrollTop）
 function startPan(ev: PointerEvent) {
@@ -402,7 +422,7 @@ function selectBrush(kind: Brush) {
 }
 function onSlotDown(slot: { row: number; col: number }, ev?: PointerEvent) {
   // 未选工具（或鼠标中键）时：长按空白处平移画布
-  if (ev && (!brush.value || ev.button === 1)) {
+  if (ev && (spacePanReady.value || !brush.value || ev.button === 1)) {
     startPan(ev)
     return
   }
@@ -433,6 +453,11 @@ function onSlotDown(slot: { row: number; col: number }, ev?: PointerEvent) {
   selectedId.value = block.id
 }
 function onBlockDown(b: CampusBlock, ev: PointerEvent) {
+  // 空格 + 拖动 / 鼠标中键：优先平移画布
+  if (spacePanReady.value || ev.button === 1) {
+    startPan(ev)
+    return
+  }
   if (editingId.value) {
     if (editingId.value !== b.id) {
       editingId.value = b.id
@@ -629,8 +654,34 @@ function redo() {
   grid.value.blocks = next
   syncSelection()
 }
+function onKeyUp(ev: KeyboardEvent) {
+  if (ev.code === 'Space') spacePanReady.value = false
+}
 function onKeyDown(ev: KeyboardEvent) {
   const key = ev.key.toLowerCase()
+  // 仅在鼠标位于画布区域时响应，且不占用 Ctrl+滚轮（避免与浏览器缩放冲突）
+  if (canvasHover.value) {
+    if (ev.key === '+' || ev.key === '=' || key === 'add') {
+      ev.preventDefault()
+      zoomIn()
+      return
+    }
+    if (ev.key === '-' || ev.key === '_' || key === 'subtract') {
+      ev.preventDefault()
+      zoomOut()
+      return
+    }
+    if (key === 'f') {
+      ev.preventDefault()
+      fitToCanvas()
+      return
+    }
+    if (ev.code === 'Space') {
+      ev.preventDefault()
+      spacePanReady.value = true
+      return
+    }
+  }
   if ((ev.ctrlKey || ev.metaKey) && key === 'z') {
     ev.preventDefault()
     if (ev.shiftKey) redo()
@@ -761,6 +812,7 @@ onMounted(async () => {
   window.addEventListener('pointermove', onPanMove)
   window.addEventListener('pointerup', endPan)
   window.addEventListener('resize', measureCanvas)
+  window.addEventListener('keyup', onKeyUp)
   try {
     buildings.value = await apiAdminBuildings()
   } catch {
@@ -782,6 +834,7 @@ onUnmounted(() => {
   window.removeEventListener('pointermove', onPanMove)
   window.removeEventListener('pointerup', endPan)
   window.removeEventListener('resize', measureCanvas)
+  window.removeEventListener('keyup', onKeyUp)
 })
 // ---------- #7 长按拖动（只改位置、不改尺寸；松手时若重叠则回退） ----------
 const pressDrag = reactive({
