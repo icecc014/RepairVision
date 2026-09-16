@@ -68,14 +68,14 @@
           <el-button size="small" @click="zoomIn">＋</el-button>
           <el-button size="small" @click="zoomReset">重置</el-button>
           <el-button size="small" @click="fitToCanvas">适应窗口</el-button>
-          <span class="toolbar-tip">快捷键：鼠标在画布上时按 + / - 缩放，F 适应窗口，空格+拖动平移（或长按空白处 0.3 秒）</span>
+          <span class="toolbar-tip">单格 24px 固定正方形；画布装不下时用「空格+拖动」或长按空白处拖动查看。快捷键：鼠标在画布上时按 + / - 缩放，F 适应窗口</span>
         </div>
         <div class="canvas-scroll" ref="scrollRef" @pointerenter="canvasHover = true" @pointerleave="canvasHover = false">
           <div class="canvas-stage" :style="stageStyle">
             <div
               ref="canvasRef"
               class="canvas"
-              :style="{ '--cols': grid.cols, '--rows': grid.rows, width: baseW + 'px', transform: `scale(${zoom})`, transformOrigin: 'top left' }"
+              :style="{ '--cols': grid.cols, '--rows': grid.rows, '--cell': CELL + 'px', '--gap': CANVAS_GAP + 'px', '--pad': CANVAS_PAD + 'px', width: canvasW + 'px', height: canvasH + 'px', transform: `scale(${zoom})`, transformOrigin: 'top left' }"
             >
             <div class="slot-layer">
               <button
@@ -281,42 +281,60 @@ const buildings = ref<AdminBuilding[]>([])
 const saving = ref(false)
 const loading = ref(false)
 const undoStack = ref<CampusBlock[][]>([])
-// ---------- 画布平移与缩放 ----------
+// ---------- 画布平移与缩放（固定正方形格子，画布可大于视口，靠拖动/缩放查看） ----------
 const scrollRef = ref<HTMLElement | null>(null)
 const zoom = ref(1)
-const baseW = ref(900)
-const baseH = ref(420)
-const stageStyle = computed(() => ({ width: baseW.value * zoom.value + 'px', height: baseH.value * zoom.value + 'px' }))
+// 单格边长固定（未缩放的 px）：格子永远是正方形。画布尺寸只由行列数决定，
+// 不再按容器宽度压缩；装不下时用拖动 / 缩放查看其余部分。
+const CELL = 24
+const CANVAS_GAP = 1
+const CANVAS_PAD = 8
+// 相邻格中心距（含 1px 间隙）：用于像素换算与拖动步长
+const cellStep: number = CELL + CANVAS_GAP
+const canvasW = computed(() => grid.value.cols * CELL + (grid.value.cols - 1) * CANVAS_GAP + CANVAS_PAD * 2)
+const canvasH = computed(() => grid.value.rows * CELL + (grid.value.rows - 1) * CANVAS_GAP + CANVAS_PAD * 2)
+const stageStyle = computed(() => ({ width: canvasW.value * zoom.value + 'px', height: canvasH.value * zoom.value + 'px' }))
 const pan = reactive({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 })
 const canvasHover = ref(false)
 const spacePanReady = ref(false)
 let panTimer: ReturnType<typeof setTimeout> | undefined
 
-function measureCanvas() {
+// 缩放：尽量让视口中心（或鼠标位置）对应的那个画布点保持不动
+function setZoom(nextRaw: number, anchor?: { x: number; y: number }) {
   const sc = scrollRef.value
-  if (!sc) return
-  baseW.value = Math.max(320, sc.clientWidth - 4)
-  const el = canvasRef.value
-  if (el) baseH.value = Math.max(320, el.offsetHeight || 420)
+  const next = Math.max(0.15, Math.min(4, Math.round(nextRaw * 100) / 100))
+  if (!sc) { zoom.value = next; return }
+  const prev = zoom.value
+  if (next === prev) return
+  const rect = sc.getBoundingClientRect()
+  const ax = anchor ? anchor.x - rect.left : rect.width / 2
+  const ay = anchor ? anchor.y - rect.top : rect.height / 2
+  const atX = sc.scrollLeft + ax
+  const atY = sc.scrollTop + ay
+  const ratio = next / prev
+  zoom.value = next
+  nextTick(() => {
+    sc.scrollLeft = atX * ratio - ax
+    sc.scrollTop = atY * ratio - ay
+  })
 }
+function zoomIn() { setZoom(zoom.value + 0.2) }
+function zoomOut() { setZoom(zoom.value - 0.2) }
+function zoomReset() { setZoom(1) }
 
-function zoomIn() { zoom.value = Math.min(4, Math.round((zoom.value + 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
-function zoomOut() { zoom.value = Math.max(0.25, Math.round((zoom.value - 0.2) * 10) / 10); setTimeout(measureCanvas, 0) }
-function zoomReset() { zoom.value = 1; setTimeout(measureCanvas, 0) }
-
-// 适应窗口：让整张画布完整落在可视区域内（高度优先，宽度不超过 100%）
+// 适应窗口：整张画布完整落在可视区域内（整体等比缩放，格子仍是正方形）
 function fitToCanvas() {
   const sc = scrollRef.value
   if (!sc) return
-  measureCanvas()
-  const byH = sc.clientHeight > 0 ? sc.clientHeight / baseH.value : 1
-  const byW = sc.clientWidth > 0 ? sc.clientWidth / baseW.value : 1
-  const next = Math.max(0.25, Math.min(4, Math.min(byH, byW)))
-  zoom.value = Math.round(next * 100) / 100
-  setTimeout(() => {
-    measureCanvas()
-    if (scrollRef.value) { scrollRef.value.scrollLeft = 0; scrollRef.value.scrollTop = 0 }
-  }, 0)
+  const byW = sc.clientWidth > 0 ? (sc.clientWidth - 8) / canvasW.value : 1
+  const byH = sc.clientHeight > 0 ? (sc.clientHeight - 8) / canvasH.value : 1
+  setZoom(Math.min(byW, byH))
+  nextTick(() => {
+    if (scrollRef.value) {
+      scrollRef.value.scrollLeft = 0
+      scrollRef.value.scrollTop = 0
+    }
+  })
 }
 
 // 长按空白处 → 平移画布（拖动 scrollLeft/scrollTop）
@@ -408,10 +426,10 @@ function labelOf(b: CampusBlock) {
 }
 function blockStyle(b: CampusBlock) {
   return {
-    left: `${(b.col / grid.value.cols) * 100}%`,
-    top: `${(b.row / grid.value.rows) * 100}%`,
-    width: `${(b.colSpan / grid.value.cols) * 100}%`,
-    height: `${(b.rowSpan / grid.value.rows) * 100}%`,
+    left: `${b.col * cellStep}px`,
+    top: `${b.row * cellStep}px`,
+    width: `${b.colSpan * CELL + (b.colSpan - 1) * CANVAS_GAP}px`,
+    height: `${b.rowSpan * CELL + (b.rowSpan - 1) * CANVAS_GAP}px`,
   }
 }
 
@@ -607,8 +625,8 @@ function beginDrag(mode: 'resize' | 'move', b: CampusBlock, handle: ResizeHandle
   drag.base = { ...b }
   drag.startX = ev.clientX
   drag.startY = ev.clientY
-  drag.cellW = rect.width / grid.value.cols
-  drag.cellH = rect.height / grid.value.rows
+  drag.cellW = cellStep * zoom.value
+  drag.cellH = cellStep * zoom.value
   selectedId.value = b.id
   editingId.value = b.id
 }
@@ -811,7 +829,6 @@ onMounted(async () => {
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('pointermove', onPanMove)
   window.addEventListener('pointerup', endPan)
-  window.addEventListener('resize', measureCanvas)
   window.addEventListener('keyup', onKeyUp)
   try {
     buildings.value = await apiAdminBuildings()
@@ -822,7 +839,6 @@ onMounted(async () => {
   // 避免"挂载过程中的控件事件把刚载入的图元覆盖掉"导致首屏空白。
   await nextTick()
   await load()
-  measureCanvas()
   loadDistances()
 })
 onUnmounted(() => {
@@ -833,7 +849,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('pointermove', onPanMove)
   window.removeEventListener('pointerup', endPan)
-  window.removeEventListener('resize', measureCanvas)
   window.removeEventListener('keyup', onKeyUp)
 })
 // ---------- #7 长按拖动（只改位置、不改尺寸；松手时若重叠则回退） ----------
@@ -853,8 +868,8 @@ function startLongPress(b: CampusBlock, ev: PointerEvent) {
   if (!canvas) return
   const rect = canvas.getBoundingClientRect()
   if (!rect.width || !rect.height) return
-  pressDrag.cellW = rect.width / grid.value.cols
-  pressDrag.cellH = rect.height / grid.value.rows
+  pressDrag.cellW = cellStep * zoom.value
+  pressDrag.cellH = cellStep * zoom.value
   pressDrag.startX = ev.clientX
   pressDrag.startY = ev.clientY
   pressDrag.id = b.id
@@ -1031,20 +1046,19 @@ function finishPressDrag() {
   user-select: none;
   -webkit-user-drag: none;
   position: relative;
-  width: 100%;
-  min-height: 420px;
+  min-height: 0;
   background: linear-gradient(135deg, #f2f6fb, #e8eef8);
-  border: 1px solid #c8d5ea;
+  box-shadow: inset 0 0 0 1px #c8d5ea;
   border-radius: 14px;
   touch-action: none;
 }
 .slot-layer {
   display: grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
-  gap: 1px;
-  padding: 8px;
-  height: calc(var(--rows) * 20px);
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  gap: var(--gap);
+  padding: var(--pad);
+  height: 100%;
 }
 .slot {
   background: rgba(255, 255, 255, 0.45);
@@ -1061,7 +1075,7 @@ function finishPressDrag() {
 }
 .block-layer {
   position: absolute;
-  inset: 8px;
+  inset: var(--pad);
   pointer-events: none;
 }
 .block {
@@ -1080,9 +1094,10 @@ function finishPressDrag() {
 .block-label {
   pointer-events: none;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 4px;
+  padding: 0 3px;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 .k-building { background: linear-gradient(135deg, #dcebff, #c7dcf7); border: 1px solid #5f7bb5; }
 .k-road { background: linear-gradient(135deg, #efe8da, #e2d8c4); border: 1px dashed #b3a68c; }
