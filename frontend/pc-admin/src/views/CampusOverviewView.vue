@@ -15,8 +15,7 @@
           <el-input-number v-model="cols" :min="10" :max="140" size="small" style="width: 100px" />
           <el-input-number v-model="rows" :min="10" :max="80" size="small" style="width: 100px" />
           <el-button size="small" @click="applySize">应用画布尺寸</el-button>
-          <el-button size="small" :loading="templateSaving" @click="saveAsTemplate">保存到我的画布</el-button>
-          <el-button type="primary" :loading="saving" @click="save">保存并应用</el-button>
+          <el-button type="primary" size="small" :loading="templateSaving" @click="saveAsTemplate">保存到我的画布</el-button>
         </template>
         <template v-else>
           <el-select
@@ -30,6 +29,7 @@
           </el-select>
           <el-button size="small" :disabled="!selectedTemplateId" @click="applyTemplate">使用此模板</el-button>
           <el-button size="small" type="danger" plain :disabled="!selectedTemplateId" @click="deleteTemplate">删除</el-button>
+          <el-button size="small" @click="openBackups">备份与恢复</el-button>
           <el-button type="primary" size="small" @click="openEditDialog">编辑画布</el-button>
           <div style="flex: 1" />
           <span class="toolbar-tip">当前生效：{{ name }} · {{ cols }} × {{ rows }} 格 · 更新于 {{ updatedAt || '—' }}</span>
@@ -87,6 +87,14 @@
             : (brush === 'erase' ? '擦除模式：点击图元即可删除'
               : (brush ? '已选择「' + brushLabel + '」：点击网格放置图元' : '请先在左侧选择图元工具，再点击网格开始绘制')) }}
         </div>
+        <el-alert
+          v-if="savedTemplateHint"
+          class="saved-hint"
+          type="success"
+          show-icon
+          :title="savedTemplateHint"
+          @close="savedTemplateHint = ''"
+        />
         <div class="canvas-tools">
           <span class="toolbar-tip">画布缩放</span>
           <el-button size="small" @click="zoomOut">－</el-button>
@@ -271,6 +279,44 @@
         </section>
       </div>
     </div>
+    <el-dialog v-model="backupDialogVisible" title="备份与恢复" width="780px">
+      <div class="backup-bar">
+        <el-button size="small" type="primary" plain :loading="backupCreating" @click="createBackup">立即备份当前地图</el-button>
+        <span class="toolbar-tip">自动保留最近</span>
+        <el-input-number v-model="backupKeep" :min="1" :max="50" size="small" style="width: 110px" />
+        <span class="toolbar-tip">份</span>
+        <el-button size="small" @click="saveBackupKeep">保存设置</el-button>
+        <el-button size="small" text :loading="backupLoading" @click="loadBackups">刷新</el-button>
+      </div>
+      <el-table v-loading="backupLoading" :data="backups" size="small" border max-height="380">
+        <el-table-column prop="createdAt" label="备份时间" width="180" />
+        <el-table-column label="画布内容" min-width="210">
+          <template #default="{ row }">
+            {{ row.cols }} × {{ row.rows }} 格 · {{ row.blocks }} 个图元（建筑 {{ row.buildings }} 个）
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="名称" min-width="170" show-overflow-tooltip />
+        <el-table-column label="操作" width="140" align="center">
+          <template #default="{ row }">
+            <el-button
+              size="small"
+              type="primary"
+              plain
+              :loading="backupRestoringId === row.id"
+              @click="restoreBackup(row)"
+            >恢复此版本</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <p v-if="!backups.length && !backupLoading" class="hint-line">
+        还没有备份。每次「使用此模板 / 恢复某一版」前都会自动备份当前地图，也可以点上方「立即备份当前地图」。
+      </p>
+      <p class="hint-line">恢复会把该版本写回「当前生效地图」（宿管端 / 工人端立即生效）；恢复前也会自动备份当前地图，可再次回退。</p>
+      <template #footer>
+        <el-button @click="backupDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="editDialogVisible" title="进入编辑模式" width="560px">
       <p class="hint-line">编辑期间的改动不会影响其他端，只有点「保存并应用」后宿管端 / 工人端才会看到。</p>
       <div class="edit-choice">
@@ -293,17 +339,21 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { AdminBuilding, CampusDistance, CampusTemplateItem } from '../api'
+import type { AdminBuilding, CampusBackupItem, CampusDistance, CampusTemplateItem } from '../api'
 import {
   apiAdminBuildings,
+  apiAdminCampusBackups,
   apiAdminCampusDistances,
   apiAdminCampusLayout,
   apiAdminCampusTemplate,
   apiAdminCampusTemplates,
   apiApplyCampusTemplate,
+  apiCreateCampusBackup,
   apiDeleteCampusTemplate,
+  apiRestoreCampusBackup,
   apiSaveCampusLayout,
   apiSaveCampusTemplate,
+  apiSetCampusBackupKeep,
 } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import {
@@ -350,6 +400,15 @@ const selectedTemplateId = ref<number | null>(null)
 const loadTemplateId = ref<number | null>(null)
 const editDialogVisible = ref(false)
 const updatedAt = ref('')
+// V6.2 两步保存 + 备份与恢复
+const editingTemplateId = ref<number | null>(null)
+const savedTemplateHint = ref('')
+const backupDialogVisible = ref(false)
+const backups = ref<CampusBackupItem[]>([])
+const backupKeep = ref(5)
+const backupLoading = ref(false)
+const backupCreating = ref(false)
+const backupRestoringId = ref<number | null>(null)
 // ---------- 画布平移与缩放（固定正方形格子，画布可大于视口，靠拖动/缩放查看） ----------
 const scrollRef = ref<HTMLElement | null>(null)
 const zoom = ref(1)
@@ -936,6 +995,8 @@ function openEditDialog() {
 
 function startNewCanvas() {
   editDialogVisible.value = false
+  editingTemplateId.value = null
+  savedTemplateHint.value = ''
   pushHistory()
   grid.value = emptyCampus(grid.value.cols, grid.value.rows)
   cols.value = grid.value.cols
@@ -960,19 +1021,23 @@ async function loadTemplateIntoEditor() {
     cols.value = parsed.cols
     rows.value = parsed.rows
     name.value = resp.template.name
+    editingTemplateId.value = resp.template.id
     syncSelection()
     brush.value = null
     editDialogVisible.value = false
     mode.value = 'edit'
-    ElMessage.success(`已载入「${resp.template.name}」到编辑器，保存并应用后其他端才可见`)
+    savedTemplateHint.value = ''
+    ElMessage.success(`已载入「${resp.template.name}」到编辑器；保存到我的画布后，再点「使用此模板」才会影响其他端`)
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
 }
 
 async function saveAsTemplate() {
-  const base = name.value && name.value !== '校园总览' ? name.value : '我的画布1'
-  const preset = templates.value.some((t) => t.name === base) ? `${base} 副本` : base
+  // 从某个画布加载进来的：默认覆盖同名画布；从空白新建的：默认给个新名字
+  const loaded = templates.value.find((t) => t.id === editingTemplateId.value)
+  const base = loaded ? loaded.name : (name.value && name.value !== '校园总览' ? name.value : '我的画布1')
+  const preset = !loaded && templates.value.some((t) => t.name === base) ? `${base} 副本` : base
   let input = ''
   try {
     const r = await ElMessageBox.prompt('给这张画布起个名字（同名会询问是否覆盖）', '保存到我的画布', {
@@ -993,7 +1058,7 @@ async function saveAsTemplate() {
 async function doSaveTemplate(templateName: string, overwrite: boolean) {
   templateSaving.value = true
   try {
-    await apiSaveCampusTemplate({
+    const resp = await apiSaveCampusTemplate({
       name: templateName,
       cols: grid.value.cols,
       rows: grid.value.rows,
@@ -1001,6 +1066,9 @@ async function doSaveTemplate(templateName: string, overwrite: boolean) {
       overwrite,
     })
     await loadTemplates()
+    editingTemplateId.value = resp.template.id
+    selectedTemplateId.value = resp.template.id
+    savedTemplateHint.value = `已保存到我的画布「${templateName}」。要让它成为其他端看到的地图，请退出编辑模式后在右上角点「使用此模板」。`
     ElMessage.success(`已保存到我的画布：${templateName}`)
   } catch (err) {
     const msg = (err as Error).message || ''
@@ -1044,6 +1112,72 @@ async function applyTemplate() {
     ElMessage.error((err as Error).message)
   } finally {
     templateLoading.value = false
+  }
+}
+
+// ---------- V6.2 备份与恢复 ----------
+async function openBackups() {
+  backupDialogVisible.value = true
+  await loadBackups()
+}
+
+async function loadBackups() {
+  backupLoading.value = true
+  try {
+    const resp = await apiAdminCampusBackups()
+    backups.value = resp.list || []
+    backupKeep.value = resp.keep || 5
+  } catch (err) {
+    ElMessage.error('加载备份失败：' + (err as Error).message)
+  } finally {
+    backupLoading.value = false
+  }
+}
+
+async function createBackup() {
+  backupCreating.value = true
+  try {
+    await apiCreateCampusBackup()
+    await loadBackups()
+    ElMessage.success('已备份当前生效地图')
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    backupCreating.value = false
+  }
+}
+
+async function saveBackupKeep() {
+  try {
+    await apiSetCampusBackupKeep(backupKeep.value)
+    await loadBackups()
+    ElMessage.success(`已设置：自动保留最近 ${backupKeep.value} 份备份`)
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+
+async function restoreBackup(row: CampusBackupItem) {
+  try {
+    await ElMessageBox.confirm(
+      `恢复「${row.name}」（${row.createdAt}，${row.cols} × ${row.rows} 格、${row.blocks} 个图元）？\n当前地图会先自动备份一份，可再次回退。`,
+      '恢复此版本',
+      { confirmButtonText: '恢复', cancelButtonText: '取消', type: 'warning' },
+    )
+  } catch {
+    return
+  }
+  backupRestoringId.value = row.id
+  try {
+    await apiRestoreCampusBackup(row.id)
+    await load()
+    await loadBackups()
+    await loadTemplates()
+    ElMessage.success('已恢复该版本，其他端立即可见')
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    backupRestoringId.value = null
   }
 }
 
@@ -1451,6 +1585,16 @@ function finishPressDrag() {
 /* V6.1 查看模式：隐藏图元工具，画布占满左侧 */
 .layout.view-mode {
   grid-template-columns: minmax(0, 1fr) 330px;
+}
+.backup-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.saved-hint {
+  margin-bottom: 10px;
 }
 .edit-choice {
   display: flex;

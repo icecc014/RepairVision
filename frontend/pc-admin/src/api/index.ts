@@ -341,6 +341,34 @@ export function apiApplyCampusTemplate(id: number): Promise<CampusLayoutData> {
   return http.post(`/admin/campus-templates/${id}/apply`, {})
 }
 
+export interface CampusBackupItem {
+  id: number
+  name: string
+  cols: number
+  rows: number
+  blocks: number
+  buildings: number
+  bytes: number
+  createdAt: string
+}
+
+// V6.2 区域概览备份与恢复
+export function apiAdminCampusBackups(): Promise<{ list: CampusBackupItem[]; keep: number }> {
+  return http.get('/admin/campus-backups')
+}
+
+export function apiCreateCampusBackup(): Promise<unknown> {
+  return http.post('/admin/campus-backups', {})
+}
+
+export function apiRestoreCampusBackup(id: number): Promise<CampusLayoutData> {
+  return http.post(`/admin/campus-backups/${id}/restore`, {})
+}
+
+export function apiSetCampusBackupKeep(keep: number): Promise<unknown> {
+  return http.put('/admin/campus-backups/keep', { keep })
+}
+
 export interface OperationLogItem {
   id: number
   userId?: number
