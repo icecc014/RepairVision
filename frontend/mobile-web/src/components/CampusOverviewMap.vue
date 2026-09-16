@@ -207,23 +207,58 @@ function isHighlight(b: CampusBlock) {
 function isFocused(b: CampusBlock) {
   return !!focusedBuildingId.value && b.buildingId === focusedBuildingId.value
 }
-// 字体自适应：在建筑框内试 1~3 行，能放下就返回字号与分行；
-// 放不下就不画字（点建筑看详情卡），保证文字永远不溢出图形。
+// 最小可读字号（世界单位）：低于它就换更短的名字，而不是干脆不画
+const MIN_LABEL_SIZE = 0.5
+
+// 名称候选：全名 → 前 4 字 → 前 3 字 → 前 2 字 → 首字（保证"每栋建筑都有字"）
+function labelCandidates(text: string): string[] {
+  const chars = Array.from(text)
+  const list = [text]
+  for (const n of [4, 3, 2, 1]) {
+    if (chars.length > n) list.push(chars.slice(0, n).join(''))
+  }
+  return list
+}
+
+// 把一段文字放进建筑框里：试 1~3 行，返回字号与分行（放不下返回 null）
+function fitLabel(text: string, b: CampusBlock) {
+  const chars = Array.from(text)
+  const w = Math.max(0.8, b.colSpan - 0.32)
+  const h = Math.max(0.55, b.rowSpan - 0.32)
+  for (let lines = 1; lines <= 3; lines++) {
+    const perLine = Math.ceil(chars.length / lines)
+    const size = Math.min(w / (perLine * 1.02), h / (lines * 1.2), 2.4)
+    if (size >= MIN_LABEL_SIZE) {
+      const out: string[] = []
+      for (let i = 0; i < chars.length; i += perLine) out.push(chars.slice(i, i + perLine).join(''))
+      return { lines: out, size }
+    }
+  }
+  return null
+}
+
+// 字体自适应（V6.5）：
+//   1) 先在"全名 / 前 4 字 / 前 3 字"里取字号最大的方案，只有明显更清楚（大 20% 以上）才截断；
+//   2) 三个都放不下时，再退到前 2 字 / 首字，保证每栋建筑一定有字；
+//   3) 文字始终被限制在建筑框内，不会溢出。
 function labelPlan(b: CampusBlock) {
   if (b.kind === 'road') return null
   const text = displayLabel(b)
   if (!text) return null
   const chars = Array.from(text)
-  const w = Math.max(0.8, b.colSpan - 0.32)
-  const h = Math.max(0.6, b.rowSpan - 0.32)
-  for (let lines = 1; lines <= 3; lines++) {
-    const perLine = Math.ceil(chars.length / lines)
-    const size = Math.min(w / (perLine * 1.02), h / (lines * 1.2), 2.4)
-    if (size >= 0.78) {
-      const out: string[] = []
-      for (let i = 0; i < chars.length; i += perLine) out.push(chars.slice(i, i + perLine).join(''))
-      return { lines: out, size }
-    }
+  const primary = [text]
+  for (const n of [4, 3]) if (chars.length > n) primary.push(chars.slice(0, n).join(''))
+  let best: { lines: string[]; size: number } | null = null
+  for (const candidate of primary) {
+    const plan = fitLabel(candidate, b)
+    if (!plan) continue
+    if (!best || plan.size >= best.size * 1.2) best = plan
+  }
+  if (best) return best
+  for (const n of [2, 1]) {
+    if (chars.length <= n) continue
+    const plan = fitLabel(chars.slice(0, n).join(''), b)
+    if (plan) return plan
   }
   return null
 }
@@ -416,6 +451,10 @@ defineExpose({ load, focusBuilding, zoomIn, zoomOut, zoomReset })
 .campus-label {
   pointer-events: none;
   font-weight: 600;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 0.14;
+  stroke-linejoin: round;
 }
 .campus-pulse {
   animation: campus-pulse 1.1s ease-in-out infinite;
