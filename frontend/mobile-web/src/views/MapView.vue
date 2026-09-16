@@ -1,4 +1,3 @@
-SKIP(0): function badgePos(b: WorkerMapBuilding) {
    <template>
   <div class="map-page">
     <div class="map-toolbar">
@@ -32,17 +31,10 @@ SKIP(0): function badgePos(b: WorkerMapBuilding) {
       />
     </div>
     <div v-if="!loading && map.buildings.length > 0" class="canvas-card">
-      <v-stage :config="stageConfig">
-        <v-layer>
-          <v-rect v-for="shape in buildingShapes" :key="shape.id" :config="shape.config" />
-          <v-text v-for="text in labelShapes" :key="text.id" :config="text.config" />
-          <v-group v-for="b in map.buildings" :key="'badge' + b.id" :config="{}">
-            <v-circle v-if="countOf(b.id) > 0" :config="badgeConfig(b)" />
-            <v-text v-if="countOf(b.id) > 0" :config="badgeTextConfig(b)" />
-          </v-group>
-        </v-layer>
-      </v-stage>
-      <div class="map-hint">点击楼栋查看工单，可进入 3D</div>
+      <div class="chips-head">
+        <span class="chips-title">我的维修楼栋（{{ map.buildings.length }} 栋）</span>
+        <span class="chips-tip">点一下 → 上方区域概览自动定位</span>
+      </div>
       <div class="building-chips">
         <button
           v-for="b in map.buildings"
@@ -114,11 +106,6 @@ const show3D = ref(false)
 const showCampus = ref(true)
 const actingType = ref('')
 
-const stageWidth = Math.max(Math.min((window.innerWidth || 390) - 28, 420), 300)
-const stageHeight = 330
-
-const stageConfig = { width: stageWidth, height: stageHeight, x: 14, y: 10 }
-
 const campusRef = ref<{ focusBuilding: (id: number, openCard?: boolean) => boolean } | null>(null)
 // 每栋楼在当前时间窗内的工单数（传给区域概览的信息卡）
 const orderCounts = computed(() => {
@@ -137,122 +124,6 @@ function selectAndFocus(b: WorkerMapBuilding) {
 }
 function countOf(buildingId: number) {
   return map.orders.filter((o) => o.buildingId === buildingId).length
-}
-
-function scaleBounds() {
-  const buildings = map.buildings
-  if (buildings.length === 0) return { minX: 0, minY: 0, rangeX: 1, rangeY: 1, pad: 36, cw: stageWidth - 72, ch: stageHeight - 72 }
-  let minX = Infinity
-  let maxX = -Infinity
-  let minY = Infinity
-  let maxY = -Infinity
-  for (const b of buildings) {
-    minX = Math.min(minX, b.posX - b.width / 2)
-    maxX = Math.max(maxX, b.posX + b.width / 2)
-    minY = Math.min(minY, b.posY - b.height / 2)
-    maxY = Math.max(maxY, b.posY + b.height / 2)
-  }
-  const pad = 40
-  // 固定可视范围：即使只有一栋楼有工单，也按最小世界范围渲染，
-  // 避免"只有一栋有活"时被放大占满整个画布，多栋/单栋比例保持一致。
-  const MIN_RANGE_X = 640
-  const MIN_RANGE_Y = 420
-  const rawRangeX = Math.max(maxX - minX, 1)
-  const rawRangeY = Math.max(maxY - minY, 1)
-  const rangeX = Math.max(rawRangeX, MIN_RANGE_X)
-  const rangeY = Math.max(rawRangeY, MIN_RANGE_Y)
-  // 内容居中：把多出的空间平均分到两侧
-  minX -= (rangeX - rawRangeX) / 2
-  minY -= (rangeY - rawRangeY) / 2
-  return { minX, minY, rangeX, rangeY, pad, cw: stageWidth - pad * 2, ch: stageHeight - pad * 2 }
-}
-
-// 竖状柱图：每栋楼一根竖条（宽度受限、并排排列），条高按该楼在手工单数递增，
-// 楼栋代号标在柱底、工单数徽标固定在柱顶，保证"数字与楼栋"一一对应。
-function chartMetrics() {
-  const n = Math.max(1, map.buildings.length)
-  const gap = 8
-  const usable = stageWidth - 60
-  const colW = Math.max(16, Math.min(56, Math.floor((usable - gap * (n - 1)) / n)))
-  return { n, gap, colW, baseY: stageHeight - 42, maxH: stageHeight - 120 }
-}
-
-function maxOrderCount() {
-  return Math.max(1, ...map.buildings.map((b) => countOf(b.id)))
-}
-
-function barRect(b: WorkerMapBuilding) {
-  const { gap, colW, baseY, maxH } = chartMetrics()
-  const index = Math.max(0, map.buildings.findIndex((x) => x.id === b.id))
-  const ratio = countOf(b.id) / maxOrderCount()
-  const h = Math.round(28 + (maxH - 28) * ratio)
-  const x = 30 + index * (colW + gap)
-  return { x, y: baseY - h, width: colW, height: h }
-}
-
-const buildingShapes = computed(() =>
-  map.buildings.map((b) => {
-    const r = barRect(b)
-    return {
-      id: b.id,
-      config: {
-        x: r.x,
-        y: r.y,
-        width: r.width,
-        height: r.height,
-        fill: selectedBuilding.value?.id === b.id ? '#60a5fa' : '#bfdbfe',
-        stroke: selectedBuilding.value?.id === b.id ? '#2563eb' : '#93c5fd',
-        strokeWidth: selectedBuilding.value?.id === b.id ? 3 : 1.5,
-        cornerRadius: 6,
-        shadowColor: '#2563eb',
-        shadowBlur: selectedBuilding.value?.id === b.id ? 12 : 0,
-        onClick: () => select(b),
-      },
-    }
-  }),
-)
-
-const labelShapes = computed(() =>
-  map.buildings.map((b) => {
-    const r = barRect(b)
-    return {
-      id: 'label' + b.id,
-      config: {
-        x: r.x - 6,
-        y: r.y + r.height + 6,
-        width: r.width + 12,
-        text: b.code,
-        fontSize: 10,
-        fontStyle: 'bold',
-        fill: '#1e3a8a',
-        align: 'center',
-      },
-    }
-  }),
-)
-function badgePos(b: WorkerMapBuilding) {
-  const r = barRect(b)
-  // 圆心固定在"该楼自己的竖条"柱顶上方，与柱底楼栋代号一一对应
-  return { x: r.x + r.width / 2, y: r.y - 22 }
-}
-
-function badgeConfig(b: WorkerMapBuilding) {
-  const p = badgePos(b)
-  return { x: p.x, y: p.y, radius: 12, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }
-}
-
-function badgeTextConfig(b: WorkerMapBuilding) {
-  const p = badgePos(b)
-  return {
-    x: p.x - 13,
-    y: p.y - 7,
-    width: 26,
-    text: String(countOf(b.id)),
-    fontSize: 13,
-    fontStyle: 'bold',
-    fill: '#fff',
-    align: 'center',
-  }
 }
 
 const selectedOrders = computed<OrderItem[]>(() => {
@@ -404,6 +275,22 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #7fe6c8, #22b573);
   border-color: transparent;
   box-shadow: 0 8px 18px rgba(34, 181, 115, 0.26);
+}
+.chips-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 8px;
+}
+.chips-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2a3d;
+}
+.chips-tip {
+  font-size: 11px;
+  color: #94a3b8;
 }
 .canvas-card {
   padding: 6px;
