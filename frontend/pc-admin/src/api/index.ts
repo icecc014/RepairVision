@@ -447,6 +447,11 @@ export function apiAdminOrderExternal(id: number): Promise<unknown> {
   return http.post(`/admin/orders/${id}/external`, {})
 }
 
+// V6.4 管理员代为完工（演示/救急：不用逐个登录工人账号）
+export function apiAdminOrderComplete(id: number): Promise<unknown> {
+  return http.post(`/admin/orders/${id}/complete`, {})
+}
+
 export interface WorkSettings {
   restDaysPerWeek: number
   restMode: string

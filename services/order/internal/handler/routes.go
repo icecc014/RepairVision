@@ -60,6 +60,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		{Method: http.MethodGet, Path: "/api/admin/sla-overview", Handler: AdminSlaOverviewHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/reassign", Handler: AdminOrderReassignHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/external", Handler: AdminOrderExternalHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/admin/orders/:id/complete", Handler: AdminOrderCompleteHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/lock", Handler: AdminOrderLockHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/admin/orders/:id/priority", Handler: AdminOrderPriorityHandler(serverCtx)},
 		{Method: http.MethodGet, Path: "/api/admin/duty-overview", Handler: AdminDutyOverviewHandler(serverCtx)},

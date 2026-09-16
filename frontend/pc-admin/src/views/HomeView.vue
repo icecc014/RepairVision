@@ -103,6 +103,13 @@
         <el-table-column label="操作" width="600" class-name="op-cell">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">详情</el-button>
+                        <el-button
+                          v-if="row.status === 2 || row.status === 3"
+                          size="small"
+                          type="success"
+                          plain
+                          @click="completeOrder(row)"
+                        >完工</el-button>
             <el-button size="small" type="warning" plain @click="toggleLock(row)">
               {{ row.dispatchLocked === 1 ? '解锁' : '锁定' }}
             </el-button>
@@ -228,6 +235,7 @@ import {
   apiAdminBatchDispatch,
   apiAdminDispatchGuard,
   apiAdminOrderExternal,
+  apiAdminOrderComplete,
   apiAdminOrderLock,
   apiAdminOrderPriority,
   apiAdminOrderReassign,
@@ -369,6 +377,26 @@ function openDetail(row: OrderItem) {
   detailRow.value = row
   detailVisible.value = true
 }
+// 管理员代为完工：演示时不必逐个登录工人账号，效果与工人端完工一致
+async function completeOrder(row: OrderItem) {
+  try {
+    await ElMessageBox.confirm(
+      `把工单 ${row.orderNo}（${row.room} 室）标记为已完成？相当于该工人已完工：会记录完成时间、清除故障标记并通知宿管。`,
+      '代为完工',
+      { confirmButtonText: '确认完工', cancelButtonText: '取消' },
+    )
+  } catch {
+    return
+  }
+  try {
+    await apiAdminOrderComplete(row.id)
+    ElMessage.success('已代为完工')
+    load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+
 async function toggleLock(row: OrderItem) {
   const lock = row.dispatchLocked === 1 ? 0 : 1
   try {
