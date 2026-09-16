@@ -896,6 +896,6 @@ get /api/worker/orders (OrderListRequest) returns (OrderListResponse)
 	get /api/admin/feedback-stats returns (AdminFeedbackStatsResponse)
 
 	@handler AdminStatsHandler
-	get /api/admin/stats returns (AdminStatsResponse)
+	get /api/admin/stats (AdminStatsRequest) returns (AdminStatsResponse)
 }
 

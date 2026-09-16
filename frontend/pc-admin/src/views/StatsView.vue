@@ -1,6 +1,20 @@
 <template>
   <AdminShell title="数据统计看板" subtitle="工单状态、SLA 超时、处理时长、楼栋与类型分布">
     <section v-if="stats && sla && feedback" class="stats-body">
+      <div class="status-grid history-grid">
+        <div class="status-card sc-history">
+          <div class="status-num">{{ stats.totalAllTime || 0 }}</div>
+          <div class="status-label">历史累计工单</div>
+        </div>
+        <div class="status-card sc-history-done">
+          <div class="status-num">{{ stats.doneAllTime || 0 }}</div>
+          <div class="status-label">历史累计完成</div>
+        </div>
+        <div class="status-card sc-history-scope">
+          <div class="status-num">{{ stats.days ? stats.days + '天' : '全部' }}</div>
+          <div class="status-label">当前统计口径</div>
+        </div>
+      </div>
       <div class="status-grid">
         <div v-for="s in stats.status" :key="s.status" class="status-card" :class="'sc' + s.status">
           <div class="status-num">{{ s.count }}</div>
@@ -229,6 +243,13 @@ onMounted(load)
 </script>
 
 <style scoped>
+.history-grid {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 16px;
+}
+.sc-history { background: linear-gradient(135deg, #eef4ff, #dfe9ff); }
+.sc-history-done { background: linear-gradient(135deg, #eafaf1, #d8f2e3); }
+.sc-history-scope { background: linear-gradient(135deg, #fdf3e3, #f8e6c8); }
 .stats-body {
   display: flex;
   flex-direction: column;

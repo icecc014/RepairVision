@@ -26,8 +26,16 @@ func NewAdminStatsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminS
 	}
 }
 
-func (l *AdminStatsLogic) AdminStats() (resp *types.AdminStatsResponse, err error) {
-	statusRows, err := store.CountOrdersByStatus(l.ctx, l.svcCtx.DB)
+func (l *AdminStatsLogic) AdminStats(req *types.AdminStatsRequest) (resp *types.AdminStatsResponse, err error) {
+	windowDays := int64(0)
+	if req != nil {
+		windowDays = req.Days
+	}
+	totalAll, doneAll, err := store.OrdersTotals(l.ctx, l.svcCtx.DB)
+	if err != nil {
+		return nil, errs.Internal(err)
+	}
+	statusRows, err := store.CountOrdersByStatusWithinDays(l.ctx, l.svcCtx.DB, windowDays)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
@@ -42,7 +50,7 @@ func (l *AdminStatsLogic) AdminStats() (resp *types.AdminStatsResponse, err erro
 		})
 	}
 
-	buildingRows, err := store.CountOrdersByBuilding(l.ctx, l.svcCtx.DB)
+	buildingRows, err := store.CountOrdersByBuildingWithinDays(l.ctx, l.svcCtx.DB, windowDays)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
@@ -61,7 +69,7 @@ func (l *AdminStatsLogic) AdminStats() (resp *types.AdminStatsResponse, err erro
 		})
 	}
 
-	faultRows, err := store.CountOrdersByFaultType(l.ctx, l.svcCtx.DB)
+	faultRows, err := store.CountOrdersByFaultTypeWithinDays(l.ctx, l.svcCtx.DB, windowDays)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
@@ -95,6 +103,7 @@ func (l *AdminStatsLogic) AdminStats() (resp *types.AdminStatsResponse, err erro
 		recent = append(recent, types.StatsDayItem{Date: day, Count: dayMap[day]})
 	}
 	return &types.AdminStatsResponse{
+		Days: windowDays, TotalAllTime: totalAll, DoneAllTime: doneAll,
 		Status: statusItems, Buildings: buildingItems, Faults: faultItems, Recent: recent,
 	}, nil
 }

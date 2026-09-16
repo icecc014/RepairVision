@@ -319,7 +319,7 @@ const assignTitle = computed(() => {
 
 async function loadStats() {
   try {
-    statsValue.value = await apiAdminStats()
+    statsValue.value = await apiAdminStats(query.days)
   } catch {
     // 统计卡失败不阻塞列表
   }
@@ -342,6 +342,7 @@ async function load() {
 function onDaysChange() {
   page.value = 1
   load()
+  loadStats()  // 统计卡与时间筛选联动
 }
 function pageChange(p: number) {
   page.value = p

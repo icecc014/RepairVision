@@ -53,9 +53,9 @@ type AdminBuildingUpdateRequest struct {
 }
 
 type AdminFaultTypeCreateRequest struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-	Sort int64  `json:"sort,optional"`
+	Code         string `json:"code"`
+	Name         string `json:"name"`
+	Sort         int64  `json:"sort,optional"`
 	Category     string `json:"category,optional"`
 	AutoDispatch int64  `json:"autoDispatch,optional"`
 }
@@ -79,10 +79,10 @@ type AdminFaultTypeListResponse struct {
 }
 
 type AdminFaultTypeUpdateRequest struct {
-	Id     int64  `path:"id"`
-	Name   string `json:"name"`
-	Sort   int64  `json:"sort,optional"`
-	Status int64  `json:"status,optional"`
+	Id           int64  `path:"id"`
+	Name         string `json:"name"`
+	Sort         int64  `json:"sort,optional"`
+	Status       int64  `json:"status,optional"`
 	Category     string `json:"category,optional"`
 	AutoDispatch int64  `json:"autoDispatch,optional"`
 }
@@ -114,10 +114,13 @@ type AdminOrderListRequest struct {
 }
 
 type AdminStatsResponse struct {
-	Status    []StatsStatusItem   `json:"status"`
-	Buildings []StatsBuildingItem `json:"buildings"`
-	Faults    []StatsFaultItem    `json:"faults"`
-	Recent    []StatsDayItem      `json:"recent"`
+	Days         int64               `json:"days"`
+	TotalAllTime int64               `json:"totalAllTime"`
+	DoneAllTime  int64               `json:"doneAllTime"`
+	Status       []StatsStatusItem   `json:"status"`
+	Buildings    []StatsBuildingItem `json:"buildings"`
+	Faults       []StatsFaultItem    `json:"faults"`
+	Recent       []StatsDayItem      `json:"recent"`
 }
 
 type AdminUserCreateRequest struct {
@@ -367,24 +370,24 @@ type ScheduleGenerateRequest struct {
 	MinPerBuilding  int64  `json:"minPerBuilding,optional"`
 }
 type AdminWorkerBoardItem struct {
-	WorkerId       int64    `json:"workerId"`
-	Name           string   `json:"name"`
-	Username       string   `json:"username"`
-	BuildingNames  []string `json:"buildingNames"`
-	MaxConcurrent  int64    `json:"maxConcurrent"`
-	TodayShift     string   `json:"todayShift"`
-	ActiveOrders   int64    `json:"activeOrders"`
-	TodayCompleted int64    `json:"todayCompleted"`
-	Available      bool     `json:"available"`
-	OnDuty             bool    `json:"onDuty"`
-	DutyReason         string  `json:"dutyReason"`
-	JobType            int64   `json:"jobType"`
-	JobTypeText        string  `json:"jobTypeText"`
-	LoadMinutes        int64   `json:"loadMinutes"`
-	LoadDeviation      float64 `json:"loadDeviation"`
-	CurrentBuildingId  int64   `json:"currentBuildingId"`
-	CurrentBuildingName string `json:"currentBuildingName"`
-	CurrentOrderNo     string  `json:"currentOrderNo"`
+	WorkerId            int64    `json:"workerId"`
+	Name                string   `json:"name"`
+	Username            string   `json:"username"`
+	BuildingNames       []string `json:"buildingNames"`
+	MaxConcurrent       int64    `json:"maxConcurrent"`
+	TodayShift          string   `json:"todayShift"`
+	ActiveOrders        int64    `json:"activeOrders"`
+	TodayCompleted      int64    `json:"todayCompleted"`
+	Available           bool     `json:"available"`
+	OnDuty              bool     `json:"onDuty"`
+	DutyReason          string   `json:"dutyReason"`
+	JobType             int64    `json:"jobType"`
+	JobTypeText         string   `json:"jobTypeText"`
+	LoadMinutes         int64    `json:"loadMinutes"`
+	LoadDeviation       float64  `json:"loadDeviation"`
+	CurrentBuildingId   int64    `json:"currentBuildingId"`
+	CurrentBuildingName string   `json:"currentBuildingName"`
+	CurrentOrderNo      string   `json:"currentOrderNo"`
 }
 
 type AdminWorkerBoardResponse struct {
@@ -627,7 +630,7 @@ type DispatchGuardResponse struct {
 	Mode               string  `json:"mode"`
 	Message            string  `json:"message"`
 	WaitText           string  `json:"waitText"`
-}
+}
 type AdminOrderLockRequest struct {
 	Id     int64 `path:"id"`
 	Locked int64 `json:"locked"`
@@ -674,4 +677,7 @@ type AutoAssignResponse struct {
 	Buildings int64                  `json:"buildings"`
 	Workers   int64                  `json:"workers"`
 	List      []AutoAssignWorkerItem `json:"list"`
+}
+type AdminStatsRequest struct {
+	Days int64 `form:"days,optional"`
 }

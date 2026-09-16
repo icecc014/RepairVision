@@ -333,14 +333,17 @@ export function apiAdminLogs(params: { page: number; size: number; module?: stri
 }
 
 export interface AdminStats {
+  days?: number
+  totalAllTime?: number
+  doneAllTime?: number
   status: { status: number; statusText: string; count: number }[]
   buildings: { buildingId: number; buildingName: string; count: number }[]
   faults: { faultType: string; faultTypeName: string; count: number }[]
   recent: { date: string; count: number }[]
 }
 
-export function apiAdminStats(): Promise<AdminStats> {
-  return http.get('/admin/stats')
+export function apiAdminStats(days = 0): Promise<AdminStats> {
+  return http.get('/admin/stats', { params: { days: days || undefined } })
 }
 
 export interface AdminReassignPayload {
