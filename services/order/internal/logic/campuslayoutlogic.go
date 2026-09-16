@@ -2,21 +2,21 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"map/mapclient"
 	"order/internal/auth"
 	"order/internal/errs"
-	"map/mapclient"
 	"order/internal/store"
 	"order/internal/svc"
-	"order/internal/ws"
 	"order/internal/types"
+	"order/internal/ws"
 )
 
 type CampusLayoutLogic struct {
@@ -161,8 +161,11 @@ func (l *CampusLayoutLogic) syncBuildingPositions(raw string) error {
 		if colSpan <= 0 {
 			colSpan = 1
 		}
-		posX := (float64(blk.Col) + float64(colSpan)/2) * defaultGridMeters
-		posY := (float64(blk.Row) + float64(rowSpan)/2) * defaultGridMeters
+		// 坐标口径（V6 起）：以区域概览画布左上角为原点，画布区域为第四象限（向下为负），
+		// 以"建筑图元左上角"为坐标应用点，1 格 = 10 米：
+		//   距左 5 格、距上 5 格 → (50, -50)
+		posX := float64(blk.Col) * defaultGridMeters
+		posY := -float64(blk.Row) * defaultGridMeters
 		if _, err := l.svcCtx.MapRpc.UpdateBuilding(l.ctx, &mapclient.SaveBuildingRequest{
 			Building: &mapclient.Building{
 				Id: b.Id, Code: b.Code, Name: b.Name, PosX: posX, PosY: posY,

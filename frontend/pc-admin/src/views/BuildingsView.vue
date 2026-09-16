@@ -19,7 +19,10 @@
         <el-table-column prop="code" label="编码" width="100" />
         <el-table-column prop="name" label="楼栋名称" min-width="160" />
         <el-table-column label="2D坐标" width="160">
-          <template #default="{ row }">({{ row.posX }}, {{ row.posY }})</template>
+          <template #default="{ row }">
+            <template v-if="row.posX || row.posY">({{ row.posX }}, {{ row.posY }})</template>
+            <span v-else class="pos-empty">未同步</span>
+          </template>
         </el-table-column>
         <el-table-column label="尺寸" width="150">
           <template #default="{ row }">{{ row.width }} × {{ row.height }}</template>
@@ -57,7 +60,7 @@
         </el-form-item>
         <el-form-item label="2D坐标 X / Y">
           <div class="inline-pair">
-            <el-input-number v-model="form.posX" :precision="2" />
+            <el-input-number v-model="form.posX" :precision="2" style="width: 100%" />
             <el-input-number v-model="form.posY" :precision="2" />
           </div>
         </el-form-item>
@@ -126,8 +129,8 @@ const designerBuilding = ref<AdminBuilding | null>(null)
 const form = reactive({
   code: '',
   name: '',
-  posX: 100,
-  posY: 100,
+  posX: 0,
+  posY: 0,
   width: 60,
   height: 36,
   floors: 6,
@@ -156,8 +159,8 @@ function openCreate() {
   Object.assign(form, {
     code: '',
     name: '',
-    posX: 100,
-    posY: 100,
+    posX: 0,
+    posY: 0,
     width: 60,
     height: 36,
     floors: 6,
@@ -257,5 +260,9 @@ onMounted(load)
 }
 .empty {
   padding: 24px 0;
+}
+.pos-empty {
+  color: #94a3b8;
+  font-size: 12px;
 }
 </style>

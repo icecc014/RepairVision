@@ -115,38 +115,7 @@
       </section>
 
       <div class="side-col">
-      <section class="panel distances">
-          <div class="panel-title">路网与距离</div>
-          <p class="dist-tip">
-            比例尺：1 格 = {{ distances.gridMeters }} 米 · 道路格 {{ distances.roadCells }} 个 ·
-            最远建筑间距 {{ distances.maxMeters }} 米（派单距离即按路网最短路计算）
-          </p>
-          <el-table :data="distances.buildings" size="small" border max-height="300">
-            <el-table-column prop="name" label="建筑" min-width="130" />
-            <el-table-column label="接入路网" width="100" align="center">
-              <template #default="{ row }">
-                <el-tag :type="row.connected ? 'success' : 'info'" size="small">{{ row.connected ? '已接入' : '未接入' }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="entryCount" label="入口格" width="90" align="center" />
-            <el-table-column label="最远通勤" width="110" align="center">
-              <template #default="{ row }">{{ row.connected ? row.maxMeters + ' 米' : '回退欧氏' }}</template>
-            </el-table-column>
-          </el-table>
-          <p v-if="distances.pairs.length" class="dist-tip" style="margin-top: 10px">建筑间路网距离（米）</p>
-          <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border max-height="300">
-            <el-table-column label="起点" min-width="120">
-              <template #default="{ row }">{{ nameOfBuilding(row.fromId) }}</template>
-            </el-table-column>
-            <el-table-column label="终点" min-width="120">
-              <template #default="{ row }">{{ nameOfBuilding(row.toId) }}</template>
-            </el-table-column>
-            <el-table-column label="路网距离" width="110" align="center">
-              <template #default="{ row }">{{ row.meters }} 米</template>
-            </el-table-column>
-          </el-table>
-        </section>
-        <section class="panel props">
+      <section class="panel props">
           <div class="panel-title">图元属性</div>
           <template v-if="selectedBlock">
             <div class="prop-row">
@@ -230,6 +199,37 @@
             <el-button size="small" type="danger" plain style="width: 100%" @click="removeSelected">删除该图元</el-button>
           </template>
           <p v-else class="prop-empty">单击图元查看属性；双击进入编辑模式（显示 8 个把手）。<br />建筑图元可关联"建筑信息管理"中的楼栋，或选择自定义后手动命名。</p>
+        </section>
+<section class="panel distances">
+          <div class="panel-title">路网与距离</div>
+          <p class="dist-tip">
+            比例尺：1 格 = {{ distances.gridMeters }} 米 · 道路格 {{ distances.roadCells }} 个 ·
+            最远建筑间距 {{ distances.maxMeters }} 米（派单距离即按路网最短路计算）
+          </p>
+          <el-table :data="distances.buildings" size="small" border max-height="300">
+            <el-table-column prop="name" label="建筑" min-width="130" />
+            <el-table-column label="接入路网" width="100" align="center">
+              <template #default="{ row }">
+                <el-tag :type="row.connected ? 'success' : 'info'" size="small">{{ row.connected ? '已接入' : '未接入' }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="entryCount" label="入口格" width="90" align="center" />
+            <el-table-column label="最远通勤" width="110" align="center">
+              <template #default="{ row }">{{ row.connected ? row.maxMeters + ' 米' : '回退欧氏' }}</template>
+            </el-table-column>
+          </el-table>
+          <p v-if="distances.pairs.length" class="dist-tip" style="margin-top: 10px">建筑间路网距离（米）</p>
+          <el-table v-if="distances.pairs.length" :data="distances.pairs" size="small" border max-height="300">
+            <el-table-column label="起点" min-width="120">
+              <template #default="{ row }">{{ nameOfBuilding(row.fromId) }}</template>
+            </el-table-column>
+            <el-table-column label="终点" min-width="120">
+              <template #default="{ row }">{{ nameOfBuilding(row.toId) }}</template>
+            </el-table-column>
+            <el-table-column label="路网距离" width="110" align="center">
+              <template #default="{ row }">{{ row.meters }} 米</template>
+            </el-table-column>
+          </el-table>
         </section>
       </div>
     </div>
