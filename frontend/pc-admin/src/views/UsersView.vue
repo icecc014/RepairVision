@@ -1,4 +1,5 @@
-<template>
+SKIP(0):     list.value = await apiAdminUsers({
+      role: <template>
   <AdminShell title="人员账号管理" subtitle="维护宿管、维修工人与管理员账号">
     <section class="panel">
       <div class="toolbar">
@@ -145,7 +146,7 @@ const resetTarget = ref<AdminUser | null>(null)
 const resetPassword = ref('')
 const editingId = ref<number | null>(null)
 const isAdminRow = ref(false)
-const filter = reactive({ role: 0, status: 0, keyword: '' })
+const filter = reactive({ role: 0, status: -1, keyword: '' })
 const form = reactive({
   username: '',
   password: '',
