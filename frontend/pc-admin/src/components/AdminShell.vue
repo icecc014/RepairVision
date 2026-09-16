@@ -67,10 +67,17 @@ function logout() {
 .admin-shell {
   display: grid;
   grid-template-columns: 232px 1fr;
-  min-height: 100vh;
+  /* 固定外壳高度：左侧导航与顶栏不动，只有内容区滚动 */
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: 20px 14px;
@@ -181,6 +188,8 @@ function logout() {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .topbar {
@@ -240,6 +249,9 @@ function logout() {
 }
 
 .content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 22px 28px 36px;
   /* 只做淡入、不使用 transform：避免 .content 变成 position:fixed 弹层的包含块与层叠上下文 */
   animation: rv-content-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
