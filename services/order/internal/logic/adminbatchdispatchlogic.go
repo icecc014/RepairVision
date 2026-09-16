@@ -67,6 +67,11 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
+	// V6.1 工种过滤：批量派单同样要按故障类型类别限制候选人
+	faultCategories, err := faultTypeCategoryMap(l.ctx, l.svcCtx)
+	if err != nil {
+		return nil, errs.Internal(err)
+	}
 	rules, err := store.ListDispatchRules(l.ctx, l.svcCtx.DB)
 	if err != nil {
 		return nil, errs.Internal(err)
@@ -138,6 +143,8 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 	type planOrder struct {
 		order    store.Order
 		building *mapclient.Building
+		// V6.1：该工单需要的工种（由故障类型类别推导，0 = 不限）
+		requiredJobType int64
 	}
 	plan := make([]planOrder, 0, len(orders))
 	remained := int64(0)
@@ -147,18 +154,23 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 			remained++
 			continue
 		}
+		// V6.1 工种匹配：电/水/泥瓦/木各归其位，通用工人仍可接任意类别
+		requiredJobType := orderRequiredJobType(faultCategories, o.FaultType)
 		hasEligible := false
 		for _, w := range workerByBuilding[o.BuildingID] {
-			if workerCanTake(w, countLoads) {
+			if workerCanTake(w, countLoads) && jobTypeAllowed(w.JobType, requiredJobType) {
 				hasEligible = true
 				break
 			}
 		}
 		if !hasEligible {
+			// 该楼栋没有工种匹配的可用工人：留在待派队列，交管理员处置
+			logx.WithContext(l.ctx).Infof("batch dispatch skip order %s: no worker matches job type %d",
+				o.OrderNo, requiredJobType)
 			remained++
 			continue
 		}
-		plan = append(plan, planOrder{order: o, building: b})
+		plan = append(plan, planOrder{order: o, building: b, requiredJobType: requiredJobType})
 	}
 	if len(plan) == 0 || len(slots) == 0 {
 		resp.Remained = int64(len(plan)) + remained
@@ -186,6 +198,10 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 		workers := workerByBuilding[po.order.BuildingID]
 		for c := 0; c < nSlots; c++ {
 			if !containsWorker(workers, slots[c].worker.Id) {
+				continue
+			}
+			// V6.1 工种过滤：工种不匹配的槽位保持 INF 成本，永远不会被指派
+			if !jobTypeAllowed(slots[c].worker.JobType, po.requiredJobType) {
 				continue
 			}
 			score := scoreWorkerForOrder(slots[c].worker, scoreInput{
@@ -220,6 +236,10 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 			continue
 		}
 		worker := slots[col].worker
+		if !jobTypeAllowed(worker.JobType, po.requiredJobType) {
+			remained++
+			continue
+		}
 		score := scoreWorkerForOrder(worker, scoreInput{
 			buildings:   buildingResp.Buildings,
 			current:     po.building,
