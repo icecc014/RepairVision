@@ -15,13 +15,20 @@
       </div>
       <div class="board-card">
         <div class="board-num" style="color: #2563eb">{{ doneSum }}</div>
-        <div class="board-label">今日已完成</div>
+        <div class="board-label">窗口内已完成</div>
       </div>
     </section>
 
     <section class="panel">
       <div class="toolbar">
         <div class="panel-title">工人状态</div>
+        <span class="toolbar-tip">统计窗口</span>
+        <el-radio-group v-model="days" size="small" @change="load">
+          <el-radio-button :value="1">1天</el-radio-button>
+          <el-radio-button :value="3">3天</el-radio-button>
+          <el-radio-button :value="7">7天</el-radio-button>
+          <el-radio-button :value="30">30天</el-radio-button>
+        </el-radio-group>
         <el-button size="small" @click="load">↻ 刷新</el-button>
       </div>
       <el-table :data="list" v-loading="loading" border stripe>
@@ -85,7 +92,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="todayCompleted" label="今日完成" width="100" align="center" />
+        <el-table-column prop="todayCompleted" label="窗口内完成" width="110" align="center" />
       </el-table>
       <el-empty v-if="!loading && list.length === 0" description="暂无可展示工人" class="empty" />
     </section>
@@ -102,6 +109,7 @@ import AdminShell from '../components/AdminShell.vue'
 const list = ref<WorkerBoardItem[]>([])
 const loading = ref(false)
 const revealed = ref(false)
+const days = ref(1)
 
 const availableCount = computed(() => list.value.filter((w) => w.available).length)
 const onDutyCount = computed(() => list.value.filter((w) => w.onDuty).length)
@@ -112,7 +120,7 @@ async function load() {
   loading.value = true
   revealed.value = false
   try {
-    list.value = await apiAdminWorkerBoard()
+    list.value = await apiAdminWorkerBoard(days.value)
   } catch (err) {
     ElMessage.error((err as Error).message)
   } finally {

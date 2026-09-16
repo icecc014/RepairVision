@@ -868,7 +868,7 @@ get /api/worker/orders (OrderListRequest) returns (OrderListResponse)
 	post /api/admin/orders/:id/priority (AdminOrderPriorityRequest) returns (EmptyResponse)
 
 	@handler AdminWorkerBoardHandler
-	get /api/admin/worker-board returns (AdminWorkerBoardResponse)
+	get /api/admin/worker-board (AdminWorkerBoardRequest) returns (AdminWorkerBoardResponse)
 
 	@handler AdminLeaveListHandler
 	get /api/admin/leaves (AdminLeaveListRequest) returns (LeaveListResponse)

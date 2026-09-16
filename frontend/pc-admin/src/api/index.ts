@@ -531,8 +531,8 @@ export interface WorkerBoardItem {
   currentOrderNo?: string
 }
 
-export async function apiAdminWorkerBoard(): Promise<WorkerBoardItem[]> {
-  const res = (await http.get('/admin/worker-board')) as { list: WorkerBoardItem[] }
+export async function apiAdminWorkerBoard(days = 1): Promise<WorkerBoardItem[]> {
+  const res = (await http.get('/admin/worker-board', { params: { days } })) as { list: WorkerBoardItem[] }
   return res.list || []
 }
 

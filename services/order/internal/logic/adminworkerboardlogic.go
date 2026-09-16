@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -29,7 +30,7 @@ func NewAdminWorkerBoardLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 // AdminWorkerBoard 聚合今日班次、在途单、今日完工与最大并发，形成调度看板。
-func (l *AdminWorkerBoardLogic) AdminWorkerBoard() (resp *types.AdminWorkerBoardResponse, err error) {
+func (l *AdminWorkerBoardLogic) AdminWorkerBoard(req *types.AdminWorkerBoardRequest) (resp *types.AdminWorkerBoardResponse, err error) {
 	usersResp, err := l.svcCtx.WorkerRpc.ListUsers(l.ctx, &workerclient.ListUsersRequest{Role: 2, Status: 1})
 	if err != nil {
 		return nil, errs.Upstream()
@@ -42,9 +43,18 @@ func (l *AdminWorkerBoardLogic) AdminWorkerBoard() (resp *types.AdminWorkerBoard
 	if err != nil {
 		return nil, errs.Upstream()
 	}
+	days := int64(1)
+	if req != nil && req.Days > 0 {
+		days = req.Days
+	}
 	buildingNames := make(map[int64]string, len(buildingResp.Buildings))
 	for _, b := range buildingResp.Buildings {
-		buildingNames[b.Id] = b.Code + " " + b.Name
+		// 楼栋名去重：编码已包含在名称里（如 code=1 / name=1号宿舍楼）时只显示名称
+		if b.Code != "" && !strings.HasPrefix(b.Name, b.Code) {
+			buildingNames[b.Id] = b.Code + " " + b.Name
+		} else {
+			buildingNames[b.Id] = b.Name
+		}
 	}
 
 	today := time.Now().Format("2006-01-02")
@@ -66,7 +76,7 @@ func (l *AdminWorkerBoardLogic) AdminWorkerBoard() (resp *types.AdminWorkerBoard
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
-	completedCounts, err := store.CountCompletedTodayByWorkers(l.ctx, l.svcCtx.DB, workerIDs)
+	completedCounts, err := store.CountCompletedByWorkersWithinDays(l.ctx, l.svcCtx.DB, workerIDs, days)
 	if err != nil {
 		return nil, errs.Internal(err)
 	}

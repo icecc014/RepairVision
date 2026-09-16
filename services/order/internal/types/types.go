@@ -659,3 +659,6 @@ type CampusDistanceResponse struct {
 	Buildings  []CampusDistanceBuilding `json:"buildings"`
 	Pairs      []CampusDistancePair     `json:"pairs"`
 }
+type AdminWorkerBoardRequest struct {
+	Days int64 `form:"days,optional"`
+}
