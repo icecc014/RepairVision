@@ -620,8 +620,35 @@ type StartOrderResponse struct {
 }
 // ---------- V6.3 派单规则可视化编辑 ----------
 
-type DispatchRuleEntry struct {
-	Key          string  `json:"key"`
+// ---------- V6.5 手动派单可选工人 ----------
+
+type AssignableWorkerItem struct {
+	Id            int64    `json:"id"`
+	Name          string   `json:"name"`
+	Username      string   `json:"username"`
+	JobType       int64    `json:"jobType"`
+	JobTypeText   string   `json:"jobTypeText"`
+	OnDuty        bool     `json:"onDuty"`
+	Working       bool     `json:"working"`
+	Enabled       bool     `json:"enabled"`
+	OnLeave       bool     `json:"onLeave"`
+	TodayShift    string   `json:"todayShift"`
+	InProgress    int64    `json:"inProgress"`
+	MaxConcurrent int64    `json:"maxConcurrent"`
+	InBuilding    bool     `json:"inBuilding"`
+	Selectable    bool     `json:"selectable"`
+	Reason        string   `json:"reason"`
+	BuildingNames []string `json:"buildingNames"`
+}
+
+type AssignableWorkerListResponse struct {
+	List            []AssignableWorkerItem `json:"list"`
+	RequiredJobType int64                  `json:"requiredJobType"`
+	RequiredJobText string                 `json:"requiredJobText"`
+	FaultTypeName   string                 `json:"faultTypeName"`
+}
+
+type DispatchRuleEntry struct {	Key          string  `json:"key"`
 	Name         string  `json:"name"`
 	Group        string  `json:"group"`
 	Type         string  `json:"type"`

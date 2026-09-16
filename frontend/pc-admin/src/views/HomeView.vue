@@ -158,10 +158,24 @@
         <p v-if="assignTarget.manualReview === 1" class="assign-note">
           该工单为「待管理员处置」：可协商派给内部工人，或直接标记外援处理。
         </p>
-        <el-select v-model="assignWorkerId" placeholder="选择负责该楼栋的工人" style="width: 100%">
-          <el-option v-for="w in assignableWorkers" :key="w.id" :label="`${w.name}（${w.username}）· 在途/并发可派`" :value="w.id" />
+        <p class="assign-hint">
+          候选规则：<b>今天排班</b>（未轮休 / 未请假 / 未停用）且<b>工种匹配</b>；轮休、请假或工种不符的会置灰并说明原因。
+          <span v-if="assignMeta">本单：{{ assignMeta.faultTypeName }}，需要 {{ assignMeta.requiredJobText || '不限工种' }}</span>
+        </p>
+        <el-select v-model="assignWorkerId" placeholder="选择在岗工人" style="width: 100%" :loading="assignLoading">
+          <el-option-group v-for="g in assignGroups" :key="g.key" :label="g.label">
+            <el-option
+              v-for="w in g.items"
+              :key="w.id"
+              :label="workerOptionLabel(w)"
+              :value="w.id"
+              :disabled="!w.selectable"
+            />
+          </el-option-group>
         </el-select>
-        <p v-if="assignableWorkers.length === 0" class="assign-empty">该楼栋暂无可用工人（可能都在休息或满载）</p>
+        <p v-if="!assignLoading && assignSelectableCount === 0" class="assign-empty">
+          今天没有「在岗且工种匹配」的工人：可到「工人排班」调整班次，或把该单「标记外援」处理。
+        </p>
       </template>
       <template #footer>
         <el-button @click="assignVisible = false">取消</el-button>
@@ -228,11 +242,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { AdminUser, DispatchGuard, OrderItem } from '../api'
+import type { AdminUser, AssignableWorkerItem, DispatchGuard, OrderItem } from '../api'
 import {
   apiAdminBatchDispatch,
   apiAdminDispatchGuard,
   apiAdminOrderExternal,
+  apiAdminAssignableWorkers,
   apiAdminOrderComplete,
   apiAdminOrderLock,
   apiAdminOrderPriority,
@@ -313,10 +328,45 @@ const visibleOrders = computed(() => {
   return orders.value.filter((o) => o.status === status)
 })
 
-const assignableWorkers = computed(() => {
-  if (!assignTarget.value) return []
-  return workers.value.filter((w) => (w.buildingIds || []).includes(assignTarget.value!.buildingId))
+// ---------- V6.5 手动派单候选（后端计算：在岗 + 工种匹配）----------
+const assignCandidates = ref<AssignableWorkerItem[]>([])
+const assignMeta = ref<{ faultTypeName: string; requiredJobText: string } | null>(null)
+const assignLoading = ref(false)
+const assignGroups = computed(() => {
+  const list = assignCandidates.value
+  const groups: Array<{ key: string; label: string; items: AssignableWorkerItem[] }> = []
+  const okIn = list.filter((w) => w.selectable && w.inBuilding)
+  const okCross = list.filter((w) => w.selectable && !w.inBuilding)
+  const noIn = list.filter((w) => !w.selectable && w.inBuilding)
+  const noCross = list.filter((w) => !w.selectable && !w.inBuilding)
+  if (okIn.length) groups.push({ key: 'in-ok', label: '本楼栋在岗可派', items: okIn })
+  if (okCross.length) groups.push({ key: 'cross-ok', label: '全校在岗（跨区支援）', items: okCross })
+  if (noIn.length) groups.push({ key: 'in-no', label: '本楼栋不可派（轮休 / 请假 / 工种不符）', items: noIn })
+  if (noCross.length) groups.push({ key: 'cross-no', label: '全校其他工人（不可派）', items: noCross })
+  return groups
 })
+const assignSelectableCount = computed(() => assignCandidates.value.filter((w) => w.selectable).length)
+function workerOptionLabel(w: AssignableWorkerItem) {
+  const parts = [`${w.name}（${w.username}）`, w.jobTypeText, `在途 ${w.inProgress}/${w.maxConcurrent}`]
+  if (w.selectable) parts.push(w.onDuty ? '当前在岗' : '今日排班（非时段）')
+  if (!w.selectable && w.reason) parts.push(w.reason)
+  else if (!w.inBuilding && w.selectable) parts.push('跨区支援')
+  return parts.join(' · ')
+}
+async function loadAssignCandidates(row: OrderItem) {
+  assignLoading.value = true
+  try {
+    const resp = await apiAdminAssignableWorkers(row.id)
+    assignCandidates.value = resp.list || []
+    assignMeta.value = { faultTypeName: resp.faultTypeName, requiredJobText: resp.requiredJobText }
+    const current = assignCandidates.value.find((w) => w.id === row.workerId && w.selectable)
+    if (current) assignWorkerId.value = current.id
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    assignLoading.value = false
+  }
+}
 const assignTitle = computed(() => {
   if (!assignTarget.value) return '手动派单'
   if (assignTarget.value.manualReview === 1) return '协商派单／手动指派'
@@ -462,8 +512,11 @@ async function markExternal(row: OrderItem) {
 }
 function openAssign(row: OrderItem) {
   assignTarget.value = row
-  assignWorkerId.value = row.workerId || null
+  assignWorkerId.value = null
+  assignCandidates.value = []
+  assignMeta.value = null
   assignVisible.value = true
+  void loadAssignCandidates(row)
 }
 
 async function submitAssign() {

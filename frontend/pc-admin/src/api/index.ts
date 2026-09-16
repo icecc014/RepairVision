@@ -341,6 +341,34 @@ export function apiApplyCampusTemplate(id: number): Promise<CampusLayoutData> {
   return http.post(`/admin/campus-templates/${id}/apply`, {})
 }
 
+export interface AssignableWorkerItem {
+  id: number
+  name: string
+  username: string
+  jobType: number
+  jobTypeText: string
+  onDuty: boolean
+  todayShift: string
+  inProgress: number
+  maxConcurrent: number
+  inBuilding: boolean
+  selectable: boolean
+  reason: string
+  buildingNames: string[]
+}
+
+export interface AssignableWorkerList {
+  list: AssignableWorkerItem[]
+  requiredJobType: number
+  requiredJobText: string
+  faultTypeName: string
+}
+
+// V6.5 手动派单 / 改派候选工人（后端按在岗 + 工种匹配计算）
+export function apiAdminAssignableWorkers(orderId: number): Promise<AssignableWorkerList> {
+  return http.get(`/admin/orders/${orderId}/assignable-workers`)
+}
+
 export interface CampusBackupItem {
   id: number
   name: string
@@ -467,6 +495,9 @@ export interface DutyStatusItem {
   workerId: number
   name: string
   onDuty: boolean
+  working: boolean
+  enabled: boolean
+  onLeave: boolean
   shiftType: string
   inWorkPeriod: boolean
   onLeave: boolean

@@ -93,7 +93,14 @@ func (l *AdminOrderReassignLogic) AdminOrderReassign(req *types.AdminOrderReassi
 		}
 	}
 	if target == nil {
-		return nil, errs.BadRequest("目标工人不负责该楼栋")
+		// V6.5 跨楼栋手动支援：管理员可指定其他在岗且工种匹配的工人
+		cross, cErr := l.crossBuildingWorker(order, req.WorkerId)
+		if cErr != nil {
+			return nil, cErr
+		}
+		target = cross
+		workerIDs = append(workerIDs, cross.Id)
+		logx.WithContext(l.ctx).Infof("cross-building manual assign: order=%s worker=%d", order.OrderNo, cross.Id)
 	}
 	countLoads, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, workerIDs)
 	if err != nil {
