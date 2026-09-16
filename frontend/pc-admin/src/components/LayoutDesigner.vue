@@ -583,9 +583,14 @@ function applySize() {
 
 function loadTemplate() {
   pushHistory()
-  grid.value = defaultLayout(cols.value, rows.value)
+  // V6.1：内置标准层 = 1 号楼自定义布局，载入后同步网格尺寸
+  const base = defaultLayout()
+  grid.value = { version: base.version, cols: base.cols, rows: base.rows, blocks: base.blocks.map((b) => ({ ...b })) }
+  cols.value = base.cols
+  rows.value = base.rows
   selectedId.value = null
   editingId.value = null
+  ElMessage.success(`已载入内置标准层（${base.cols} × ${base.rows} 格，${base.blocks.filter((b) => b.kind === 'room').length} 间房）`)
 }
 
 function clearAll() {
@@ -604,7 +609,8 @@ async function clearCustom() {
   }
   saving.value = true
   try {
-    await apiUpdateBuilding(props.building.id, { ...props.building, layoutJson: '' })
+    // V6.1：显式哨兵表示"清空自定义布局，回退内置标准层"（空串会被后端理解为"本次不动布局"）
+    await apiUpdateBuilding(props.building.id, { ...props.building, layoutJson: '__DEFAULT__' })
     ElMessage.success('已清除自定义布局')
     emit('saved')
     emit('update:modelValue', false)
