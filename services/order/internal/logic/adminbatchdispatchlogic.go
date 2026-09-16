@@ -107,6 +107,75 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 		return nil, errs.Internal(err)
 	}
 
+	// V6.1 工种兜底池（懒加载）：若某楼栋池里没有所需工种的当班工人
+	//（例如该楼栋唯一的电工今天轮休），回退到"全校同工种当班工人"，
+	// 再由路网距离与负载评分决定派谁，避免"电维修没人可派"而长期积压。
+	poolWorkers := make([]*workerclient.WorkerInfo, 0)
+	for _, ws := range workerByBuilding {
+		poolWorkers = append(poolWorkers, ws...)
+	}
+	leaveSet := onLeaveWorkerIDs(l.ctx, l.svcCtx, poolWorkers)
+	extraWorkers := make([]*workerclient.WorkerInfo, 0)
+	extraLoaded := false
+	loadExtraWorkers := func() []*workerclient.WorkerInfo {
+		if extraLoaded {
+			return extraWorkers
+		}
+		extraLoaded = true
+		seen := map[int64]bool{}
+		for _, ws := range workerByBuilding {
+			for _, w := range ws {
+				seen[w.Id] = true
+			}
+		}
+		workDate := time.Now().Format("2006-01-02")
+		for _, b := range buildingResp.Buildings {
+			if _, ok := workerByBuilding[b.Id]; ok {
+				continue
+			}
+			wr, err := l.svcCtx.WorkerRpc.ListWorkersByBuilding(l.ctx,
+				&workerclient.BuildingWorkersRequest{BuildingId: b.Id, WorkDate: workDate})
+			if err != nil {
+				continue
+			}
+			for _, w := range wr.Workers {
+				if seen[w.Id] {
+					continue
+				}
+				seen[w.Id] = true
+				extraWorkers = append(extraWorkers, w)
+			}
+		}
+		if len(extraWorkers) == 0 {
+			return extraWorkers
+		}
+		ids := workerIDs(extraWorkers)
+		if more, err := store.CountInProgressByWorkers(l.ctx, l.svcCtx.DB, ids); err == nil {
+			for k, v := range more {
+				countLoads[k] = v
+			}
+		}
+		if more, err := store.CountWorkloadByWorkers(l.ctx, l.svcCtx.DB, ids); err == nil {
+			for k, v := range more {
+				minuteLoads[k] = v
+			}
+		}
+		for id, onLeave := range onLeaveWorkerIDs(l.ctx, l.svcCtx, extraWorkers) {
+			if onLeave {
+				leaveSet[id] = true
+			}
+		}
+		return extraWorkers
+	}
+	eligible := func(workers []*workerclient.WorkerInfo, required int64) bool {
+		for _, w := range workers {
+			if workerCanTake(w, countLoads) && !leaveSet[w.Id] && jobTypeAllowed(w.JobType, required) {
+				return true
+			}
+		}
+		return false
+	}
+
 	// 为每个“当班且有剩余容量”的工人建立容量槽位。
 	type slot struct {
 		worker *workerclient.WorkerInfo
@@ -119,7 +188,7 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 	for _, ws := range workerByBuilding {
 		allWorkers = append(allWorkers, ws...)
 	}
-	leaveSet := onLeaveWorkerIDs(l.ctx, l.svcCtx, allWorkers)
+	leaveSet = onLeaveWorkerIDs(l.ctx, l.svcCtx, allWorkers)
 	for _, ws := range workerByBuilding {
 		for _, w := range ws {
 			if seenWorker[w.Id] || !workerCanTake(w, countLoads) || leaveSet[w.Id] {
@@ -145,6 +214,8 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 		building *mapclient.Building
 		// V6.1：该工单需要的工种（由故障类型类别推导，0 = 不限）
 		requiredJobType int64
+		// 该工单的候选工人池（楼栋池，必要时已并入全校同工种兜底池）
+		pool []*workerclient.WorkerInfo
 	}
 	plan := make([]planOrder, 0, len(orders))
 	remained := int64(0)
@@ -156,21 +227,37 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 		}
 		// V6.1 工种匹配：电/水/泥瓦/木各归其位，通用工人仍可接任意类别
 		requiredJobType := orderRequiredJobType(faultCategories, o.FaultType)
-		hasEligible := false
-		for _, w := range workerByBuilding[o.BuildingID] {
-			if workerCanTake(w, countLoads) && jobTypeAllowed(w.JobType, requiredJobType) {
-				hasEligible = true
-				break
-			}
+		pool := workerByBuilding[o.BuildingID]
+		if !eligible(pool, requiredJobType) {
+			pool = append(append([]*workerclient.WorkerInfo{}, pool...), loadExtraWorkers()...)
 		}
-		if !hasEligible {
-			// 该楼栋没有工种匹配的可用工人：留在待派队列，交管理员处置
-			logx.WithContext(l.ctx).Infof("batch dispatch skip order %s: no worker matches job type %d",
+		if !eligible(pool, requiredJobType) {
+			// 全校都没有该工种的当班工人：留在待派队列，交管理员处置
+			logx.WithContext(l.ctx).Infof("batch dispatch skip order %s: no on-duty worker matches job type %d",
 				o.OrderNo, requiredJobType)
 			remained++
 			continue
 		}
-		plan = append(plan, planOrder{order: o, building: b, requiredJobType: requiredJobType})
+		plan = append(plan, planOrder{order: o, building: b, requiredJobType: requiredJobType, pool: pool})
+	}
+	// 兜底工人可能不在原槽位里：补槽位并重算人均负载
+	for _, po := range plan {
+		for _, w := range po.pool {
+			if seenWorker[w.Id] || !workerCanTake(w, countLoads) || leaveSet[w.Id] {
+				continue
+			}
+			seenWorker[w.Id] = true
+			for i := int64(0); i < maxConcurrentOf(w)+softExtraSlots; i++ {
+				slots = append(slots, slot{worker: w})
+			}
+		}
+	}
+	if len(slots) > len(slotWorkers) {
+		slotWorkers = slotWorkers[:0]
+		for _, s := range slots {
+			slotWorkers = append(slotWorkers, s.worker)
+		}
+		avgLoad = avgLoadOf(minuteLoads, slotWorkers)
 	}
 	if len(plan) == 0 || len(slots) == 0 {
 		resp.Remained = int64(len(plan)) + remained
@@ -195,7 +282,7 @@ func (l *AdminBatchDispatchLogic) AdminBatchDispatch(req *types.AdminBatchDispat
 		}
 	}
 	for i, po := range plan {
-		workers := workerByBuilding[po.order.BuildingID]
+		workers := po.pool
 		for c := 0; c < nSlots; c++ {
 			if !containsWorker(workers, slots[c].worker.Id) {
 				continue
