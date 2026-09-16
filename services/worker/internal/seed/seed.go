@@ -45,6 +45,16 @@ var accounts = []accountSpec{
 	{Username: "dorm14", Name: "14号宿舍管理员", Role: 3, BuildingID: 14},
 	{Username: "dorm15", Name: "15号宿舍管理员", Role: 3, BuildingID: 15},
 	{Username: "dorm16", Name: "16号宿舍管理员", Role: 3, BuildingID: 16},
+	{Username: "dorm17", Name: "17号教学楼管理员", Role: 3, BuildingID: 17},
+	{Username: "dorm18", Name: "18号教学楼管理员", Role: 3, BuildingID: 18},
+	{Username: "dorm19", Name: "19号教学楼管理员", Role: 3, BuildingID: 19},
+	{Username: "dorm20", Name: "20号教学楼管理员", Role: 3, BuildingID: 20},
+	{Username: "dorm21", Name: "21号教学楼管理员", Role: 3, BuildingID: 21},
+	{Username: "dorm22", Name: "22号教学楼管理员", Role: 3, BuildingID: 22},
+	{Username: "dorm23", Name: "23号教学楼管理员", Role: 3, BuildingID: 23},
+	{Username: "dorm24", Name: "24号教学楼管理员", Role: 3, BuildingID: 24},
+	{Username: "dorm25", Name: "25号教学楼管理员", Role: 3, BuildingID: 25},
+	{Username: "dorm26", Name: "26号教学楼管理员", Role: 3, BuildingID: 26},
 }
 
 var workerSkills = []workerSkillSpec{
