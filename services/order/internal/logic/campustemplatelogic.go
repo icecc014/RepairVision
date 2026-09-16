@@ -248,7 +248,7 @@ func (l *CampusTemplateApplyLogic) Apply(req *types.CampusTemplateIdRequest) (*t
 	if row.LayoutJson.Valid {
 		layoutJson = row.LayoutJson.String
 	}
-	if err := l.backupCurrent(); err != nil {
+	if err := backupCurrentCampus(l.ctx, l.svcCtx, "应用前备份 "+nowStamp()); err != nil {
 		// 备份失败不阻塞应用，但必须留痕
 		logx.WithContext(l.ctx).Errorf("auto backup current campus layout failed: %v", err)
 	}
@@ -258,30 +258,6 @@ func (l *CampusTemplateApplyLogic) Apply(req *types.CampusTemplateIdRequest) (*t
 		Rows:       row.Rows,
 		LayoutJson: layoutJson,
 	})
-}
-
-// backupCurrent 把当前生效地图存成自动备份模板。
-func (l *CampusTemplateApplyLogic) backupCurrent() error {
-	current, err := store.FindDefaultCampusLayout(l.ctx, l.svcCtx.DB)
-	if err != nil {
-		return err
-	}
-	raw := ""
-	if current.LayoutJson.Valid {
-		raw = strings.TrimSpace(current.LayoutJson.String)
-	}
-	if len(raw) < 20 {
-		return nil // 当前地图为空，无需备份
-	}
-	name := "应用前备份 " + nowStamp()
-	if existing, err := store.FindCampusTemplateByName(l.ctx, l.svcCtx.DB, name); err == nil {
-		if err := store.UpdateCampusTemplateContent(l.ctx, l.svcCtx.DB, existing.ID, current.Cols, current.Rows, raw); err != nil {
-			return err
-		}
-	} else if _, err := store.InsertCampusTemplate(l.ctx, l.svcCtx.DB, name, current.Cols, current.Rows, raw, "auto-backup"); err != nil {
-		return err
-	}
-	return store.PruneCampusTemplatesBySource(l.ctx, l.svcCtx.DB, "auto-backup", 5)
 }
 
 // nowStamp 备份命名的秒级时间戳。

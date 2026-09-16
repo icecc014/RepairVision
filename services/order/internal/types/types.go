@@ -681,6 +681,32 @@ type CampusTemplateIdRequest struct {
 	Id int64 `path:"id"`
 }
 
+// ---------- V6.2 区域概览备份与恢复 ----------
+
+type CampusBackupItem struct {
+	Id        int64  `json:"id"`
+	Name      string `json:"name"`
+	Cols      int64  `json:"cols"`
+	Rows      int64  `json:"rows"`
+	Blocks    int    `json:"blocks"`
+	Buildings int    `json:"buildings"`
+	Bytes     int    `json:"bytes"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type CampusBackupListResponse struct {
+	List []CampusBackupItem `json:"list"`
+	Keep int                `json:"keep"`
+}
+
+type CampusBackupIdRequest struct {
+	Id int64 `path:"id"`
+}
+
+type CampusBackupKeepRequest struct {
+	Keep int `json:"keep"`
+}
+
 type CampusTemplateRenameRequest struct {
 	Id   int64  `path:"id"`
 	Name string `json:"name"`

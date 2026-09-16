@@ -82,6 +82,17 @@ func DeleteCampusTemplate(ctx context.Context, conn sqlx.Session, id int64) erro
 	return err
 }
 
+// ListCampusTemplatesBySource 按来源列出模板（如全部备份），最新的在前。
+func ListCampusTemplatesBySource(ctx context.Context, conn sqlx.Session, source string) ([]CampusTemplate, error) {
+	var list []CampusTemplate
+	if err := conn.QueryRowsCtx(ctx, &list,
+		"select "+campusTemplateColumns+" from campus_layout_templates where source = ? order by id desc",
+		source); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 // PruneCampusTemplatesBySource 只保留某来源（如自动备份）最新的 keep 条。
 func PruneCampusTemplatesBySource(ctx context.Context, conn sqlx.Session, source string, keep int) error {
 	_, err := conn.ExecCtx(ctx,
