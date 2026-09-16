@@ -11,8 +11,8 @@
           <div class="status-label">历史累计完成</div>
         </div>
         <div class="status-card sc-history-scope">
-          <div class="status-num">{{ stats.days ? stats.days + '天' : '全部' }}</div>
-          <div class="status-label">当前统计口径</div>
+          <div class="status-num">{{ stats.days ? '近 ' + stats.days + ' 天' : '全部' }}</div>
+          <div class="status-label">统计窗口（状态卡与分布图）</div>
         </div>
       </div>
       <div class="status-grid">
@@ -156,11 +156,11 @@ const buildingRef = ref<HTMLElement | null>(null)
 const faultRef = ref<HTMLElement | null>(null)
 let barObserver: IntersectionObserver | null = null
 let barsRevealed = false
-const days = ref(3)
+const days = ref(7)
 
 async function load() {
   try {
-    stats.value = await apiAdminStats()
+    stats.value = await apiAdminStats(days.value)
   } catch (err) {
     ElMessage.error((err as Error).message)
   }
