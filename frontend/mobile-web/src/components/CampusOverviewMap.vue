@@ -14,7 +14,7 @@
       <button class="campus-retry" @click="load">{{ loading ? '加载中…' : '加载' }}</button>
     </div>
     <template v-else>
-      <div ref="viewportRef" class="campus-viewport" @scroll="onScroll">
+      <div ref="viewportRef" class="campus-viewport">
       <svg class="campus-svg" :width="svgW" :height="svgH" :viewBox="`0 0 ${layout.cols} ${layout.rows}`" preserveAspectRatio="none">
         <defs>
           <linearGradient id="campusBg" x1="0" y1="0" x2="1" y2="1">
@@ -34,7 +34,7 @@
             :stroke-width="isFocused(b) ? 0.7 : (isHighlight(b) ? 0.5 : 0.22)"
             :class="{ 'campus-pulse': isFocused(b) }"
             rx="0.35"
-            @click="tapBlock(b, $event)"
+            @click="tapBlock(b)"
           />
           <text
             v-if="labelPlan(b)"
@@ -54,7 +54,8 @@
           </text>
         </g>
       </svg>
-      <div v-if="active" class="campus-card" :style="cardStyle">
+      </div>
+      <div v-if="active" ref="cardRef" class="campus-card">
         <div class="card-head">
           <span class="card-title">{{ activeTitle }}</span>
           <button class="card-close" @click="active = null">✕</button>
@@ -64,7 +65,6 @@
         <div v-if="activeInfo" class="card-row"><span class="k">楼层</span><span class="v">{{ activeInfo.floors }} 层 · 每层 {{ activeInfo.roomsPerFloor }} 间</span></div>
         <div v-if="activeInfo" class="card-row"><span class="k">待处理</span><span class="v">{{ activeCount }} 单</span></div>
         <div v-if="!activeInfo" class="card-tip">自定义设施，未关联建筑信息</div>
-      </div>
       </div>
       <div class="campus-legend">
         <span><i class="lg building" />建筑</span>
@@ -111,9 +111,8 @@ const unitPx = ref(3)
 const svgW = computed(() => (layout.value ? layout.value.cols * unitPx.value * zoom.value : 0))
 const svgH = computed(() => (layout.value ? layout.value.rows * unitPx.value * zoom.value : 0))
 const active = ref<CampusBlock | null>(null)
-const activeAt = ref({ x: 0, y: 0 })
+const cardRef = ref<HTMLElement | null>(null)
 const focusedBuildingId = ref<number | null>(null)
-const scroll = ref({ left: 0, top: 0 })
 const activeInfo = computed(() => {
   const id = active.value?.buildingId
   if (!id) return null
@@ -134,14 +133,19 @@ const focusedLabel = computed(() => {
   if (!id) return ''
   return props.buildings?.find((b) => b.id === id)?.name || ''
 })
-const cardStyle = computed(() => {
+// 把图元平滑滚到地图视口中央（卡片在地图下方，不会再遮挡任何建筑）
+function scrollBlockIntoView(target: CampusBlock) {
   const vp = viewportRef.value
-  const width = 176
-  const maxLeft = vp ? Math.max(4, vp.clientWidth - width - 6) : 4
-  const anchorX = activeAt.value.x - scroll.value.left + 6
-  const anchorY = activeAt.value.y - scroll.value.top + 6
-  return { left: Math.min(Math.max(4, anchorX), maxLeft) + 'px', top: Math.max(4, anchorY) + 'px', width: width + 'px' }
-})
+  if (!vp) return
+  const px = unitPx.value * zoom.value
+  const cx = (target.col + target.colSpan / 2) * px
+  const cy = (target.row + target.rowSpan / 2) * px
+  vp.scrollTo({
+    left: Math.max(0, cx - vp.clientWidth / 2),
+    top: Math.max(0, cy - vp.clientHeight / 2),
+    behavior: 'smooth',
+  })
+}
 function zoomIn() { zoom.value = Math.min(4, Math.round((zoom.value + 0.25) * 100) / 100) }
 function zoomOut() { zoom.value = Math.max(1, Math.round((zoom.value - 0.25) * 100) / 100) }
 function zoomReset() {
@@ -153,7 +157,6 @@ function zoomReset() {
     if (vp) {
       vp.scrollLeft = 0
       vp.scrollTop = 0
-      scroll.value = { left: 0, top: 0 }
     }
   })
 }
@@ -268,18 +271,10 @@ function labelBaseY(b: CampusBlock) {
   if (!plan) return cy
   return cy + plan.size * 0.35 - ((plan.lines.length - 1) * plan.size * 1.18) / 2
 }
-function onScroll() {
-  const vp = viewportRef.value
-  if (!vp) return
-  scroll.value = { left: vp.scrollLeft, top: vp.scrollTop }
-}
-function tapBlock(b: CampusBlock, ev: MouseEvent) {
-  const vp = viewportRef.value
-  if (!vp) return
-  const rect = vp.getBoundingClientRect()
+// 点建筑：只做选中 + 显示下方信息卡（不再弹在地图上遮挡建筑）
+function tapBlock(b: CampusBlock) {
   active.value = b
   focusedBuildingId.value = b.buildingId ?? null
-  activeAt.value = { x: ev.clientX - rect.left, y: ev.clientY - rect.top }
 }
 function measure() {
   const vp = viewportRef.value
@@ -305,16 +300,8 @@ function focusBuilding(buildingId: number, openCard = true): boolean {
     if (!vp) return
     measure()
     // 再等一帧：SVG 用新的宽高渲染完成后，容器的可滚动范围才是对的，否则滚动会被夹到 0
-    nextTick(() => {
-      const px = unitPx.value * zoom.value
-      const cx = (target.col + target.colSpan / 2) * px
-      const cy = (target.row + target.rowSpan / 2) * px
-      vp.scrollTo({ left: Math.max(0, cx - vp.clientWidth / 2), top: Math.max(0, cy - vp.clientHeight / 2), behavior: 'smooth' })
-      activeAt.value = { x: Math.min(vp.clientWidth - 16, cx), y: Math.max(8, cy - vp.clientHeight / 2 + 14) }
-      window.setTimeout(() => {
-        scroll.value = { left: vp.scrollLeft, top: vp.scrollTop }
-      }, 420)
-    })
+    // 等一帧让 SVG 用新尺寸渲染完，再滚动到视口中央
+    nextTick(() => scrollBlockIntoView(target))
   })
   return true
 }
@@ -464,12 +451,11 @@ defineExpose({ load, focusBuilding, zoomIn, zoomOut, zoomReset })
   50% { opacity: 0.45; }
 }
 .campus-card {
-  position: absolute;
-  z-index: 5;
-  background: rgba(255, 255, 255, 0.98);
+  margin-top: 8px;
+  background: #ffffff;
   border: 1px solid #dbe4f0;
   border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
   padding: 8px 10px;
   font-size: 12px;
   color: #334155;
