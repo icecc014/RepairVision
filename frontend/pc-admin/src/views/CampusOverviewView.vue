@@ -2,21 +2,43 @@
   <AdminShell title="区域概览" subtitle="绘制校园 / 建筑群总平面图（建筑、道路、广场、校门），作为派单算法的空间数据基础">
     <section class="panel">
       <div class="toolbar">
-        <el-input v-model="name" placeholder="概览图名称" style="width: 200px" />
-        <el-button size="small" @click="loadTemplate">生成示例布局</el-button>
-        <el-button size="small" @click="clearAll">清空画布</el-button>
-        <el-button size="small" @click="reload">放弃修改</el-button>
-        <div style="flex: 1" />
-        <span class="toolbar-tip">画布 {{ cols }} × {{ rows }} 格</span>
-        <el-input-number v-model="cols" :min="10" :max="140" size="small" style="width: 100px" />
-        <el-input-number v-model="rows" :min="10" :max="80" size="small" style="width: 100px" />
-        <el-button size="small" @click="applySize">应用画布尺寸</el-button>
-        <el-button type="primary" :loading="saving" @click="save">保存概览</el-button>
+        <el-tag :type="mode === 'edit' ? 'warning' : 'success'" effect="plain" size="small">
+          {{ mode === 'edit' ? '编辑模式' : '查看模式（只读）' }}
+        </el-tag>
+        <template v-if="mode === 'edit'">
+          <el-input v-model="name" placeholder="概览图名称" style="width: 180px" />
+          <el-button size="small" @click="loadTemplate">生成示例布局</el-button>
+          <el-button size="small" @click="clearAll">清空画布</el-button>
+          <el-button size="small" @click="reload">放弃修改</el-button>
+          <div style="flex: 1" />
+          <span class="toolbar-tip">画布 {{ cols }} × {{ rows }} 格</span>
+          <el-input-number v-model="cols" :min="10" :max="140" size="small" style="width: 100px" />
+          <el-input-number v-model="rows" :min="10" :max="80" size="small" style="width: 100px" />
+          <el-button size="small" @click="applySize">应用画布尺寸</el-button>
+          <el-button size="small" :loading="templateSaving" @click="saveAsTemplate">保存到我的画布</el-button>
+          <el-button type="primary" :loading="saving" @click="save">保存并应用</el-button>
+        </template>
+        <template v-else>
+          <el-select
+            v-model="selectedTemplateId"
+            placeholder="选择我的画布"
+            size="small"
+            style="width: 230px"
+            :loading="templateLoading"
+          >
+            <el-option v-for="t in templates" :key="t.id" :label="templateLabel(t)" :value="t.id" />
+          </el-select>
+          <el-button size="small" :disabled="!selectedTemplateId" @click="applyTemplate">使用此模板</el-button>
+          <el-button size="small" type="danger" plain :disabled="!selectedTemplateId" @click="deleteTemplate">删除</el-button>
+          <el-button type="primary" size="small" @click="openEditDialog">编辑画布</el-button>
+          <div style="flex: 1" />
+          <span class="toolbar-tip">当前生效：{{ name }} · {{ cols }} × {{ rows }} 格 · 更新于 {{ updatedAt || '—' }}</span>
+        </template>
       </div>
     </section>
 
-    <div class="layout">
-      <section class="panel tools">
+    <div class="layout" :class="{ 'view-mode': mode !== 'edit' }">
+      <section v-if="mode === 'edit'" class="panel tools">
         <div class="panel-title">图元工具</div>
         <button
           v-for="t in CAMPUS_KINDS"
@@ -56,7 +78,11 @@
 
       <section class="panel canvas-area">
         <div v-if="loading" class="hint-line">正在加载服务器上的区域概览…</div>
-        <div class="hint-line" :class="{ warn: !brush || !!editingId }">
+        <div v-if="mode !== 'edit'" class="hint-line">
+          查看模式：当前显示的是<b>服务器上正在生效</b>的地图，其他端看到的就是这一张。
+          可直接缩放（＋ / － / F）与拖动查看；需要修改请点右上角「编辑画布」。
+        </div>
+        <div v-else class="hint-line" :class="{ warn: !brush || !!editingId }">
           {{ editingId ? '编辑模式：只能调整当前图元（拖把手改尺寸 / 拖本体移动）；按 Esc 或点击空白处退出'
             : (brush === 'erase' ? '擦除模式：点击图元即可删除'
               : (brush ? '已选择「' + brushLabel + '」：点击网格放置图元' : '请先在左侧选择图元工具，再点击网格开始绘制')) }}
@@ -115,7 +141,7 @@
       </section>
 
       <div class="side-col">
-      <section class="panel props">
+      <section v-if="mode === 'edit'" class="panel props">
           <div class="panel-title">图元属性</div>
           <template v-if="selectedBlock">
             <div class="prop-row">
@@ -245,18 +271,39 @@
         </section>
       </div>
     </div>
+    <el-dialog v-model="editDialogVisible" title="进入编辑模式" width="560px">
+      <p class="hint-line">编辑期间的改动不会影响其他端，只有点「保存并应用」后宿管端 / 工人端才会看到。</p>
+      <div class="edit-choice">
+        <el-button type="primary" plain @click="startNewCanvas">新建空白画布</el-button>
+        <span class="toolbar-tip">从当前尺寸开始（{{ cols }} × {{ rows }} 格），原地图仍保留在我的画布中</span>
+      </div>
+      <div class="edit-choice">
+        <el-select v-model="loadTemplateId" placeholder="选择我的画布" size="small" style="width: 240px">
+          <el-option v-for="t in templates" :key="t.id" :label="templateLabel(t)" :value="t.id" />
+        </el-select>
+        <el-button :disabled="!loadTemplateId" @click="loadTemplateIntoEditor">加载到编辑器</el-button>
+      </div>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+      </template>
+    </el-dialog>
   </AdminShell>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { AdminBuilding, CampusDistance } from '../api'
+import type { AdminBuilding, CampusDistance, CampusTemplateItem } from '../api'
 import {
   apiAdminBuildings,
   apiAdminCampusDistances,
   apiAdminCampusLayout,
+  apiAdminCampusTemplate,
+  apiAdminCampusTemplates,
+  apiApplyCampusTemplate,
+  apiDeleteCampusTemplate,
   apiSaveCampusLayout,
+  apiSaveCampusTemplate,
 } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import {
@@ -294,6 +341,15 @@ const buildings = ref<AdminBuilding[]>([])
 const saving = ref(false)
 const loading = ref(false)
 const undoStack = ref<CampusBlock[][]>([])
+// ---------- V6.1 查看 / 编辑模式 + 我的画布 ----------
+const mode = ref<'view' | 'edit'>('view')
+const templates = ref<CampusTemplateItem[]>([])
+const templateLoading = ref(false)
+const templateSaving = ref(false)
+const selectedTemplateId = ref<number | null>(null)
+const loadTemplateId = ref<number | null>(null)
+const editDialogVisible = ref(false)
+const updatedAt = ref('')
 // ---------- 画布平移与缩放（固定正方形格子，画布可大于视口，靠拖动/缩放查看） ----------
 const scrollRef = ref<HTMLElement | null>(null)
 const zoom = ref(1)
@@ -467,6 +523,11 @@ function selectBrush(kind: Brush) {
   editingId.value = null
 }
 function onSlotDown(slot: { row: number; col: number }, ev?: PointerEvent) {
+  // V6.1 查看模式：只允许平移画布，不落笔
+  if (mode.value !== 'edit') {
+    if (ev) startPan(ev)
+    return
+  }
   // 未选工具（或鼠标中键）时：长按空白处平移画布
   if (ev && (spacePanReady.value || !brush.value || ev.button === 1)) {
     startPan(ev)
@@ -499,6 +560,12 @@ function onSlotDown(slot: { row: number; col: number }, ev?: PointerEvent) {
   selectedId.value = block.id
 }
 function onBlockDown(b: CampusBlock, ev: PointerEvent) {
+  // V6.1 查看模式：点击图元只做选中查看，不移动
+  if (mode.value !== 'edit') {
+    selectedId.value = b.id
+    // 查看模式：仅高亮当前图元
+    return
+  }
   // 空格 + 拖动 / 鼠标中键：优先平移画布
   if (spacePanReady.value || ev.button === 1) {
     startPan(ev)
@@ -742,6 +809,8 @@ function onKeyDown(ev: KeyboardEvent) {
       return
     }
   }
+  // V6.1 查看模式：只保留缩放 / 平移，编辑类快捷键一律忽略
+  if (mode.value !== 'edit') return
   if ((ev.ctrlKey || ev.metaKey) && key === 'z') {
     ev.preventDefault()
     if (ev.shiftKey) redo()
@@ -805,6 +874,7 @@ async function load() {
     name.value = data.name || '校园总览'
     cols.value = data.cols || 40
     rows.value = data.rows || 30
+    updatedAt.value = data.updatedAt || ''
     let parsed = parseCampus(data.layoutJson)
     if (!parsed && data.layoutJson && data.layoutJson.length > 2) {
       // 兜底：若图元相互重叠导致严格解析失败，改用宽松解析，避免整页空白
@@ -838,6 +908,165 @@ async function load() {
 function reload() {
   load()
   ElMessage.info('已重新加载服务器上的概览数据')
+}
+
+// ---------- V6.1 我的画布 + 模式切换 ----------
+function templateLabel(t: CampusTemplateItem): string {
+  const tag = t.source === 'auto-backup' ? '（自动备份）' : ''
+  return `${t.name}${tag} · ${t.cols}×${t.rows}`
+}
+
+async function loadTemplates() {
+  templateLoading.value = true
+  try {
+    const resp = await apiAdminCampusTemplates()
+    templates.value = resp.list || []
+  } catch (err) {
+    ElMessage.error('加载我的画布失败：' + (err as Error).message)
+  } finally {
+    templateLoading.value = false
+  }
+}
+
+function openEditDialog() {
+  loadTemplateId.value = selectedTemplateId.value
+  editDialogVisible.value = true
+  void loadTemplates()
+}
+
+function startNewCanvas() {
+  editDialogVisible.value = false
+  pushHistory()
+  grid.value = emptyCampus(grid.value.cols, grid.value.rows)
+  cols.value = grid.value.cols
+  rows.value = grid.value.rows
+  syncSelection()
+  brush.value = null
+  mode.value = 'edit'
+  ElMessage.info('已进入编辑模式（空白画布）：改完点「保存并应用」才会影响其他端')
+}
+
+async function loadTemplateIntoEditor() {
+  if (!loadTemplateId.value) return
+  try {
+    const resp = await apiAdminCampusTemplate(loadTemplateId.value)
+    const parsed = parseCampus(resp.template.layoutJson)
+    if (!parsed) {
+      ElMessage.error('该画布内容无法解析')
+      return
+    }
+    pushHistory()
+    grid.value = parsed
+    cols.value = parsed.cols
+    rows.value = parsed.rows
+    name.value = resp.template.name
+    syncSelection()
+    brush.value = null
+    editDialogVisible.value = false
+    mode.value = 'edit'
+    ElMessage.success(`已载入「${resp.template.name}」到编辑器，保存并应用后其他端才可见`)
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+
+async function saveAsTemplate() {
+  const base = name.value && name.value !== '校园总览' ? name.value : '我的画布1'
+  const preset = templates.value.some((t) => t.name === base) ? `${base} 副本` : base
+  let input = ''
+  try {
+    const r = await ElMessageBox.prompt('给这张画布起个名字（同名会询问是否覆盖）', '保存到我的画布', {
+      inputValue: preset,
+      inputPattern: /\S+/,
+      inputErrorMessage: '名称不能为空',
+      confirmButtonText: '保存',
+      cancelButtonText: '取消',
+    })
+    input = String((r as { value?: string }).value || '').trim()
+  } catch {
+    return
+  }
+  if (!input) return
+  await doSaveTemplate(input, false)
+}
+
+async function doSaveTemplate(templateName: string, overwrite: boolean) {
+  templateSaving.value = true
+  try {
+    await apiSaveCampusTemplate({
+      name: templateName,
+      cols: grid.value.cols,
+      rows: grid.value.rows,
+      layoutJson: serializeCampus(grid.value),
+      overwrite,
+    })
+    await loadTemplates()
+    ElMessage.success(`已保存到我的画布：${templateName}`)
+  } catch (err) {
+    const msg = (err as Error).message || ''
+    if (msg.includes('已存在同名画布')) {
+      try {
+        await ElMessageBox.confirm(`已存在「${templateName}」，是否覆盖？`, '覆盖同名画布', {
+          confirmButtonText: '覆盖',
+          cancelButtonText: '取消',
+        })
+        await doSaveTemplate(templateName, true)
+      } catch {
+        // 用户取消覆盖
+      }
+      return
+    }
+    ElMessage.error(msg)
+  } finally {
+    templateSaving.value = false
+  }
+}
+
+async function applyTemplate() {
+  if (!selectedTemplateId.value) return
+  const target = templates.value.find((t) => t.id === selectedTemplateId.value)
+  try {
+    await ElMessageBox.confirm(
+      `将把「${target?.name || '所选画布'}」应用到当前生效地图，宿管端 / 工人端立即可见。\n应用前会自动把当前地图存为「应用前备份」。继续？`,
+      '使用此模板',
+      { confirmButtonText: '使用此模板', cancelButtonText: '取消' },
+    )
+  } catch {
+    return
+  }
+  templateLoading.value = true
+  try {
+    await apiApplyCampusTemplate(selectedTemplateId.value)
+    await load()
+    await loadTemplates()
+    ElMessage.success('已应用为当前生效地图，其他端立即可见')
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  } finally {
+    templateLoading.value = false
+  }
+}
+
+async function deleteTemplate() {
+  if (!selectedTemplateId.value) return
+  const target = templates.value.find((t) => t.id === selectedTemplateId.value)
+  try {
+    await ElMessageBox.confirm(`删除画布「${target?.name || ''}」？删除后不可恢复。`, '删除我的画布', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+  try {
+    await apiDeleteCampusTemplate(selectedTemplateId.value)
+    selectedTemplateId.value = null
+    await loadTemplates()
+    ElMessage.success('已删除')
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
 }
 async function save() {
   if (campusCount(grid.value, 'building') === 0) {
@@ -882,6 +1111,7 @@ onMounted(async () => {
   await nextTick()
   await load()
   loadDistances()
+  void loadTemplates()
 })
 onUnmounted(() => {
   window.removeEventListener('pointerup', endDrag)
@@ -1217,5 +1447,15 @@ function finishPressDrag() {
   position: absolute;
   top: 0;
   left: 0;
+}
+/* V6.1 查看模式：隐藏图元工具，画布占满左侧 */
+.layout.view-mode {
+  grid-template-columns: minmax(0, 1fr) 330px;
+}
+.edit-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 </style>

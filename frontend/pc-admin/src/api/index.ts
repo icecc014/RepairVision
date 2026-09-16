@@ -297,6 +297,50 @@ export function apiAdminCampusLayout(): Promise<CampusLayoutData> {
 export function apiSaveCampusLayout(payload: { name: string; cols: number; rows: number; layoutJson: string }): Promise<CampusLayoutData> {
   return http.post('/admin/campus-layout', payload)
 }
+export interface CampusTemplateItem {
+  id: number
+  name: string
+  cols: number
+  rows: number
+  source: string
+  updatedAt: string
+}
+
+export interface CampusTemplateDetail extends CampusTemplateItem {
+  layoutJson: string
+}
+
+// V6.1 「我的画布」模板库
+export function apiAdminCampusTemplates(): Promise<{ list: CampusTemplateItem[] }> {
+  return http.get('/admin/campus-templates')
+}
+
+export function apiAdminCampusTemplate(id: number): Promise<{ template: CampusTemplateDetail }> {
+  return http.get(`/admin/campus-templates/${id}`)
+}
+
+export function apiSaveCampusTemplate(payload: {
+  name: string
+  cols: number
+  rows: number
+  layoutJson: string
+  overwrite?: boolean
+}): Promise<{ template: CampusTemplateDetail }> {
+  return http.post('/admin/campus-templates', payload)
+}
+
+export function apiRenameCampusTemplate(id: number, name: string): Promise<unknown> {
+  return http.put(`/admin/campus-templates/${id}`, { name })
+}
+
+export function apiDeleteCampusTemplate(id: number): Promise<unknown> {
+  return http.delete(`/admin/campus-templates/${id}`)
+}
+
+export function apiApplyCampusTemplate(id: number): Promise<CampusLayoutData> {
+  return http.post(`/admin/campus-templates/${id}/apply`, {})
+}
+
 export interface OperationLogItem {
   id: number
   userId?: number
