@@ -77,9 +77,10 @@ func RevokeActiveDispatch(ctx context.Context, conn sqlx.Session, orderID, worke
 
 // ReassignOrderWorker 更新订单为已派并绑定新工人（仅待派/已派可改派）。
 func ReassignOrderWorker(ctx context.Context, conn sqlx.Session, orderID, workerID int64) (bool, error) {
+	// V6.5：维修中也能改派（工人请假/换人），改派后回到"已派单"并清掉开工时间
 	result, err := conn.ExecCtx(ctx,
-		"update orders set status = ?, worker_id = ?, dispatched_at = ? where id = ? and status in (?,?)",
-		StatusDispatched, workerID, time.Now(), orderID, StatusPending, StatusDispatched)
+		"update orders set status = ?, worker_id = ?, dispatched_at = ?, started_at = null where id = ? and status in (?,?,?)",
+		StatusDispatched, workerID, time.Now(), orderID, StatusPending, StatusDispatched, StatusWorking)
 	if err != nil {
 		return false, err
 	}

@@ -325,9 +325,12 @@ func join(items []string) string {
 
 // MarkOrderExternal 把待派工单标记为外援处理（不参与自动派单）。
 func MarkOrderExternal(ctx context.Context, conn sqlx.Session, orderID int64) (bool, error) {
+	// V6.5：未完成的工单都可以转外援；转外援后释放内部工人（不再占用在途名额）
 	result, err := conn.ExecCtx(ctx,
-		"update orders set external_mark = 1, manual_review = 1, updated_at = now() where id = ? and status = ?",
-		orderID, StatusPending)
+		`update orders set external_mark = 1, manual_review = 1, status = ?, worker_id = null,
+		        dispatched_at = null, started_at = null, updated_at = now()
+		  where id = ? and status in (?, ?, ?)`,
+		StatusPending, orderID, StatusPending, StatusDispatched, StatusWorking)
 	if err != nil {
 		return false, err
 	}

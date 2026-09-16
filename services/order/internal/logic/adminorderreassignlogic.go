@@ -47,8 +47,8 @@ func (l *AdminOrderReassignLogic) AdminOrderReassign(req *types.AdminOrderReassi
 		}
 		return nil, errs.Internal(err)
 	}
-	if order.Status != store.StatusPending && order.Status != store.StatusDispatched {
-		return nil, errs.Conflict("只有待派单或已派单（未开工）工单可以改派")
+	if order.Status != store.StatusPending && order.Status != store.StatusDispatched && order.Status != store.StatusWorking {
+		return nil, errs.Conflict("已完成的工单不能改派")
 	}
 
 	faultNames, err := faultTypeNameMap(l.ctx, l.svcCtx)

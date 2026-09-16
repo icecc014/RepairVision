@@ -40,10 +40,20 @@ func (l *AdminOrderExternalLogic) AdminOrderExternal(req *types.OrderIdRequest) 
 		}
 		return nil, errs.Internal(err)
 	}
-	if order.Status != store.StatusPending {
-		return nil, errs.Conflict("只有待派单的工单可以标记外援")
+	if order.Status == store.StatusCompleted || order.Status == store.StatusCanceled {
+		return nil, errs.Conflict("已完成的工单不能标记外援")
 	}
-	affected, err := store.MarkOrderExternal(l.ctx, l.svcCtx.DB, order.ID)
+	affected := false
+	err = l.svcCtx.DB.TransactCtx(l.ctx, func(txCtx context.Context, session sqlx.Session) error {
+		if order.WorkerID.Valid && order.WorkerID.Int64 > 0 {
+			if rErr := store.RevokeActiveDispatch(txCtx, session, order.ID, order.WorkerID.Int64); rErr != nil {
+				return rErr
+			}
+		}
+		ok, mErr := store.MarkOrderExternal(txCtx, session, order.ID)
+		affected = ok
+		return mErr
+	})
 	if err != nil {
 		return nil, errs.Internal(err)
 	}
