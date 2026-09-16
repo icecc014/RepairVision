@@ -19,6 +19,23 @@
       </div>
     </section>
 
+    <el-alert
+      v-if="guard"
+      class="guard-bar"
+      :type="guard.level === 'guard' ? 'error' : (guard.level === 'warn' ? 'warning' : 'success')"
+      show-icon
+      :closable="false"
+    >
+      <template #title>
+        <span class="guard-title">{{ guard.message }}</span>
+        <el-button v-if="guard.paused" size="small" type="primary" @click="resume">恢复自动派单</el-button>
+      </template>
+      <div class="guard-detail">
+        待派 {{ guard.pendingCount }} 单 · 在岗 {{ guard.onDutyCount }} 人 · 最长等待 {{ guard.waitText }}；
+        预警线：待派 ≥ max(在岗×{{ guard.warnRatio }}, {{ guard.warnMinOrders }} 单) 或 最长等待 > {{ guard.warnHours }} 小时；
+        保护线：待派 ≥ max(在岗×{{ guard.guardRatio }}, {{ guard.guardMinOrders }} 单) 时暂停自动派单；暂停后若仍有工单等待 > {{ guard.guardHours }} 小时会自动恢复并把积压派出去。
+      </div>
+    </el-alert>
     <section class="panel">
       <div class="toolbar">
         <div class="panel-title">工人状态</div>
@@ -102,11 +119,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { WorkerBoardItem } from '../api'
-import { apiAdminWorkerBoard } from '../api'
+import type { DispatchGuard, WorkerBoardItem } from '../api'
+import { apiAdminDispatchGuard, apiAdminWorkerBoard, apiResumeAutoDispatch } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 
 const list = ref<WorkerBoardItem[]>([])
+const guard = ref<DispatchGuard | null>(null)
 const loading = ref(false)
 const revealed = ref(false)
 const days = ref(1)
@@ -116,9 +134,28 @@ const onDutyCount = computed(() => list.value.filter((w) => w.onDuty).length)
 const activeSum = computed(() => list.value.reduce((sum, w) => sum + w.activeOrders, 0))
 const doneSum = computed(() => list.value.reduce((sum, w) => sum + w.todayCompleted, 0))
 
+async function loadGuard() {
+  try {
+    guard.value = await apiAdminDispatchGuard()
+  } catch {
+    // 保护线状态读取失败不影响看板主体
+  }
+}
+
+async function resume() {
+  try {
+    guard.value = await apiResumeAutoDispatch()
+    ElMessage.success("已恢复自动派单，积压工单会立即重新派发")
+    await load()
+  } catch (err) {
+    ElMessage.error((err as Error).message)
+  }
+}
+
 async function load() {
   loading.value = true
   revealed.value = false
+  void loadGuard()
   try {
     list.value = await apiAdminWorkerBoard(days.value)
   } catch (err) {
@@ -196,6 +233,18 @@ onMounted(load)
   margin-top: 8px;
   color: #5a6a85;
   font-size: 13px;
+}
+.guard-bar {
+  margin-bottom: 14px;
+}
+.guard-title {
+  margin-right: 10px;
+  font-weight: 700;
+}
+.guard-detail {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.7;
 }
 .panel {
   padding: 18px 20px;

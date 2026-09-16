@@ -512,12 +512,67 @@ export async function apiUpdateWorkSettings(payload: Partial<WorkSettings>): Pro
   return http.post('/admin/work-settings', payload)
 }
 
+export interface DispatchRuleEntry {
+  key: string
+  name: string
+  group: string
+  type: string
+  unit: string
+  min: number
+  max: number
+  step: number
+  precision: number
+  value: number
+  defaultValue: number
+  enabled: number
+  remark: string
+  description: string
+  runtimeOnly: boolean
+  registered: boolean
+  saved: boolean
+  custom: boolean
+  updatedAt: string
+}
+
+export interface DispatchRuleGroup {
+  key: string
+  label: string
+  items: DispatchRuleEntry[]
+}
+
+export interface DispatchRulesData {
+  groups: DispatchRuleGroup[]
+  paused: boolean
+  pendingCount: number
+  onDutyCount: number
+  updatedAt: string
+}
+
+// V6.3 派单规则可视化编辑（分组 + 元数据 + 当前值）
+export function apiDispatchRulesGrouped(): Promise<DispatchRulesData> {
+  return http.get('/admin/dispatch-rules')
+}
+
+export function apiSaveDispatchRules(items: Array<{ key: string; value: number; enabled: number; remark?: string }>): Promise<unknown> {
+  return http.put('/admin/dispatch-rules', { items })
+}
+
+export function apiResetDispatchRule(key: string): Promise<unknown> {
+  return http.post(`/admin/dispatch-rules/${key}/reset`, {})
+}
+
+export function apiDeleteDispatchRule(key: string): Promise<unknown> {
+  return http.delete(`/admin/dispatch-rules/${key}`)
+}
+
 export interface DispatchGuard {
   pendingCount: number
   onDutyCount: number
   longestWaitMinutes: number
   warnRatio: number
+  warnMinOrders: number
   guardRatio: number
+  guardMinOrders: number
   warnHours: number
   guardHours: number
   level: string
