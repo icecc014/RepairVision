@@ -118,6 +118,7 @@ func buildOrderItems(ctx context.Context, svcCtx *svc.ServiceContext, orders []s
 			DispatchLocked: o.DispatchLocked,
 			Priority:       o.Priority,
 			ReporterId:    o.ReporterID,
+			ReporterType:  o.ReporterType,
 			ReporterName:  userNames[o.ReporterID],
 			Source:        o.Source,
 			CreatedAt:     o.CreatedAt.Format("2006-01-02 15:04:05"),

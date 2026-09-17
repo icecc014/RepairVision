@@ -15,6 +15,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes([]rest.Route{
 		{Method: http.MethodGet, Path: "/ping/:name", Handler: PingHandler(serverCtx)},
 		{Method: http.MethodPost, Path: "/api/login", Handler: LoginHandler(serverCtx)},
+		// V7 公共报修（免登录）
+		{Method: http.MethodGet, Path: "/api/public/captcha", Handler: PublicCaptchaHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/public/buildings", Handler: PublicBuildingsHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/api/public/report", Handler: PublicReportHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/api/public/room-orders", Handler: PublicRoomOrdersHandler(serverCtx)},
 	})
 	server.AddRoutes([]rest.Route{
 		{Method: http.MethodGet, Path: "/api/fault-types", Handler: FaultTypesHandler(serverCtx)},

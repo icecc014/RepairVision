@@ -3,6 +3,7 @@ package svc
 import (
 	"map/mapclient"
 	"order/internal/config"
+	"order/internal/pubcache"
 	"order/internal/ws"
 	"worker/workerclient"
 
@@ -16,6 +17,7 @@ type ServiceContext struct {
 	WorkerRpc workerclient.Worker
 	MapRpc    mapclient.Map
 	WS        *ws.Hub
+	PubCache  *pubcache.Store
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -25,5 +27,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		WorkerRpc: workerclient.NewWorker(zrpc.MustNewClient(c.WorkerRpc)),
 		MapRpc:    mapclient.NewMap(zrpc.MustNewClient(c.MapRpc)),
 		WS:        ws.NewHub(),
+		PubCache:  pubcache.New(c.Cache.Addr),
 	}
 }

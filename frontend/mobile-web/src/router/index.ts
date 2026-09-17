@@ -2,12 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+import PublicReportView from '../views/PublicReportView.vue'
 
 const router = createRouter({
   history: createWebHistory('/m/'),
   routes: [
     { path: '/', redirect: '/login' },
     { path: '/login', name: 'login', component: LoginView },
+    // V7 公共报修页：免登录，任何人可通过 /report 直接访问
+    { path: '/report', name: 'public-report', component: PublicReportView },
     { path: '/dorm', name: 'dorm', component: HomeView, meta: { requiresAuth: true, role: 3 } },
     { path: '/worker', name: 'worker', component: HomeView, meta: { requiresAuth: true, role: 2 } },
   ],

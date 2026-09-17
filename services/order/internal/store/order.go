@@ -38,6 +38,8 @@ DispatchLocked int64        `db:"dispatch_locked"`
 	StartedAt     sql.NullTime  `db:"started_at"`
 	CompletedAt   sql.NullTime  `db:"completed_at"`
 	ReporterID    int64         `db:"reporter_id"`
+	ReporterType  int64         `db:"reporter_type"`
+	ReporterContact sql.NullString `db:"reporter_contact"`
 	Source        string        `db:"source"`
 	CreatedAt     time.Time     `db:"created_at"`
 	UpdatedAt     time.Time     `db:"updated_at"`
@@ -50,7 +52,7 @@ type WorkerLoad struct {
 
 const orderColumns = `id, order_no, title, description, building_id, room, floor, fault_type,
     priority, expect_minutes, status, is_merged, manual_review, external_mark, dispatch_locked, main_order_id, worker_id,
-    dispatched_at, started_at, completed_at, reporter_id, source, created_at, updated_at`
+    dispatched_at, started_at, completed_at, reporter_id, reporter_type, reporter_contact, source, created_at, updated_at`
 const orderBase = "select " + orderColumns + " from orders "
 
 func FindOrder(ctx context.Context, conn sqlx.Session, id int64) (*Order, error) {
@@ -140,11 +142,12 @@ func InsertOrder(ctx context.Context, conn sqlx.Session, o *Order) (int64, error
 	}
 	result, err := conn.ExecCtx(ctx,
 		`insert into orders(order_no, title, description, building_id, room, floor, fault_type,
-            priority, expect_minutes, status, is_merged, manual_review, main_order_id, worker_id, reporter_id, source)
-         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            priority, expect_minutes, status, is_merged, manual_review, main_order_id, worker_id, reporter_id,
+            reporter_type, reporter_contact, source)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		o.OrderNo, o.Title, o.Description, o.BuildingID, o.Room, o.Floor, o.FaultType,
 		o.Priority, o.ExpectMinutes, o.Status, o.IsMerged, o.ManualReview, nullableInt64(o.MainOrderID),
-		nullableInt64(o.WorkerID), o.ReporterID, o.Source)
+		nullableInt64(o.WorkerID), o.ReporterID, o.ReporterType, o.ReporterContact, o.Source)
 	if err != nil {
 		return 0, err
 	}

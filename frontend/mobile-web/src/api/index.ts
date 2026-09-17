@@ -54,6 +54,7 @@ export interface OrderItem {
   rating?: number
   reporterId: number
   reporterName?: string
+  reporterType?: number
   source: string
   createdAt: string
   updatedAt: string
@@ -101,6 +102,73 @@ export function apiStartOrder(id: number, force = false): Promise<{ warning?: st
 
 export function apiCompleteOrder(id: number): Promise<unknown> {
   return http.post(`/worker/orders/${id}/complete`)
+}
+
+// ---------- V7 公共报修（免登录） ----------
+
+export interface PublicBuildingItem {
+  id: number
+  code: string
+  name: string
+}
+
+export interface PublicCaptcha {
+  captchaId: string
+  svg: string
+  expiresIn: number
+}
+
+export interface PublicReportPayload {
+  buildingId: number
+  room: string
+  faultType: string
+  description: string
+  reporterType: number
+  contact?: string
+  captchaId: string
+  captchaCode: string
+}
+
+export interface PublicReportResult {
+  orderNo: string
+  merged: boolean
+  mainOrderNo?: string
+  status: number
+  statusText: string
+  dispatched: boolean
+  workerName?: string
+  message: string
+}
+
+export interface PublicRoomOrder {
+  faultTypeName: string
+  description: string
+  statusText: string
+  createdAt: string
+  completedAt?: string
+  workerName?: string
+}
+
+export interface PublicRoomOrders {
+  buildingName: string
+  room: string
+  orders: PublicRoomOrder[]
+}
+
+export function apiPublicBuildings(): Promise<{ list: PublicBuildingItem[] }> {
+  return http.get('/public/buildings')
+}
+
+export function apiPublicCaptcha(): Promise<PublicCaptcha> {
+  return http.get('/public/captcha')
+}
+
+export function apiPublicReport(payload: PublicReportPayload): Promise<PublicReportResult> {
+  return http.post('/public/report', payload)
+}
+
+export function apiPublicRoomOrders(buildingId: number, room: string): Promise<PublicRoomOrders> {
+  return http.get('/public/room-orders', { params: { buildingId, room } })
 }
 
 export interface WorkerMapBuilding {

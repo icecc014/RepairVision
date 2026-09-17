@@ -52,6 +52,14 @@
           {{ d.label }}
         </button>
       </div>
+      <div v-if="!loading" class="dorm-summary">
+        <span class="dorm-summary-title">本栋维修记录（近 {{ days }} 天）</span>
+        <b>共 {{ total }} 单</b>
+        <span>待处理 {{ dormStats.todo }}</span>
+        <span>维修中 {{ dormStats.working }}</span>
+        <span>已完成 {{ dormStats.done }}</span>
+      </div>
+
       <div v-if="visibleOrders.length === 0" class="rv-empty">
         <div class="rv-empty-icon">🗂️</div>
         <div class="rv-empty-text">当前筛选下暂无工单</div>
@@ -61,6 +69,9 @@
         <article v-for="item in visibleOrders" :key="item.id" class="rv-order-card">
           <div class="rv-order-top">
             <span class="rv-type">{{ item.faultTypeName }}</span>
+            <span v-if="sourceText(item)" class="rv-source" :class="{ public: item.source === 'public' }">
+              {{ sourceText(item) }}
+            </span>
             <span class="rv-status" :class="'s' + item.status">{{ item.statusText }}</span>
           </div>
           <h3 class="rv-order-title">{{ item.title }}</h3>
@@ -220,6 +231,21 @@ const feedbackSubmitting = ref(false)
 const showCampus = ref(false)
 const filter = ref<FilterValue>('all')
 const days = ref(3)
+// V7：本栋维修记录概览（按已加载工单统计）
+const dormStats = computed(() => ({
+  todo: orders.value.filter((o) => o.status === 1 || o.status === 2).length,
+  working: orders.value.filter((o) => o.status === 3).length,
+  done: orders.value.filter((o) => o.status === 4).length,
+}))
+// V7：公共报修来源标记（宿管需要区分“别人报的”与“自己报的”）
+function sourceText(item: OrderItem) {
+  if (item.source === 'public') {
+    const who = item.reporterType === 1 ? '学生' : item.reporterType === 2 ? '教师' : '用户'
+    return '公共报修·' + who
+  }
+  if (item.source === 'admin') return '管理员代报'
+  return ''
+}
 const dayOptions = [
   { value: 1, label: '1天' },
   { value: 3, label: '3天' },
@@ -505,5 +531,35 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(120, 145, 190, 0.25);
   border-radius: 999px;
+}
+.dorm-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 14px 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(234, 241, 255, 0.75);
+  color: #33415c;
+  font-size: 12px;
+}
+.dorm-summary-title {
+  font-weight: 700;
+}
+.dorm-summary b {
+  color: #2462d9;
+}
+.rv-source {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f1f3f7;
+  color: #64748b;
+  font-size: 11px;
+}
+.rv-source.public {
+  background: #fff4e5;
+  color: #b45309;
 }
 </style>

@@ -14,6 +14,9 @@ type Config struct {
 	DB struct {
 		DataSource string
 	}
+	Cache struct {
+		Addr string
+	}
 	Kafka struct {
 		Enabled bool
 		Brokers []string

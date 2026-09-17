@@ -325,6 +325,8 @@ type OrderItem struct {
 	DistanceScore   float64 `json:"distanceScore,optional"`
 	LoadScore       float64 `json:"loadScore,optional"`
 	ReporterId      int64   `json:"reporterId"`
+	ReporterType    int64   `json:"reporterType,optional"`
+	ReporterContact string  `json:"reporterContact,optional"`
 	ReporterName    string  `json:"reporterName,optional"`
 	Source          string  `json:"source"`
 	CreatedAt       string  `json:"createdAt"`
@@ -619,6 +621,67 @@ type StartOrderResponse struct {
 	Warning string `json:"warning,optional"`
 }
 // ---------- V6.3 派单规则可视化编辑 ----------
+
+// ---------- V7 公共报修 ----------
+
+type PublicCaptchaResponse struct {
+	CaptchaId string `json:"captchaId"`
+	Svg       string `json:"svg"`
+	ExpiresIn int    `json:"expiresIn"`
+}
+
+type PublicBuildingItem struct {
+	Id   int64  `json:"id"`
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type PublicBuildingListResponse struct {
+	List []PublicBuildingItem `json:"list"`
+}
+
+type PublicReportRequest struct {
+	BuildingId  int64  `json:"buildingId"`
+	Room        string `json:"room"`
+	FaultType   string `json:"faultType"`
+	Description string `json:"description"`
+	ReporterType int64 `json:"reporterType"`
+	Contact     string `json:"contact,optional"`
+	CaptchaId   string `json:"captchaId"`
+	CaptchaCode string `json:"captchaCode"`
+	ClientIp    string `json:"-"`
+}
+
+type PublicReportResponse struct {
+	OrderNo     string `json:"orderNo"`
+	Merged      bool   `json:"merged"`
+	MainOrderNo string `json:"mainOrderNo,optional"`
+	Status      int64  `json:"status"`
+	StatusText  string `json:"statusText"`
+	Dispatched  bool   `json:"dispatched"`
+	WorkerName  string `json:"workerName,optional"`
+	Message     string `json:"message"`
+}
+
+type PublicRoomOrdersRequest struct {
+	BuildingId int64  `form:"buildingId"`
+	Room       string `form:"room"`
+}
+
+type PublicRoomOrderItem struct {
+	FaultTypeName string `json:"faultTypeName"`
+	Description   string `json:"description"`
+	StatusText    string `json:"statusText"`
+	CreatedAt     string `json:"createdAt"`
+	CompletedAt   string `json:"completedAt,optional"`
+	WorkerName    string `json:"workerName,optional"`
+}
+
+type PublicRoomOrdersResponse struct {
+	BuildingName string                `json:"buildingName"`
+	Room         string                `json:"room"`
+	Orders       []PublicRoomOrderItem `json:"orders"`
+}
 
 // ---------- V6.5 手动派单可选工人 ----------
 
