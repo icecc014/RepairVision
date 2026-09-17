@@ -110,6 +110,8 @@ export interface PublicBuildingItem {
   id: number
   code: string
   name: string
+  floors: number
+  roomsPerFloor: number
 }
 
 export interface PublicCaptcha {

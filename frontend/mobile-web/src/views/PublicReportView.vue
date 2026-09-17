@@ -11,6 +11,10 @@
     </nav>
 
     <section v-if="tab === 'report'" class="public-card">
+      <div v-if="errorMsg" class="error-banner">
+        <span>{{ errorMsg }}</span>
+        <button class="link" @click="errorMsg = ''">知道了</button>
+      </div>
       <div v-if="history.length" class="history">
         <div class="history-head">
           <span>最近报修过的房间（点击快速填充）</span>
@@ -46,6 +50,7 @@
           maxlength="4"
           placeholder="如 401（楼层 + 房间序号）"
         />
+        <span v-if="roomHint" class="hint">{{ roomHint }}</span>
       </label>
 
       <div class="field">
@@ -143,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { showToast } from 'vant'
 import { apiPublicBuildings, apiPublicCaptcha, apiPublicReport, apiPublicRoomOrders } from '../api'
 
@@ -193,6 +198,35 @@ const form = reactive({
   captchaCode: '',
 })
 const query = reactive({ buildingId: 0, room: '' })
+const errorMsg = ref('')
+const selectedBuilding = computed(() => buildings.value.find((b) => b.id === form.buildingId) || null)
+const roomHint = computed(() => {
+  const b = selectedBuilding.value
+  if (!b) return ''
+  const per = b.roomsPerFloor > 0 ? b.roomsPerFloor : 16
+  const sample = `${b.floors}01 ~ ${b.floors}${String(per).padStart(2, '0')}`
+  return `${b.name}：共 ${b.floors} 层、每层 ${per} 间，房间号形如 ${sample}`
+})
+function fail(msg: string) {
+  errorMsg.value = msg
+  showToast(msg)
+}
+// 房间号前置校验（避免提交到服务端才返回 400）
+function roomRangeError(roomValue: string): string {
+  const b = selectedBuilding.value
+  if (!b) return ''
+  const per = b.roomsPerFloor > 0 ? b.roomsPerFloor : 16
+  const num = Number(roomValue)
+  const floor = Math.floor(num / 100)
+  if (floor < 1 || floor > b.floors) {
+    return `${b.name}共 ${b.floors} 层，房间号首位应是楼层（如 ${b.floors}01）`
+  }
+  const index = num - floor * 100
+  if (index < 1 || index > per) {
+    return `${b.name}每层 ${per} 间，${floor} 层房间号范围是 ${floor}01 ~ ${floor}${String(per).padStart(2, '0')}`
+  }
+  return ''
+}
 const queryResult = reactive({
   buildingName: '',
   room: '',
@@ -257,12 +291,15 @@ async function loadCaptcha() {
 
 async function submit() {
   const room = form.room.trim()
-  if (!form.buildingId) return showToast('请选择报修楼栋')
-  if (!/^\d{3,4}$/.test(room)) return showToast('请填写正确房间号，如 401')
-  if (!form.faultType) return showToast('请选择故障类型')
-  if (form.description.trim().length < 5) return showToast('故障描述至少 5 个字')
-  if (!form.reporterType) return showToast('请选择报修人身份')
-  if (!form.captchaCode.trim()) return showToast('请输入验证码')
+  errorMsg.value = ''
+  if (!form.buildingId) { fail('请选择报修楼栋'); return }
+  if (!/^\d{3,4}$/.test(room)) { fail('请填写正确房间号，如 401'); return }
+  const rangeError = roomRangeError(room)
+  if (rangeError) { fail(rangeError); return }
+  if (!form.faultType) { fail('请选择故障类型'); return }
+  if (form.description.trim().length < 5) { fail('故障描述至少 5 个字'); return }
+  if (!form.reporterType) { fail('请选择报修人身份'); return }
+  if (!form.captchaCode.trim()) { fail('请输入验证码'); return }
 
   submitting.value = true
   try {
@@ -289,7 +326,9 @@ async function submit() {
     await loadCaptcha()
   } catch (err) {
     const msg = (err as Error).message || '提交失败'
-    showToast(msg)
+    // 控制台里也能看到具体原因（页面同时给出常驻提示条）
+    console.warn('[public-report] 提交失败:', msg, { buildingId: form.buildingId, room, faultType: form.faultType })
+    fail(msg)
     if (msg.includes('验证码')) await loadCaptcha()
   } finally {
     submitting.value = false
@@ -361,6 +400,20 @@ onMounted(() => {
   background: linear-gradient(135deg, #4b86f8, #3478f6);
   color: #fff;
   box-shadow: 0 8px 18px rgba(52, 120, 246, 0.28);
+}
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #f5c2c0;
+  border-radius: 10px;
+  background: #fff1f0;
+  color: #c0392b;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .public-card {
   padding: 14px 14px 18px;

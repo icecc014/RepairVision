@@ -631,9 +631,11 @@ type PublicCaptchaResponse struct {
 }
 
 type PublicBuildingItem struct {
-	Id   int64  `json:"id"`
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Id            int64  `json:"id"`
+	Code          string `json:"code"`
+	Name          string `json:"name"`
+	Floors        int64  `json:"floors"`
+	RoomsPerFloor int64  `json:"roomsPerFloor"`
 }
 
 type PublicBuildingListResponse struct {
