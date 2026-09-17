@@ -16,6 +16,7 @@ type RepairRecordItem struct {
 	StatusText    string `json:"statusText"`
 	ReporterId    int64  `json:"reporterId"`
 	ReporterName  string `json:"reporterName,optional"`
+	ReporterType  int64  `json:"reporterType,optional"`
 	WorkerId      int64  `json:"workerId,optional"`
 	WorkerName    string `json:"workerName,optional"`
 	WorkerPhone   string `json:"workerPhone,optional"`

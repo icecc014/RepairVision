@@ -220,6 +220,7 @@ export function apiDeleteBuilding(id: number): Promise<unknown> {
 }
 
 export interface RepairRecordItem {
+  reporterType?: number
   id: number
   orderNo: string
   title: string

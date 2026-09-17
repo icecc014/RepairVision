@@ -75,8 +75,13 @@
         <el-table-column prop="description" label="故障描述" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">{{ row.description || '—' }}</template>
         </el-table-column>
-        <el-table-column prop="reporterName" label="报修宿管" width="110">
-          <template #default="{ row }">{{ row.reporterName || '—' }}</template>
+        <el-table-column label="报修人 / 来源" width="140">
+          <template #default="{ row }">
+            <el-tag v-if="row.source === 'public' || row.source === 'student'" type="warning" size="small">
+              {{ originText(row) }}
+            </el-tag>
+            <span v-else>{{ originText(row) }}</span>
+          </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
@@ -238,15 +243,41 @@ function openDetail(row: RepairRecordItem) {
   detailVisible.value = true
 }
 
+// V7：来源 + 报修人身份（公共渠道 / 宿管 / 管理员代报）
+function reporterTypeText(reporterType?: number) {
+  switch (reporterType) {
+    case 1:
+      return '学生'
+    case 2:
+      return '教师'
+    case 3:
+      return '其他'
+    default:
+      return ''
+  }
+}
 function sourceText(source: string) {
   switch (source) {
+    case 'public':
+      return '公共报修'
+    case 'admin':
+      return '管理员代报'
+    case 'dormitory':
     case 'dorm':
       return '宿管报修'
     case 'student':
-      return '学生自助'
+      return '公共报修'
     default:
       return source || '宿管报修'
   }
+}
+function originText(row: RepairRecordItem) {
+  if (row.source === 'public' || row.source === 'student') {
+    const who = reporterTypeText(row.reporterType)
+    return '公共报修' + (who ? '·' + who : '')
+  }
+  if (row.source === 'admin') return '管理员代报'
+  return row.reporterName || '宿管报修'
 }
 
 function csvCell(value: unknown) {
@@ -261,7 +292,7 @@ async function exportCsv() {
       ElMessage.warning('当前筛选条件下没有可导出的报修记录')
       return
     }
-    const header = ['报修时间', '楼栋', '房间号', '楼层', '故障类型', '故障描述', '报修宿管', '状态', '处理工人', '派单时间', '完工时间']
+    const header = ['报修时间', '楼栋', '房间号', '楼层', '故障类型', '故障描述', '报修人/来源', '状态', '处理工人', '派单时间', '完工时间']
     const rows = data.list.map((r) => [
       r.createdAt,
       r.buildingName,
@@ -269,7 +300,7 @@ async function exportCsv() {
       r.floor,
       r.faultTypeName || r.faultType,
       r.description,
-      r.reporterName || '',
+      originText(r),
       r.statusText,
       r.workerName || '',
       r.dispatchedAt || '',

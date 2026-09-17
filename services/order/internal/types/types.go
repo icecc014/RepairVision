@@ -620,6 +620,7 @@ type StartOrderRequest struct {
 type StartOrderResponse struct {
 	Warning string `json:"warning,optional"`
 }
+
 // ---------- V6.3 派单规则可视化编辑 ----------
 
 // ---------- V7 公共报修 ----------
@@ -643,15 +644,15 @@ type PublicBuildingListResponse struct {
 }
 
 type PublicReportRequest struct {
-	BuildingId  int64  `json:"buildingId"`
-	Room        string `json:"room"`
-	FaultType   string `json:"faultType"`
-	Description string `json:"description"`
-	ReporterType int64 `json:"reporterType"`
-	Contact     string `json:"contact,optional"`
-	CaptchaId   string `json:"captchaId"`
-	CaptchaCode string `json:"captchaCode"`
-	ClientIp    string `json:"-"`
+	BuildingId   int64  `json:"buildingId"`
+	Room         string `json:"room"`
+	FaultType    string `json:"faultType"`
+	Description  string `json:"description"`
+	ReporterType int64  `json:"reporterType"`
+	Contact      string `json:"contact,optional"`
+	CaptchaId    string `json:"captchaId"`
+	CaptchaCode  string `json:"captchaCode"`
+	ClientIp     string `json:"-"`
 }
 
 type PublicReportResponse struct {
@@ -713,7 +714,8 @@ type AssignableWorkerListResponse struct {
 	FaultTypeName   string                 `json:"faultTypeName"`
 }
 
-type DispatchRuleEntry struct {	Key          string  `json:"key"`
+type DispatchRuleEntry struct {
+	Key          string  `json:"key"`
 	Name         string  `json:"name"`
 	Group        string  `json:"group"`
 	Type         string  `json:"type"`
@@ -788,6 +790,7 @@ type AdminOrderPriorityRequest struct {
 	Id       int64 `path:"id"`
 	Priority int64 `json:"priority"`
 }
+
 // ---------- V6.1 区域概览「我的画布」模板 ----------
 
 type CampusTemplateItem struct {

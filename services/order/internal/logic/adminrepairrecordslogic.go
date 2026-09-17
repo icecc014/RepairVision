@@ -84,19 +84,20 @@ func (l *AdminRepairRecordsLogic) AdminRepairRecords(req *types.RepairRecordList
 	for i := range orders {
 		o := orders[i]
 		record := types.RepairRecordItem{
-			Id:            o.ID,
-			OrderNo:       o.OrderNo,
-			Title:         o.Title,
-			Description:   o.Description,
-			BuildingId:    o.BuildingID,
-			Room:          o.Room,
-			Floor:         o.Floor,
-			FaultType:     o.FaultType,
-			Status:        o.Status,
-			StatusText:    statusText(o.Status),
-			ReporterId:    o.ReporterID,
-			Source:        o.Source,
-			CreatedAt:     o.CreatedAt.Format("2006-01-02 15:04:05"),
+			Id:           o.ID,
+			OrderNo:      o.OrderNo,
+			Title:        o.Title,
+			Description:  o.Description,
+			BuildingId:   o.BuildingID,
+			Room:         o.Room,
+			Floor:        o.Floor,
+			FaultType:    o.FaultType,
+			Status:       o.Status,
+			StatusText:   statusText(o.Status),
+			ReporterId:   o.ReporterID,
+			Source:       o.Source,
+			ReporterType: o.ReporterType,
+			CreatedAt:    o.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
 		if i < len(items) {
 			record.BuildingName = items[i].BuildingName
@@ -122,4 +123,3 @@ func (l *AdminRepairRecordsLogic) AdminRepairRecords(req *types.RepairRecordList
 	}
 	return &types.RepairRecordListResponse{Total: total, Summary: summary, List: list}, nil
 }
-
