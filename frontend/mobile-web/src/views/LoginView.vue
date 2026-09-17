@@ -29,14 +29,14 @@
           />
         </div>
         <button class="login-btn" type="submit" :disabled="loading">
-          {{ loading ? '正在登录…' : '登 录' }}
+          {{ loading ? '正在登录…' : (entryRole === 'dorm' ? '宿管登录' : entryRole === 'worker' ? '工人登录' : '登 录') }}
         </button>
       </form>
 
       <div class="demo-box">
         <div class="demo-title">演示账号（密码 admin123）</div>
-        <div class="demo-row"><span class="dot dorm">宿</span>宿管：dorm1 / dorm2</div>
-        <div class="demo-row"><span class="dot worker">工</span>工人：worker1 / worker2</div>
+        <div v-if="entryRole !== 'worker'" class="demo-row"><span class="dot dorm">宿</span>宿管：dorm1（1 号楼）</div>
+        <div v-if="entryRole !== 'dorm'" class="demo-row"><span class="dot worker">工</span>工人：water1（水工）/ elec1（电工）</div>
       </div>
     </section>
 
@@ -45,14 +45,27 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { apiLogin } from '../api'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
+// 入口角色预设：从 /dorm 或 /worker 进入时给出对应提示（登录接口共用）
+const entryRole = computed<'dorm' | 'worker' | ''>(() => {
+  const fromQuery = String(route.query.role || '')
+  if (fromQuery === 'dorm' || fromQuery === 'worker') return fromQuery
+  if (route.path.startsWith('/dorm')) return 'dorm'
+  if (route.path.startsWith('/worker')) return 'worker'
+  // 直达 /dorm 时会被守卫重写到 /login，这里用首次进入的地址兜底
+  const entryPath = window.location.pathname
+  if (entryPath.startsWith('/m/dorm')) return 'dorm'
+  if (entryPath.startsWith('/m/worker')) return 'worker'
+  return ''
+})
 const loading = ref(false)
 const form = reactive({ username: '', password: '' })
 
@@ -65,8 +78,14 @@ async function onSubmit() {
   try {
     const data = await apiLogin(form.username, form.password)
     auth.setAuth(data.token, data.user)
-    showToast('登录成功')
-    router.replace(data.user.role === 3 ? '/dorm' : '/worker')
+    const target = data.user.role === 3 ? '/dorm' : '/worker'
+    const mismatch = (entryRole.value === 'dorm' && data.user.role !== 3) || (entryRole.value === 'worker' && data.user.role !== 2)
+    if (entryRole.value && mismatch) {
+      showToast(entryRole.value === 'dorm' ? '该账号不是宿管账号，已跳转到工人端' : '该账号不是工人账号，已跳转到宿管端')
+    } else {
+      showToast('登录成功')
+    }
+    router.replace(target)
   } catch (err) {
     showToast((err as Error).message || '登录失败')
   } finally {

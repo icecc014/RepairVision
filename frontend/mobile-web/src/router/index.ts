@@ -24,7 +24,8 @@ router.beforeEach((to) => {
   const requiresAuth = to.meta.requiresAuth as boolean | undefined
   const requiredRole = to.meta.role as number | undefined
   if (requiresAuth && !auth.token) {
-    return { path: '/login' }
+    const entryRole = to.path.startsWith('/dorm') ? 'dorm' : to.path.startsWith('/worker') ? 'worker' : ''
+    return entryRole ? { path: '/login', query: { role: entryRole } } : { path: '/login' }
   }
   if (requiredRole && auth.user?.role !== requiredRole) {
     return { path: '/login' }

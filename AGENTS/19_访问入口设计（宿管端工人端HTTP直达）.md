@@ -89,3 +89,35 @@ location = /report { return 302 /m/report; }   # V7 公共报修页
 3. 重建 web 容器：`docker compose up -d --build web`，异常时再加 `--force-recreate web`；
 4. `scripts/up.ps1` 输出入口地址；
 5. 可选：登录页角色预设 + 管理端入口二维码页。
+
+---
+
+## 8. 实施记录（2026-09-17 已完成）
+
+已按方案 A 落地，改动 6 个文件：
+
+| 文件 | 改动 |
+| --- | --- |
+| `nginx.conf` | 新增 `location = /dorm`、`location = /worker` 两条 302；并加 `absolute_redirect off; port_in_redirect off;`（关键：8080/8081 共用同一 server，不做这一步 302 会丢掉端口，跳到 80 端口导致打不开） |
+| `docker-compose.yml` | web 服务新增端口映射 `${PUBLIC_PORT:-8081}:80` |
+| `.env.example` | 新增 `WEB_PORT` / `PUBLIC_PORT` 说明 |
+| `scripts/up.ps1` | 启动后打印本机与局域网两套入口地址（含 IP） |
+| `mobile-web/src/router/index.ts` | 守卫跳登录页时带上 `?role=`，保留入口语义 |
+| `mobile-web/src/views/LoginView.vue` | 按 `?role` / 入口路径显示“宿管登录 / 工人登录”、过滤演示账号；演示账号更新为 dorm1、water1、elec1 |
+
+### 实测（无头浏览器 + curl）
+
+| 检查 | 结果 |
+| --- | --- |
+| `http://localhost:8080/dorm` | 302 → `http://localhost:8080/m/dorm` |
+| `http://localhost:8081/worker` | 302 → `http://localhost:8081/m/worker`（端口正确保留） |
+| `http://10.1.97.149:8081/dorm` | 302 → `http://10.1.97.149:8081/m/dorm`（局域网可用） |
+| `8080/admin/`、`8080/m/` | 仍 200，未受影响 |
+| `/dorm` 登录页 | 按钮“宿管登录”，只显示宿管演示账号 |
+| `/worker` 登录页 | 按钮“工人登录”，只显示工人演示账号 |
+| `/dorm` + dorm1 | 落到 `/m/dorm`，标题“1号宿舍管理员 · 本栋工单管理”，8 张工单 |
+| `/worker` + water1 | 落到 `/m/worker`，标题“水工·刘师傅 · 我的工单”，4 张工单 |
+| `/dorm` + water1（角色不符） | 提示“该账号不是宿管账号，已跳转到工人端”并落到工人端 |
+| `/worker` + dorm1（角色不符） | 提示“该账号不是工人账号，已跳转到宿管端”并落到宿管端 |
+
+> 待办：V7 公共报修页完成后，在 `nginx.conf` 补 `location = /report { return 302 /m/report; }`，届时 `8081/report` 即可用。

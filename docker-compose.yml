@@ -125,6 +125,7 @@ services:
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-8080}:80"
+      - "${PUBLIC_PORT:-8081}:80"   # 公共入口：/dorm、/worker（V7 起含 /report）
     depends_on:
       - order-api
     networks: [repair-net]
