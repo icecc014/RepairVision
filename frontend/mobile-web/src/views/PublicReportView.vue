@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="public-page">
     <header class="public-header">
       <h1 class="public-title">校园维修报修</h1>
@@ -330,7 +330,8 @@ async function submit() {
       room,
       faultType: form.faultType,
       description: form.description.trim(),
-      reporterType: form.reporterType,
+      // V9.8 修复：后端 reporterType 为 int64，身份选项是字符串，提交前统一映射为 1~3
+    reporterType: reporterTypeCode(form.reporterType),
       contact: form.contact.trim(),
       captchaId: captchaId.value,
       captchaCode: form.captchaCode.trim().toUpperCase(),
@@ -379,6 +380,12 @@ onMounted(() => {
   void loadBuildings()
   void loadCaptcha()
 })
+// V9.8：后端 reporterType 为 int64（1=学生 2=教师 3=其他），前端选项是字符串，统一在此转换
+function reporterTypeCode(v: unknown): number {
+  if (typeof v === 'number' && v >= 1 && v <= 3) return v
+  const map: Record<string, number> = { student: 1, teacher: 2, other: 3 }
+  return map[String(v)] ?? 1
+}
 </script>
 
 <style scoped>
