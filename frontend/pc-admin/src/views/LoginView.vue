@@ -46,7 +46,7 @@
             登 录
           </el-button>
         </el-form>
-        <el-alert title="演示账号：admin / admin123" type="info" :closable="false" class="demo-alert" />
+        <el-alert title="演示账号请向项目负责人索取" type="info" :closable="false" class="demo-alert" />
       </div>
     </main>
   </div>

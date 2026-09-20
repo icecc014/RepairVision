@@ -34,7 +34,7 @@
       </form>
 
       <div class="demo-box">
-        <div class="demo-title">演示账号（密码 admin123）</div>
+        <div class="demo-title">演示账号请向项目负责人索取</div>
         <div v-if="entryRole !== 'worker'" class="demo-row"><span class="dot dorm">宿</span>宿管：dorm1（1 号楼）</div>
         <div v-if="entryRole !== 'dorm'" class="demo-row"><span class="dot worker">工</span>工人：water1（水工）/ elec1（电工）</div>
       </div>
