@@ -47,8 +47,8 @@ func ListActiveOrdersByWorkerWithinDays(ctx context.Context, conn sqlx.Session, 
 	}
 	var orders []Order
 	if err := conn.QueryRowsCtx(ctx, &orders,
-		orderBase+"where worker_id = ? and status in (?, ?, ?) and created_at >= date_sub(now(), interval ? day) order by field(status, ?, ?), priority desc, id desc",
-		workerID, StatusDispatched, StatusWorking, StatusPending, days, StatusWorking, StatusDispatched); err != nil {
+		orderBase+"where worker_id = ? and status in (?, ?, ?, ?) and created_at >= date_sub(now(), interval ? day) order by field(status, ?, ?, ?), priority desc, id desc",
+		workerID, StatusWorking, StatusDispatched, StatusPending, StatusCompleted, days, StatusWorking, StatusDispatched, StatusPending); err != nil {
 		return nil, err
 	}
 	return orders, nil

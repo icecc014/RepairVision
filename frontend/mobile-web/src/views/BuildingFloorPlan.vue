@@ -6,10 +6,16 @@
           v-for="f in building.floors"
           :key="f"
           class="floor-tab"
-          :class="{ active: activeFloor === f }"
+          :class="{
+            active: activeFloor === f,
+            'has-fault': getFloorStatus(f) === 'fault',
+            'has-done': getFloorStatus(f) === 'done'
+          }"
           @click="switchFloor(f)"
         >
           {{ f }}F
+          <i v-if="getFloorStatus(f) === 'fault'" class="tab-dot fault"></i>
+          <i v-else-if="getFloorStatus(f) === 'done'" class="tab-dot done"></i>
         </button>
       </div>
       <div class="zoom-bar">
@@ -20,8 +26,9 @@
     </div>
 
     <div class="legend-line">
-      <span><i class="red"></i> 待处理故障（点击看解释）</span>
-      <span><i class="blue"></i> 普通房间</span>
+      <span><i class="dot-lg red"></i> 待处理故障</span>
+      <span><i class="dot-lg green"></i> 已修好房间</span>
+      <span><i class="dot-lg blue"></i> 普通房间</span>
       <span>拖动平移 · 滚轮/双指缩放</span>
     </div>
 
@@ -39,45 +46,49 @@
         <svg class="plan-svg" :viewBox="viewBoxStr" preserveAspectRatio="xMidYMid meet" @click="onSvgClick">
           <defs>
             <linearGradient id="gPlanBg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#eef3fc" />
-              <stop offset="100%" stop-color="#e6ecfa" />
+              <stop offset="0%" stop-color="#f8fafc" />
+              <stop offset="100%" stop-color="#f1f5f9" />
             </linearGradient>
             <linearGradient id="gRoom" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#dcebff" />
-              <stop offset="100%" stop-color="#c7dcf7" />
+              <stop offset="0%" stop-color="#e0f2fe" />
+              <stop offset="100%" stop-color="#bae6fd" />
             </linearGradient>
             <linearGradient id="gRoomFault" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#fde3ea" />
-              <stop offset="100%" stop-color="#f8c9d6" />
+              <stop offset="0%" stop-color="#ffe4e6" />
+              <stop offset="100%" stop-color="#fecdd3" />
+            </linearGradient>
+            <linearGradient id="gRoomDone" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#dcfce7" />
+              <stop offset="100%" stop-color="#bbf7d0" />
             </linearGradient>
             <linearGradient id="gCorridor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#f3f7fd" />
-              <stop offset="100%" stop-color="#e9f0fa" />
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#f8fafc" />
             </linearGradient>
             <linearGradient id="gStair" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#e6ecf7" />
-              <stop offset="100%" stop-color="#d3dcec" />
+              <stop offset="0%" stop-color="#eef2ff" />
+              <stop offset="100%" stop-color="#e0e7ff" />
             </linearGradient>
             <linearGradient id="gPublic" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#eaf2fd" />
-              <stop offset="100%" stop-color="#dde8f8" />
+              <stop offset="0%" stop-color="#f1f5f9" />
+              <stop offset="100%" stop-color="#e2e8f0" />
             </linearGradient>
           </defs>
-          <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="url(#gPlanBg)" stroke="#7d8db3" stroke-width="1.6" rx="1.5" />
+          <rect x="1" y="1" :width="PLAN_WIDTH - 2" :height="PLAN_DEPTH - 2" fill="url(#gPlanBg)" stroke="#cbd5e1" stroke-width="1.2" rx="2" />
           <template v-if="!plan.custom">
-          <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="url(#gCorridor)" stroke="#a9b8d4" stroke-width="0.6" stroke-dasharray="3 2" />
-          <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="4" fill="#94a3b8" transform="rotate(90, 50, 88)">过道</text>
+            <rect :x="plan.corridor.x" :y="plan.corridor.z" :width="plan.corridor.w" :height="plan.corridor.d" fill="url(#gCorridor)" stroke="#cbd5e1" stroke-width="0.6" stroke-dasharray="3 2" />
+            <text :x="plan.corridor.x + plan.corridor.w / 2" :y="PLAN_DEPTH / 2" text-anchor="middle" font-size="3.6" fill="#94a3b8" transform="rotate(90, 50, 88)">贯通走廊</text>
 
-          <g v-for="core in plan.cores" :key="core.index">
-            <rect x="0" :y="core.z" width="32" :height="core.d" fill="url(#gStair)" stroke="#7d8db3" stroke-width="0.7" />
-            <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#334155">封闭防火楼梯</text>
-            <rect x="32" :y="core.z" width="68" :height="core.d" fill="url(#gPublic)" stroke="#9aa9c6" stroke-width="0.7" stroke-dasharray="2 1.6" />
-            <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.8" fill="#64748b">公共区域</text>
-          </g>
+            <g v-for="core in plan.cores" :key="core.index">
+              <rect x="0" :y="core.z" width="32" :height="core.d" fill="url(#gStair)" stroke="#a5b4fc" stroke-width="0.7" />
+              <text x="16" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.2" fill="#4338ca">封闭防火楼梯</text>
+              <rect x="32" :y="core.z" width="68" :height="core.d" fill="url(#gPublic)" stroke="#cbd5e1" stroke-width="0.7" stroke-dasharray="2 1.6" />
+              <text x="66" :y="core.z + core.d / 2 + 1.4" text-anchor="middle" font-size="3.4" fill="#64748b">公共区域</text>
+            </g>
           </template>
           <g v-else>
             <template v-for="(b, bi) in plan.blocks" :key="'blk' + bi">
-              <rect :x="b.x" :y="b.z" :width="b.w" :height="b.d" :fill="blockFill(b.type)" :stroke="b.type === 'corridor' ? '#a9b8d4' : '#7d8db3'" stroke-width="0.6" :stroke-dasharray="b.type === 'corridor' ? '3 2' : '0'" />
+              <rect :x="b.x" :y="b.z" :width="b.w" :height="b.d" :fill="blockFill(b.type)" :stroke="b.type === 'corridor' ? '#cbd5e1' : '#94a3b8'" stroke-width="0.6" :stroke-dasharray="b.type === 'corridor' ? '3 2' : '0'" />
               <text v-if="b.type !== 'corridor'" :x="b.x + b.w / 2" :y="b.z + b.d / 2 + 1.1" text-anchor="middle" font-size="2.6" fill="#64748b">{{ b.label || (b.type === 'stair' ? '楼梯' : '公共区') }}</text>
             </template>
           </g>
@@ -88,9 +99,10 @@
               :y="room.z"
               :width="room.w"
               :height="room.d"
-              :fill="roomOrders(room)[0] ? 'url(#gRoomFault)' : 'url(#gRoom)'"
-              stroke="#5f7bb5"
-              stroke-width="0.8"
+              :fill="getRoomFill(room.no)"
+              :stroke="getRoomStroke(room.no)"
+              :stroke-width="selectedRoomNo === room.no ? 1.8 : 0.8"
+              rx="1.5"
               @pointerdown.stop
               @click.stop="select(room)"
               style="cursor: pointer"
@@ -99,18 +111,36 @@
               :x="room.x + room.w / 2"
               :y="room.z + room.d / 2 + 1.4"
               text-anchor="middle"
-              font-size="4.6"
+              font-size="4.2"
               font-weight="bold"
-              fill="#3d5687"
+              :fill="getRoomTextColor(room.no)"
+              pointer-events="none"
             >
               {{ room.no }}
             </text>
+            <!-- 待修故障警示红点 -->
             <circle
-              v-if="roomOrders(room).length"
-              :cx="room.x + room.w - 5"
-              :cy="room.z + 5"
-              r="3.4"
-              class="fault-dot" fill="#e0648a"
+              v-if="getRoomAnalysis(room.no).status === 'fault'"
+              :cx="room.x + room.w - 4.5"
+              :cy="room.z + 4.5"
+              r="3.2"
+              class="fault-dot"
+              fill="#ef4444"
+              stroke="#ffffff"
+              stroke-width="0.8"
+              @pointerdown.stop
+              @click.stop="select(room)"
+              style="cursor: pointer"
+            />
+            <!-- 已修好绿色圆点 -->
+            <circle
+              v-else-if="getRoomAnalysis(room.no).status === 'done'"
+              :cx="room.x + room.w - 4.5"
+              :cy="room.z + 4.5"
+              r="2.6"
+              fill="#10b981"
+              stroke="#ffffff"
+              stroke-width="0.8"
               @pointerdown.stop
               @click.stop="select(room)"
               style="cursor: pointer"
@@ -121,32 +151,38 @@
 
       <aside v-if="activeFault" class="fault-card" @pointerdown.stop @wheel.stop>
         <div class="fault-head">
-          <div>
+          <div class="fault-title-group">
             <span class="fault-room">{{ activeFault.no }}</span>
             <span class="fault-floor">{{ activeFault.floor }} 层</span>
+            <span v-if="activeFault.status === 'fault'" class="card-status-badge fault">待维修 ({{ activeFault.unfinished.length }})</span>
+            <span v-else-if="activeFault.status === 'done'" class="card-status-badge done">已完工 ({{ activeFault.completed.length }})</span>
+            <span v-else class="card-status-badge normal">状态正常</span>
           </div>
-          <button class="fault-close" @click="activeFault = null">✕</button>
+          <button class="fault-close" @click="closeFaultCard">✕</button>
         </div>
 
+        <div v-if="activeFault.orders.length === 0" class="fault-empty">
+          当前房间无报修工单记录
+        </div>
         <div v-for="o in activeFault.orders" :key="o.id" class="fault-item">
           <div class="fault-row">
-            <span class="fault-type">{{ o.faultTypeName }}</span>
+            <span class="fault-type">{{ o.faultTypeName || '报修' }}</span>
             <span class="fault-status" :class="'fs' + o.status">{{ o.statusText }}</span>
           </div>
-          <div class="fault-label">可能原因</div>
-          <div class="fault-text">{{ explain(o).cause }}</div>
+          <div class="fault-title">{{ o.title }}</div>
           <div class="fault-label">故障描述</div>
           <div class="fault-text">{{ o.description || '无补充说明' }}</div>
           <div class="fault-label">处理建议</div>
           <div class="fault-text">{{ explain(o).advice }}</div>
-          <div class="fault-meta">报修 {{ o.createdAt }} · {{ o.workerName || '待派单' }}</div>
+          <div class="fault-meta">工单: {{ o.orderNo }} · {{ o.createdAt }}</div>
           <div class="fault-actions">
-            <button v-if="o.status === 2" class="fault-btn" :disabled="actingId === o.id" @click="act(o, 'start')">
-              {{ actingId === o.id ? '处理中…' : '开工' }}
+            <button v-if="o.status === 1 || o.status === 2" class="fault-btn" :disabled="actingId === o.id" @click="act(o, 'start')">
+              {{ actingId === o.id ? '处理中…' : '开始维修' }}
             </button>
             <button v-if="o.status === 3" class="fault-btn done" :disabled="actingId === o.id" @click="act(o, 'complete')">
-              {{ actingId === o.id ? '处理中…' : '完工' }}
+              {{ actingId === o.id ? '处理中…' : '确认完工' }}
             </button>
+            <span v-if="o.status === 4" class="badge-done-text">✓ 已完工</span>
           </div>
         </div>
       </aside>
@@ -164,9 +200,9 @@ import { PLAN_DEPTH, PLAN_WIDTH, matchRoomOrders, type PlanRoom } from '../utils
 import { resolveFloorPlan } from '../utils/layoutGrid'
 
 function blockFill(type: 'corridor' | 'stair' | 'public') {
-  if (type === 'stair') return '#dbe3f3'
-  if (type === 'public') return '#e7f1fe'
-  return '#eef3fc'
+  if (type === 'stair') return '#eef2ff'
+  if (type === 'public') return '#f8fafc'
+  return '#ffffff'
 }
 
 const props = defineProps<{ building: WorkerMapBuilding; orders: OrderItem[] }>()
@@ -177,11 +213,21 @@ const emit = defineEmits<{
 
 const activeFloor = ref(1)
 const viewportRef = ref<HTMLDivElement | null>(null)
-const activeFault = ref<{ no: string; floor: number; orders: OrderItem[] } | null>(null)
+const selectedRoomNo = ref<string | null>(null)
+
+interface ActiveFaultState {
+  no: string
+  floor: number
+  status: 'fault' | 'done' | 'normal'
+  orders: OrderItem[]
+  unfinished: OrderItem[]
+  completed: OrderItem[]
+}
+const activeFault = ref<ActiveFaultState | null>(null)
 const actingId = ref<number | null>(null)
 
 const MIN_W = 24
-const MAX_W = PLAN_WIDTH * 1.4
+const MAX_W = PLAN_WIDTH * 1.5
 const view = reactive({ x: 0, y: 0, w: PLAN_WIDTH, h: PLAN_DEPTH })
 const viewBoxStr = computed(() => `${view.x} ${view.y} ${view.w} ${view.h}`)
 
@@ -189,42 +235,97 @@ const plan = computed(() =>
   resolveFloorPlan(activeFloor.value, props.building.roomsPerFloor, props.building.layoutJson),
 )
 
-function roomOrders(room: PlanRoom) {
-  return matchRoomOrders(
-    props.orders.filter((o) => o.buildingId === props.building.id),
-    activeFloor.value,
-    room.no,
-  ).filter((o) => o.status === 1 || o.status === 2 || o.status === 3)
+function getRoomAnalysis(roomNo: string) {
+  const bOrders = (props.orders || []).filter((o) => o.buildingId === props.building.id)
+  const matched = matchRoomOrders(bOrders, activeFloor.value, roomNo)
+  const unfinished = matched.filter((o) => o.status === 1 || o.status === 2 || o.status === 3)
+  const completed = matched.filter((o) => o.status === 4)
+  let status: 'fault' | 'done' | 'normal' = 'normal'
+  if (unfinished.length > 0) {
+    status = 'fault'
+  } else if (completed.length > 0) {
+    status = 'done'
+  }
+  return { unfinished, completed, status, all: matched }
+}
+
+function getRoomFill(roomNo: string) {
+  const status = getRoomAnalysis(roomNo).status
+  if (status === 'fault') return 'url(#gRoomFault)'
+  if (status === 'done') return 'url(#gRoomDone)'
+  return 'url(#gRoom)'
+}
+
+function getRoomStroke(roomNo: string) {
+  if (selectedRoomNo.value === roomNo) return '#2563eb'
+  const status = getRoomAnalysis(roomNo).status
+  if (status === 'fault') return '#f43f5e'
+  if (status === 'done') return '#10b981'
+  return '#93c5fd'
+}
+
+function getRoomTextColor(roomNo: string) {
+  const status = getRoomAnalysis(roomNo).status
+  if (status === 'fault') return '#be123c'
+  if (status === 'done') return '#047857'
+  return '#1e40af'
+}
+
+function getFloorStatus(f: number): 'fault' | 'done' | 'normal' {
+  const bOrders = (props.orders || []).filter(
+    (o) => o.buildingId === props.building.id && (o.floor || 1) === f,
+  )
+  if (bOrders.some((o) => o.status === 1 || o.status === 2 || o.status === 3)) {
+    return 'fault'
+  }
+  if (bOrders.some((o) => o.status === 4)) {
+    return 'done'
+  }
+  return 'normal'
 }
 
 function switchFloor(f: number) {
   activeFloor.value = f
+  selectedRoomNo.value = null
   activeFault.value = null
   resetView()
 }
 
 function select(room: PlanRoom) {
-  const orders = roomOrders(room)
-  activeFault.value = orders.length > 0 ? { no: room.no, floor: activeFloor.value, orders } : null
-  emit('selectRoom', { num: room.no, floor: activeFloor.value, orders })
+  selectedRoomNo.value = room.no
+  const analysis = getRoomAnalysis(room.no)
+  activeFault.value = {
+    no: room.no,
+    floor: activeFloor.value,
+    status: analysis.status,
+    orders: analysis.all,
+    unfinished: analysis.unfinished,
+    completed: analysis.completed,
+  }
+  emit('selectRoom', { num: room.no, floor: activeFloor.value, orders: analysis.all })
+}
+
+function closeFaultCard() {
+  activeFault.value = null
+  selectedRoomNo.value = null
 }
 
 function explain(o: OrderItem): { cause: string; advice: string } {
   switch (o.faultType) {
     case 'electric':
       return {
-        cause: '常见于线路接触不良、开关/插座损坏、灯具故障或负载跳闸。',
-        advice: '先断开该房间电源再检修，避免湿手操作；涉及总闸请联系电工。',
+        cause: '线路接触不良、开关插座损坏或负荷跳闸。',
+        advice: '先断开该房间总闸再检修，避免带电操作。',
       }
     case 'water':
       return {
-        cause: '常见于管道接头渗漏、阀门老化、下水堵塞或水压异常。',
-        advice: '先关闭角阀/进水阀并清理积水，避免渗漏扩大到楼下。',
+        cause: '管道接头渗漏、角阀老化或下水堵塞。',
+        advice: '先关闭角阀/进水阀并清理积水，避免渗漏扩大。',
       }
     default:
       return {
-        cause: '设施损坏或需要现场排查的具体故障。',
-        advice: '请按报修描述携带工具上门确认，必要时上报更换配件。',
+        cause: '设施损坏或需现场排查的具体故障。',
+        advice: '请按报修描述携带对应工具上门排查。',
       }
   }
 }
@@ -247,7 +348,6 @@ async function act(o: OrderItem, action: 'start' | 'complete') {
       await apiCompleteOrder(o.id)
       showToast('已完工')
     }
-    activeFault.value = null
     emit('refresh')
   } catch (err) {
     showToast((err as Error).message)
@@ -261,13 +361,13 @@ function onSvgClick(e: MouseEvent) {
   const p = svgPoint(e)
   for (const room of plan.value.rooms) {
     if (p.x >= room.x && p.x <= room.x + room.w && p.y >= room.z && p.y <= room.z + room.d) {
-      const orders = roomOrders(room)
-      activeFault.value = orders.length > 0 ? { no: room.no, floor: activeFloor.value, orders } : null
+      select(room)
       return
     }
   }
-  activeFault.value = null
+  closeFaultCard()
 }
+
 function clampView() {
   view.w = Math.min(Math.max(view.w, MIN_W), MAX_W)
   view.h = (view.w * PLAN_DEPTH) / PLAN_WIDTH
@@ -332,7 +432,6 @@ function onPointerDown(e: PointerEvent) {
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
   moved = false
   if (pointers.size === 1) {
-    moved = false
     dragStart = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }
   } else if (pointers.size === 2) {
     const [a, b] = [...pointers.values()]
@@ -374,55 +473,86 @@ function onPointerUp(e: PointerEvent) {
 .plan-wrap { padding: 4px 10px 10px; }
 .plan-top { display: flex; align-items: center; gap: 8px; }
 .floor-tabs { display: flex; gap: 6px; flex: 1; overflow-x: auto; }
-.floor-tab { flex: 0 0 auto; padding: 6px 13px; font-size: 12px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; cursor: pointer; }
-.floor-tab.active { color: #fff; background: #2563eb; }
+.floor-tab {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.floor-tab.active { color: #fff; background: #2563eb; border-color: #2563eb; }
+.floor-tab.has-fault { border-color: #fecdd3; color: #e11d48; }
+.floor-tab.has-fault.active { background: #e11d48; border-color: #e11d48; color: #fff; }
+.floor-tab.has-done { border-color: #a7f3d0; color: #059669; }
+.floor-tab.has-done.active { background: #059669; border-color: #059669; color: #fff; }
+.tab-dot { width: 6px; height: 6px; border-radius: 50%; }
+.tab-dot.fault { background: #e11d48; }
+.tab-dot.done { background: #10b981; }
+
 .zoom-bar { display: flex; gap: 6px; }
 .zoom-btn { width: 32px; height: 30px; font-size: 15px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; cursor: pointer; }
 .zoom-btn.wide { width: auto; padding: 0 10px; font-size: 12px; }
-.legend-line { display: flex; gap: 12px; margin: 6px 0; color: #64748b; font-size: 11px; flex-wrap: wrap; }
-.red { display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
-.blue { display: inline-block; width: 8px; height: 8px; background: #dbeafe; border: 1px solid #1e3a8a; border-radius: 2px; }
+
+.legend-line { display: flex; gap: 12px; margin: 6px 0; color: #64748b; font-size: 11px; flex-wrap: wrap; align-items: center; }
+.dot-lg { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.dot-lg.red { background: #ef4444; }
+.dot-lg.green { background: #10b981; }
+.dot-lg.blue { background: #93c5fd; border: 1px solid #3b82f6; }
+
 .plan-stage { position: relative; }
 .plan-viewport { height: calc(82vh - 200px); min-height: 260px; overflow: hidden; touch-action: none; cursor: grab; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
 .plan-svg { width: 100%; height: 100%; display: block; }
 .fault-dot {
   transform-box: fill-box;
   transform-origin: center;
-  animation: rv-dot-pulse 2.2s ease-out infinite;
+  animation: rv-dot-pulse 2s ease-out infinite;
 }
 @keyframes rv-dot-pulse {
   0% { opacity: 1; transform: scale(1); }
-  60% { opacity: 0.75; transform: scale(1.55); }
+  60% { opacity: 0.75; transform: scale(1.4); }
   100% { opacity: 1; transform: scale(1); }
 }
+
 .fault-card {
-  position: absolute; top: 6px; right: 6px; width: min(76%, 320px);
+  position: absolute; top: 6px; right: 6px; width: min(80%, 320px);
   max-height: calc(100% - 12px); overflow: auto;
-  z-index: 6;
-  padding: 12px 14px; color: #2b3445;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 16px;
-  box-shadow: 0 16px 36px rgba(46, 68, 112, 0.18);
+  background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px);
+  border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 12px; z-index: 20;
 }
-.fault-head { display: flex; align-items: center; justify-content: space-between; }
-.fault-room { color: var(--rv-primary-deep); font-size: 16px; font-weight: 800; }
-.fault-floor { margin-left: 6px; color: #6b7a94; font-size: 12px; }
-.fault-close { width: 24px; height: 24px; color: var(--rv-text-sub); background: rgba(120,145,190,0.14); border: none; border-radius: 50%; cursor: pointer; }
-.fault-item { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(120,145,190,0.24); }
-.fault-row { display: flex; align-items: center; gap: 8px; }
-.fault-type { padding: 2px 8px; color: #2462d9; font-size: 12px; background: var(--rv-grad-1); border-radius: 999px; }
-.fault-status { font-size: 12px; font-weight: 700; }
-.fs1, .fs2 { color: #b96b1c; }
-.fs3 { color: #2462d9; }
-.fs4 { color: #17865a; }
-.fs5 { color: #5a6a85; }
-.fault-label { margin-top: 7px; color: #2462d9; font-size: 11px; }
-.fault-text { margin-top: 2px; color: #2b3445; font-size: 12px; line-height: 1.5; }
-.fault-meta { margin-top: 6px; color: #6b7a94; font-size: 11px; }
-.fault-actions { margin-top: 8px; display: flex; gap: 8px; }
-.fault-btn { padding: 5px 14px; color: #fff; font-size: 12px; background: linear-gradient(135deg,#7fb2ff,#3478f6); border: none; border-radius: 999px; cursor: pointer; }
-.fault-btn.done { background: linear-gradient(135deg,#7fe6c8,#22b573); }
+.fault-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+.fault-title-group { display: flex; align-items: center; gap: 6px; }
+.fault-room { font-size: 16px; font-weight: 800; color: #0f172a; }
+.fault-floor { font-size: 12px; color: #64748b; }
+.card-status-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.card-status-badge.fault { background: #fee2e2; color: #dc2626; }
+.card-status-badge.done { background: #dcfce7; color: #15803d; }
+.card-status-badge.normal { background: #f1f5f9; color: #64748b; }
+.fault-close { width: 22px; height: 22px; border-radius: 50%; border: none; background: #f1f5f9; color: #64748b; cursor: pointer; font-size: 11px; }
+
+.fault-empty { font-size: 12px; color: #94a3b8; padding: 12px 0; text-align: center; }
+.fault-item { padding: 8px 0; border-bottom: 1px dashed #f1f5f9; }
+.fault-item:last-child { border-bottom: none; }
+.fault-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.fault-type { font-size: 11px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+.fault-status { font-size: 11px; font-weight: 600; }
+.fault-status.fs1, .fault-status.fs2 { color: #d97706; }
+.fault-status.fs3 { color: #2563eb; }
+.fault-status.fs4 { color: #16a34a; }
+.fault-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+.fault-label { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+.fault-text { font-size: 12px; color: #334155; line-height: 1.4; }
+.fault-meta { font-size: 10px; color: #94a3b8; margin-top: 6px; }
+.fault-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.fault-btn { padding: 4px 12px; font-size: 11px; font-weight: 600; color: #fff; background: #2563eb; border: none; border-radius: 6px; cursor: pointer; }
+.fault-btn.done { background: #10b981; }
+.badge-done-text { font-size: 11px; font-weight: 700; color: #059669; }
 </style>
