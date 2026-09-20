@@ -1793,4 +1793,46 @@ onBeforeUnmount(() => {
 :deep(.el-button) {
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
+/* ---------- V9.7.4 移动端：头部控制条换行，楼层切片独占一行可横向滚动 ----------
+   原因：单行 flex 下 .floor-filter-wrap 带 overflow:hidden，窄屏被模式切换与徽标挤到 0 宽，
+   导致 2D/3D 的楼层按钮全部被裁掉（只能看第一层）。 */
+@media (max-width: 767px) {
+  .visual-header-bar {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 8px 12px;
+  }
+
+  .mode-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .header-badges {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .floor-filter-wrap {
+    order: 3;
+    flex: 0 0 100%;
+    overflow: visible;
+    gap: 6px;
+  }
+
+  .filter-title {
+    font-size: 11px;
+  }
+
+  .floor-chip-scroller {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .floor-chip-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
 </style>
