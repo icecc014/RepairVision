@@ -138,7 +138,7 @@ func UpdateUserProfile(ctx context.Context, conn sqlx.Session, id int64, name, p
 
 func UpdateUserPassword(ctx context.Context, conn sqlx.Session, id int64, password string) error {
 	_, err := conn.ExecCtx(ctx,
-		"update users set password = ? where id = ?", password, id)
+		"update users set password = ?, pwd_version = pwd_version + 1 where id = ?", password, id)
 	return err
 }
 
