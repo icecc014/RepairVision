@@ -478,4 +478,11 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 800;
 }
+/* ---------- V9.7.3 移动端：报修记录统计卡四列改两列 ---------- */
+@media (max-width: 767px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
 </style>

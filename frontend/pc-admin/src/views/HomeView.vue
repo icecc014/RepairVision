@@ -951,4 +951,11 @@ onUnmounted(() => {
 .oc-actions :deep(.el-button + .el-button) {
   margin-left: 0;
 }
+/* ---------- V9.7.3 移动端：工单页顶部统计卡四列改两列 ---------- */
+@media (max-width: 767px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
 </style>

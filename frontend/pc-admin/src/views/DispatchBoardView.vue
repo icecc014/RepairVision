@@ -201,7 +201,7 @@ onMounted(load)
 .load-text.is-high {
   color: #b34568;
   font-weight: 700;
-}
+}
 .board-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -296,5 +296,12 @@ onMounted(load)
 }
 .empty {
   padding: 24px 0;
+}
+/* ---------- V9.7.3 移动端：看板四列改两列 ---------- */
+@media (max-width: 767px) {
+  .board-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
 }
 </style>

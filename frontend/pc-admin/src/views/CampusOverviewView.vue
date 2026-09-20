@@ -1602,4 +1602,11 @@ function finishPressDrag() {
   gap: 10px;
   margin-bottom: 14px;
 }
+/* ---------- V9.7.3 移动端：画布页三列布局改单列（移动端只读浏览） ---------- */
+@media (max-width: 767px) {
+  .layout,
+  .layout.view-mode {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

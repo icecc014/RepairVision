@@ -224,4 +224,11 @@ onMounted(load)
   overflow: hidden;
   background: #ffffff;
 }
+/* ---------- V9.7.3 移动端：卡片栅格改单列（310px 最小宽在窄屏会溢出） ---------- */
+@media (max-width: 767px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
 </style>
