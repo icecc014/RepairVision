@@ -38,8 +38,12 @@ http.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('rv_admin_auth')
       localStorage.removeItem('rv_admin_token')
+      // V9 统一登录：登录态失效时一并清理共享键，并回到统一登录页
+      localStorage.removeItem('rv_token')
+      localStorage.removeItem('rv_user')
+      localStorage.removeItem('rv_role')
       if (!location.pathname.startsWith('/login')) {
-        location.href = '/admin/login'
+        location.href = '/login/'
       }
     }
     const msg = error.response?.data?.msg || error.message || '网络异常'

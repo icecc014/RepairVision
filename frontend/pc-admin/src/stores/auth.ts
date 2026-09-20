@@ -24,6 +24,12 @@ export const useAuthStore = defineStore('adminAuth', {
       this.user = null
       localStorage.removeItem('rv_admin_auth')
       localStorage.removeItem('rv_admin_token')
+      // V9 统一登录：同步清理共享登录态，避免退出后统一登录页仍显示「已登录」
+      localStorage.removeItem('rv_token')
+      localStorage.removeItem('rv_user')
+      localStorage.removeItem('rv_role')
+      sessionStorage.removeItem('rv_token')
+      sessionStorage.removeItem('rv_user')
     },
   },
 })

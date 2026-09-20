@@ -40,7 +40,8 @@ http.interceptors.response.use(
       clearAuth()
       // 移动端登录页路径是 /m/login，用 endsWith 判断才有效（原 startsWith('/login') 恒为真）
       if (!location.pathname.endsWith('/login')) {
-        location.href = '/m/login'
+        // V9 统一登录：登录态失效回到统一登录页
+        location.href = '/login/'
       }
     }
     const msg = error.response?.data?.msg || error.message || '网络异常'

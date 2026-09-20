@@ -9,18 +9,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import DormView from './DormView.vue'
 import WorkerView from './WorkerView.vue'
 import { useAuthStore } from '../stores/auth'
 
-const router = useRouter()
 const auth = useAuthStore()
 const isDorm = computed(() => auth.user?.role === 3)
 const isWorker = computed(() => auth.user?.role === 2)
 
 function logout() {
   auth.logout()
-  router.replace('/login')
+  // V9 统一登录：退出后回到统一登录页（可换角色登录）
+  window.location.href = '/login/'
 }
 </script>

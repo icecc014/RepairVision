@@ -49,17 +49,17 @@
 
 <script setup lang="ts">
 import NotificationBell from './NotificationBell.vue'
-import { useRouter } from 'vue-router'
+
 import { useAuthStore } from '../stores/auth'
 
 defineProps<{ title: string; subtitle?: string }>()
 
-const router = useRouter()
 const auth = useAuthStore()
 
 function logout() {
   auth.logout()
-  router.replace('/login')
+  // V9 统一登录：退出后回到统一登录页（同一地址即可换角色登录）
+  window.location.href = '/login/'
 }
 </script>
 

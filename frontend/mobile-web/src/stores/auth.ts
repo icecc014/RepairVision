@@ -28,6 +28,10 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       sessionStorage.removeItem('rv_token')
       sessionStorage.removeItem('rv_user')
+      // V9 统一登录：同步清理共享登录态（localStorage），避免残留导致重复登录/跳转
+      localStorage.removeItem('rv_token')
+      localStorage.removeItem('rv_user')
+      localStorage.removeItem('rv_role')
     },
   },
 })
