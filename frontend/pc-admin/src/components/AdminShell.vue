@@ -1,6 +1,9 @@
 <template>
   <div class="admin-shell">
-    <aside class="sidebar">
+    <!-- V9.7.1 移动端抽屉遮罩（仅 ≤767px 生效） -->
+    <div class="nav-mask" :class="{ open: navOpen }" @click="navOpen = false"></div>
+
+    <aside class="sidebar" :class="{ 'mobile-open': navOpen }">
       <div class="side-brand">
         <span class="side-logo">修</span>
         <div>
@@ -29,14 +32,20 @@
 
     <section class="main-area">
       <header class="topbar">
-        <div>
+        <!-- V9.7.1 移动端导航开关（宽屏隐藏） -->
+        <button class="nav-toggle" type="button" aria-label="打开导航菜单" @click="navOpen = !navOpen">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="title-box">
           <h2 class="page-title">{{ title }}</h2>
           <p class="page-sub">{{ subtitle }}</p>
         </div>
         <div class="user-box">
           <NotificationBell />
-          <el-tag type="primary" effect="dark" size="small">管理员</el-tag>
-          <span class="user-name">{{ auth.user?.name }}</span>
+          <el-tag class="desktop-only" type="primary" effect="dark" size="small">管理员</el-tag>
+          <span class="user-name desktop-only">{{ auth.user?.name }}</span>
           <button class="logout-btn" @click="logout">退出登录</button>
         </div>
       </header>
@@ -50,11 +59,23 @@
 <script setup lang="ts">
 import NotificationBell from './NotificationBell.vue'
 
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
 import { useAuthStore } from '../stores/auth'
 
 defineProps<{ title: string; subtitle?: string }>()
 
 const auth = useAuthStore()
+const route = useRoute()
+
+// V9.7.1 移动端抽屉导航开关：宽屏下该状态不影响布局（侧栏恒为常驻列）
+const navOpen = ref(false)
+
+// 切页后自动收起抽屉，避免遮挡内容
+watch(() => route.fullPath, () => {
+  navOpen.value = false
+})
 
 function logout() {
   auth.logout()
@@ -69,6 +90,8 @@ function logout() {
   grid-template-columns: 232px 1fr;
   /* 固定外壳高度：左侧导航与顶栏不动，只有内容区滚动 */
   height: 100vh;
+  /* V9.7.1：移动端按动态视口高度，避免地址栏导致底部被裁切（不支持者忽略此行） */
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -189,6 +212,7 @@ function logout() {
   flex-direction: column;
   min-width: 0;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -255,6 +279,121 @@ function logout() {
   padding: 22px 28px 36px;
   /* 只做淡入、不使用 transform：避免 .content 变成 position:fixed 弹层的包含块与层叠上下文 */
   animation: rv-content-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---------- V9.7.1 移动自适应外壳（≤767px 生效，宽屏零影响） ---------- */
+
+.nav-mask {
+  display: none;
+}
+
+.nav-toggle {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* 侧栏脱离文档流改为抽屉，内容区占满宽度 */
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    z-index: 30;
+    top: 0;
+    left: 0;
+    width: 264px;
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    background: rgba(255, 255, 255, 0.94);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .nav-mask {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(28, 38, 60, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .nav-mask.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .topbar {
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    justify-content: center;
+    gap: 4px;
+    width: 40px;
+    height: 40px;
+    padding: 9px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(120, 145, 190, 0.24);
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  .nav-toggle span {
+    display: block;
+    height: 2px;
+    background: var(--pc-sub);
+    border-radius: 2px;
+  }
+
+  .title-box {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .page-title {
+    overflow: hidden;
+    font-size: 17px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .page-sub {
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .user-box {
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .logout-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .content {
+    padding: 14px 12px calc(24px + env(safe-area-inset-bottom));
+  }
 }
 
 @keyframes rv-content-in {
