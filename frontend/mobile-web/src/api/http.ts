@@ -10,6 +10,15 @@ function readToken(): string {
   return sessionStorage.getItem('rv_token') || localStorage.getItem('rv_token') || ''
 }
 
+// V9 统一登录：清理本标签页与共享登录态。仅清共享键，不影响 PC 管理端自身的 rv_admin_* 登录态
+function clearAuth(): void {
+  sessionStorage.removeItem('rv_token')
+  sessionStorage.removeItem('rv_user')
+  localStorage.removeItem('rv_token')
+  localStorage.removeItem('rv_user')
+  localStorage.removeItem('rv_role')
+}
+
 http.interceptors.request.use((config) => {
   const token = readToken()
   if (token) {
@@ -28,9 +37,9 @@ http.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
-      sessionStorage.removeItem('rv_token')
-      sessionStorage.removeItem('rv_user')
-      if (!location.pathname.startsWith('/login')) {
+      clearAuth()
+      // 移动端登录页路径是 /m/login，用 endsWith 判断才有效（原 startsWith('/login') 恒为真）
+      if (!location.pathname.endsWith('/login')) {
         location.href = '/m/login'
       }
     }
