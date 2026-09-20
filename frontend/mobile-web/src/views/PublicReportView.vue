@@ -284,7 +284,8 @@ function statusClass(s: number) {
 
 async function loadBuildings() {
   try {
-    $res = await apiPublicBuildings(); buildings.value = $res.list || []
+    const res = await apiPublicBuildings()
+    buildings.value = res.list || []
     if (buildings.value.length > 0 && form.buildingId === 0) {
       form.buildingId = buildings.value[0].id
       query.buildingId = buildings.value[0].id
