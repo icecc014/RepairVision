@@ -7,6 +7,7 @@ import (
 
 const (
 	ctxKeyUID        = "uid"
+	ctxKeyPwdVer     = "pwdver"
 	ctxKeyRole       = "role"
 	ctxKeyBuildingID = "bid"
 	ctxKeyUsername   = "username"
@@ -18,6 +19,8 @@ type Identity struct {
 	Role       int64
 	BuildingID int64
 	Username   string
+	// V9.8 方案A2：密码版本号（改密后 +1，用于让旧 token 失效）
+	PwdVersion int64
 	Name       string
 }
 

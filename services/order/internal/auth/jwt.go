@@ -14,6 +14,7 @@ func Sign(secret string, expireSeconds int64, in Identity) (string, error) {
 		ctxKeyBuildingID: in.BuildingID,
 		ctxKeyUsername:   in.Username,
 		ctxKeyName:       in.Name,
+		ctxKeyPwdVer:     in.PwdVersion,
 		"iat":            now.Unix(),
 		"exp":            now.Add(time.Duration(expireSeconds) * time.Second).Unix(),
 	}
