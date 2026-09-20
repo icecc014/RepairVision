@@ -30,7 +30,7 @@
           <el-button size="small" :disabled="!selectedTemplateId" @click="applyTemplate">使用此模板</el-button>
           <el-button size="small" type="danger" plain :disabled="!selectedTemplateId" @click="deleteTemplate">删除</el-button>
           <el-button size="small" @click="openBackups">备份与恢复</el-button>
-          <el-button type="primary" size="small" @click="openEditDialog">编辑画布</el-button>
+          <el-button type="primary" size="small" @click="onEditCanvasClick">编辑画布</el-button>
           <div style="flex: 1" />
           <span class="toolbar-tip">当前生效：{{ name }} · {{ cols }} × {{ rows }} 格 · 更新于 {{ updatedAt || '—' }}</span>
         </template>
@@ -339,6 +339,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useIsMobile } from '../composables/useViewport'
 import type { AdminBuilding, CampusBackupItem, CampusDistance, CampusTemplateItem } from '../api'
 import {
   apiAdminBuildings,
@@ -412,6 +413,9 @@ const backupRestoringId = ref<number | null>(null)
 // ---------- 画布平移与缩放（固定正方形格子，画布可大于视口，靠拖动/缩放查看） ----------
 const scrollRef = ref<HTMLElement | null>(null)
 const zoom = ref(1)
+
+// V9.7.4 移动端：编辑画布走提示；画布支持双指缩放
+const { isMobile } = useIsMobile()
 // 单格边长固定（未缩放的 px）：格子永远是正方形。画布尺寸只由行列数决定，
 // 不再按容器宽度压缩；装不下时用拖动 / 缩放查看其余部分。
 const CELL = 24
@@ -1332,6 +1336,52 @@ function finishPressDrag() {
     ElMessage.warning('该位置与其它图元重叠，已还原到拖动前的位置')
   }
 }
+// V9.7.4 移动端：编辑画布需要鼠标与键盘，改为提示；画布支持双指缩放（无需与电脑端一致）
+function onEditCanvasClick() {
+  if (isMobile.value) {
+    ElMessage.warning('编辑画布需要在电脑端操作')
+    return
+  }
+  openEditDialog()
+}
+
+function touchDistance(e: TouchEvent) {
+  const a = e.touches[0]
+  const b = e.touches[1]
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+}
+
+let pinchStartDist = 0
+let pinchStartZoom = 1
+
+function onPinchStart(e: TouchEvent) {
+  if (e.touches.length === 2) {
+    pinchStartDist = touchDistance(e)
+    pinchStartZoom = zoom.value
+  }
+}
+
+function onPinchMove(e: TouchEvent) {
+  if (e.touches.length !== 2 || pinchStartDist <= 0) return
+  e.preventDefault()
+  setZoom(pinchStartZoom * (touchDistance(e) / pinchStartDist))
+}
+
+function onPinchEnd() {
+  pinchStartDist = 0
+}
+
+onMounted(() => {
+  window.addEventListener('touchstart', onPinchStart, { passive: true })
+  window.addEventListener('touchmove', onPinchMove, { passive: false })
+  window.addEventListener('touchend', onPinchEnd, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('touchstart', onPinchStart)
+  window.removeEventListener('touchmove', onPinchMove)
+  window.removeEventListener('touchend', onPinchEnd)
+})
 </script>
 
 <style scoped>

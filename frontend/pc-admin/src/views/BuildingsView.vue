@@ -42,7 +42,7 @@
         <el-table-column label="操作" width="360">
           <template #default="{ row }">
             <el-button size="small" type="primary" plain @click="openEdit(row)">编辑</el-button>
-            <el-button size="small" @click="openDesigner(row)">布局设计</el-button>
+            <el-button size="small" @click="onDesignerClick(row)">布局设计</el-button>
             <el-button size="small" type="danger" plain @click="remove(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -96,6 +96,7 @@ import type { AdminBuilding } from '../api'
 import { apiAdminBuildings, apiCreateBuilding, apiDeleteBuilding, apiUpdateBuilding } from '../api'
 import AdminShell from '../components/AdminShell.vue'
 import LayoutDesigner from '../components/LayoutDesigner.vue'
+import { useIsMobile } from '../composables/useViewport'
 
 const list = ref<AdminBuilding[]>([])
 const loading = ref(false)
@@ -125,6 +126,9 @@ const saving = ref(false)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
 const designerVisible = ref(false)
+
+// V9.7.4 移动端不提供布局设计（需要鼠标与键盘）
+const { isMobile } = useIsMobile()
 const designerBuilding = ref<AdminBuilding | null>(null)
 const form = reactive({
   code: '',
@@ -138,7 +142,20 @@ const form = reactive({
   roomsPerFloor: 20,
 })
 
+function onDesignerClick(row: AdminBuilding) {
+  // V9.7.4：布局设计是画布级编辑，移动端提示改用电脑端
+  if (isMobile.value) {
+    ElMessage.warning('布局设计需要在电脑端操作')
+    return
+  }
+  openDesigner(row)
+}
+
 function openDesigner(row: AdminBuilding) {
+  if (isMobile.value) {
+    ElMessage.warning('布局设计需要在电脑端操作')
+    return
+  }
   designerBuilding.value = { ...row }
   designerVisible.value = true
 }

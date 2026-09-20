@@ -1761,4 +1761,36 @@ onBeforeUnmount(() => {
   font-size: 12px;
   color: #94a3b8;
 }
+/* ---------- V9.7.4 视觉柔化：圆角与柔和过渡（仅本组件内元素） ---------- */
+[class*="panel"],
+[class*="card"],
+[class*="toolbar"] {
+  border-radius: 16px;
+}
+
+:deep(.el-button),
+:deep(.el-input__wrapper),
+:deep(.el-select__wrapper),
+:deep(.el-textarea__inner) {
+  border-radius: 10px;
+}
+
+:deep(.el-tag) {
+  border-radius: 8px;
+}
+
+:deep(.el-dialog),
+:deep(.el-drawer),
+:deep(.el-card) {
+  border-radius: 18px;
+}
+
+:deep(.el-table) {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+:deep(.el-button) {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
 </style>
