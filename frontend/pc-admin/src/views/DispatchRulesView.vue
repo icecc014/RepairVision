@@ -409,4 +409,31 @@ onMounted(load)
   color: #94a3b8;
   line-height: 1.7;
 }
+/* ---------- V9.7.3 移动端：4 列规则行改单列，控件占满宽度 ---------- */
+@media (max-width: 767px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .rule-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .rule-main {
+    min-width: 0;
+  }
+
+  .rule-control {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .rule-control :deep(.el-input-number),
+  .rule-control :deep(.el-select) {
+    width: 100% !important;
+  }
+}
 </style>

@@ -396,4 +396,42 @@ onMounted(load)
   text-align: center;
   padding: 20px;
 }
+/* ---------- V9.7.3 移动端：卡片与图表改为窄屏排布 ---------- */
+@media (max-width: 767px) {
+  .history-grid,
+  .status-grid,
+  .sla-grid,
+  .eval-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* 近 7 日趋势与楼栋工单分布：上下错开而不是挤在一行 */
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .status-card,
+  .sla-card {
+    padding: 12px;
+  }
+
+  .status-num,
+  .sla-num {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .status-label,
+  .sla-label {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .sla-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
 </style>

@@ -256,7 +256,7 @@
         </el-button>
       </template>
     </el-dialog>
-    <el-drawer append-to-body v-model="detailVisible" title="工单详情" size="480px">
+    <el-drawer append-to-body v-model="detailVisible" title="工单详情" :size="isMobile ? '100%' : '480px'">
       <el-descriptions v-if="detailRow" :column="1" border>
         <el-descriptions-item label="工单号">{{ detailRow.orderNo }}</el-descriptions-item>
         <el-descriptions-item label="标题">{{ detailRow.title }}</el-descriptions-item>
