@@ -63,7 +63,7 @@
         工单列表
         <el-tag type="info" effect="plain" size="small">共 {{ total }} 条</el-tag>
       </div>
-      <el-table :data="visibleOrders" v-loading="loading" border stripe :row-class-name="rowClassName">
+      <el-table v-if="!isMobile" :data="visibleOrders" v-loading="loading" border stripe :row-class-name="rowClassName">
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
         <el-table-column label="位置" width="165">
           <template #default="{ row }">{{ row.buildingName }} {{ row.floor }}F-{{ row.room }}</template>
@@ -132,6 +132,78 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- V9.7.2 移动端工单卡片（≤767px，仅窄屏渲染）-->
+      <div v-else class="order-cards">
+        <article v-for="row in visibleOrders" :key="row.id" class="order-card">
+          <header class="oc-head">
+            <h4 class="oc-title">{{ row.title }}</h4>
+            <span class="status-badge" :class="'st' + row.status">{{ row.statusText }}</span>
+          </header>
+
+          <div v-if="row.manualReview === 1 || row.dispatchLocked === 1" class="oc-tags">
+            <el-tag
+              v-if="row.manualReview === 1"
+              :type="row.externalMark === 1 ? 'info' : 'danger'"
+              effect="plain"
+              size="small"
+            >{{ row.externalMark === 1 ? '外援处理' : '待管理员处置' }}</el-tag>
+            <el-tag v-if="row.dispatchLocked === 1" type="warning" effect="dark" size="small">🔒 已锁定</el-tag>
+          </div>
+
+          <dl class="oc-meta">
+            <div><dt>位置</dt><dd>{{ row.buildingName }} {{ row.floor }}F-{{ row.room }}</dd></div>
+            <div><dt>类型</dt><dd>{{ row.faultTypeName }}</dd></div>
+            <div><dt>工人</dt><dd>{{ row.workerName || '—' }}</dd></div>
+            <div><dt>报修人</dt><dd>{{ row.reporterName }}</dd></div>
+            <div>
+              <dt>评分</dt>
+              <dd>
+                <el-tooltip
+                  v-if="row.dispatchScore !== undefined && row.dispatchScore > 0"
+                  :content="`技能 ${row.skillScore} · 路网距离 ${row.distanceScore} · 负载 ${row.loadScore}`"
+                >
+                  <span class="score-text">{{ row.dispatchScore }}</span>
+                </el-tooltip>
+                <span v-else class="score-empty">—</span>
+              </dd>
+            </div>
+          </dl>
+
+          <p v-if="row.status === 1 && row.pendingReason" class="pending-reason">{{ row.pendingReason }}</p>
+
+          <footer class="oc-actions">
+            <el-button size="small" @click="openDetail(row)">详情</el-button>
+            <el-button
+              v-if="row.status === 2 || row.status === 3"
+              size="small"
+              type="success"
+              plain
+              @click="completeOrder(row)"
+            >完工</el-button>
+            <el-button v-if="row.status === 1" size="small" type="warning" plain @click="toggleLock(row)">
+              {{ row.dispatchLocked === 1 ? '解锁' : '锁定' }}
+            </el-button>
+            <el-button v-if="row.status === 1 || row.status === 2" size="small" plain @click="editPriority(row)">优先级</el-button>
+            <el-button
+              v-if="row.status === 1 || row.status === 2 || row.status === 3"
+              size="small"
+              type="primary"
+              plain
+              @click="openAssign(row)"
+            >{{ row.status === 1 ? '手动派单' : '改派' }}</el-button>
+            <el-button
+              v-if="row.manualReview === 1 && row.externalMark !== 1 && row.status !== 4"
+              size="small"
+              type="danger"
+              plain
+              :loading="externalMarking === row.id"
+              @click="markExternal(row)"
+            >标记外援</el-button>
+          </footer>
+        </article>
+      </div>
+
       <el-empty
         v-if="!loading && visibleOrders.length === 0"
         description="当前筛选条件下暂无工单"
@@ -258,7 +330,11 @@ import {
   apiResumeAutoDispatch,
 } from '../api'
 import AdminShell from '../components/AdminShell.vue'
+import { useIsMobile } from '../composables/useViewport'
 import { useAuthStore } from '../stores/auth'
+
+// V9.7.2：≤767px 用卡片列表替代表格；宽屏仍走原有 el-table
+const { isMobile } = useIsMobile()
 
 const orders = ref<OrderItem[]>([])
 const statsValue = ref<{ status: { status: number; count: number }[] } | null>(null)
@@ -799,5 +875,80 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 14px;
+}
+/* ---------- V9.7.2 移动端工单卡片（仅 ≤767px 渲染） ---------- */
+
+.order-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(46, 68, 112, 0.08);
+}
+
+.oc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.oc-title {
+  flex: 1;
+  margin: 0;
+  color: var(--pc-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.oc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.oc-meta {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.oc-meta div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.oc-meta dt {
+  flex: 0 0 56px;
+  color: var(--pc-light);
+  font-size: 12px;
+}
+
+.oc-meta dd {
+  margin: 0;
+  color: var(--pc-sub);
+  font-size: 13px;
+}
+
+.oc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(120, 145, 190, 0.16);
+}
+
+/* Element 默认给相邻按钮加 margin-left，这里统一交给 gap */
+.oc-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>
