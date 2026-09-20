@@ -19,7 +19,7 @@ Write-Host ('  统一入口 http://localhost:{0}/        （按角色自动跳�
 Write-Host ('  管理端   http://localhost:{0}/admin/' -f $adminPort)
 Write-Host ('  宿管端   http://localhost:{0}/dorm' -f $adminPort)
 Write-Host ('  工人端   http://localhost:{0}/worker' -f $adminPort)
-Write-Host ('  公共入口 http://localhost:{0}/dorm   http://localhost:{0}/worker' -f $publicPort)
+Write-Host ('  公共报修 http://localhost:{0}/report    （免登录，学生/教师用）' -f $publicPort)
 if ($lanIp) {
   Write-Host ''
   Write-Host '手机访问（同一 WiFi，需放行端口）：' -ForegroundColor Cyan
