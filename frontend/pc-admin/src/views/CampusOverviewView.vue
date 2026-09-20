@@ -102,7 +102,7 @@
           <el-button size="small" @click="zoomIn">＋</el-button>
           <el-button size="small" @click="zoomReset">重置</el-button>
           <el-button size="small" @click="fitToCanvas">适应窗口</el-button>
-          <span class="toolbar-tip">单格 24px 固定正方形；画布装不下时用「空格+拖动」或长按空白处拖动查看。快捷键：鼠标在画布上时按 + / - 缩放，F 适应窗口</span>
+          <span class="toolbar-tip">单格 24px 固定正方形；画布装不下时直接按住拖动查看（PC 与手机一致）。快捷键：鼠标在画布上时按 + / - 缩放，F 适应窗口</span>
         </div>
         <div class="canvas-scroll" ref="scrollRef" @pointerenter="canvasHover = true" @pointerleave="canvasHover = false">
           <div class="canvas-stage" :style="stageStyle">
@@ -477,11 +477,12 @@ function startPan(ev: PointerEvent) {
   pan.startY = ev.clientY
   pan.scrollLeft = sc.scrollLeft
   pan.scrollTop = sc.scrollTop
-  if (panTimer) clearTimeout(panTimer)
-  panTimer = setTimeout(() => {
-    pan.active = true
-    ElMessage.info('平移模式：拖动查看画布，松开结束')
-  }, 300)
+  // V9.7.5 查看模式实时拖动：按下即可平移（PC 与移动端一致），无需长按等待
+  if (panTimer) {
+    clearTimeout(panTimer)
+    panTimer = undefined
+  }
+  pan.active = true
 }
 
 function onPanMove(ev: PointerEvent) {
@@ -1357,6 +1358,7 @@ let pinchStartZoom = 1
 function onPinchStart(e: TouchEvent) {
   if (e.touches.length === 2) {
     pinchStartDist = touchDistance(e)
+    pan.active = false // 双指缩放时不要同时平移
     pinchStartZoom = zoom.value
   }
 }
