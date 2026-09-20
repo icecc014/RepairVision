@@ -5,10 +5,15 @@
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-entry.ps1
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-entry.ps1 -BaseUrl https://xxxx.cpolar.cn
     powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-entry.ps1 -BaseUrl http://10.1.97.149:8080 -CheckWs
+  改过演示密码后（V9.8 起管理员可在人员账号里改密）：
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-entry.ps1 -AdminPassword 你的新密码
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-entry.ps1 -Password 宿管工人密码 -AdminPassword 管理员密码
   说明：使用 HttpClient 且关闭自动重定向与系统代理，保证 302 与 WebSocket 检测结果可信。
 #>
 param(
   [string]$BaseUrl = 'http://localhost:8080',
+  [string]$Password = 'admin123',
+  [string]$AdminPassword = 'admin123',
   [switch]$CheckWs
 )
 
@@ -112,7 +117,8 @@ $cases = @(
   @{ User = 'dorm1';  Role = 3; Expect = '/m/dorm' }
 )
 foreach ($case in $cases) {
-  $body = '{"username":"' + $case.User + '","password":"admin123"}'
+  $pw = if ($case.User -eq 'admin') { $AdminPassword } else { $Password }
+  $body = '{"username":"' + $case.User + '","password":"' + $pw + '"}'
   $r = Invoke-Probe ($BaseUrl + '/api/login') 'POST' $body
   if ($r.Code -eq 200) {
     try {
