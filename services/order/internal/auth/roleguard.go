@@ -17,6 +17,11 @@ func RoleGuard(roles ...int64) rest.Middleware {
 				httpx.ErrorCtx(r.Context(), w, errs.Unauthorized("登录状态无效，请重新登录"))
 				return
 			}
+			// V9.8 方案A2：改密后旧 token 立即失效
+			if !pwdVersionOK(r.Context(), identity) {
+				httpx.ErrorCtx(r.Context(), w, errs.Unauthorized("登录状态已失效，请重新登录"))
+				return
+			}
 			for _, role := range roles {
 				if identity.Role == role {
 					next(w, r)

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	auth "order/internal/auth"
 	"context"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -25,6 +26,12 @@ func NewAdminUserResetPasswordLogic(ctx context.Context, svcCtx *svc.ServiceCont
 }
 
 func (l *AdminUserResetPasswordLogic) AdminUserResetPassword(req *types.AdminUserResetPasswordRequest) (resp *types.EmptyResponse, err error) {
+	defer func() {
+		// V9.8 方案A2：改密成功后递增版本号，使该账号在其它端的旧 token 失效
+		if err == nil {
+			auth.BumpPwdVersion(l.ctx, l.svcCtx.PubCache, req.Id)
+		}
+	}()
 	if len(req.Password) < 6 {
 		return nil, errs.BadRequest("新密码长度不能少于6位")
 	}

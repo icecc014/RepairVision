@@ -10,6 +10,8 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	// V9.8 方案A2：注入密码版本号缓存（改密后旧 token 失效）
+	auth.UsePwdVersionStore(serverCtx.PubCache)
 	jwtOpt := rest.WithJwt(serverCtx.Config.Auth.AccessSecret)
 
 	server.AddRoutes([]rest.Route{

@@ -43,6 +43,7 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, 
 	}
 	token, err := auth.Sign(l.svcCtx.Config.Auth.AccessSecret, expire, auth.Identity{
 		UID:        u.Id,
+		PwdVersion: auth.CurrentPwdVersion(l.ctx, l.svcCtx.PubCache, u.Id),
 		Role:       u.Role,
 		BuildingID: u.BuildingId,
 		Username:   u.Username,

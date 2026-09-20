@@ -34,12 +34,14 @@ func IdentityFromContext(ctx context.Context) (*Identity, bool) {
 		return nil, false
 	}
 	buildingID, _ := toInt64(ctx.Value(ctxKeyBuildingID))
+	pwdVer, _ := toInt64(ctx.Value(ctxKeyPwdVer))
 	username, _ := ctx.Value(ctxKeyUsername).(string)
 	name, _ := ctx.Value(ctxKeyName).(string)
 	return &Identity{
 		UID:        uid,
 		Role:       role,
 		BuildingID: buildingID,
+		PwdVersion: pwdVer,
 		Username:   username,
 		Name:       name,
 	}, true
