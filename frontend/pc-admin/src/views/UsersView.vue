@@ -17,7 +17,7 @@
         <el-button type="primary" @click="load">查询</el-button>
       </div>
 
-      <el-table :data="list" v-loading="loading" border stripe>
+      <el-table v-if="!isMobile" :data="list" v-loading="loading" border stripe>
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="username" label="账号" width="130" />
         <el-table-column prop="name" label="姓名" width="130" />
@@ -54,6 +54,33 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-else class="m-cards">
+        <article v-for="row in list" :key="row.id" class="m-card">
+          <header class="m-head">
+            <h4 class="m-title">{{ row.name || row.username }}</h4>
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">{{ row.statusText }}</el-tag>
+          </header>
+          <dl class="m-meta">
+            <div><dt>账号</dt><dd>{{ row.username }}</dd></div>
+            <div><dt>角色</dt><dd>{{ row.roleText }}</dd></div>
+            <div v-if="row.role === 2"><dt>工种</dt><dd>{{ jobTypeText(row.jobType) }}</dd></div>
+            <div><dt>手机</dt><dd>{{ row.phone || '—' }}</dd></div>
+            <div v-if="row.role === 2"><dt>最大并发</dt><dd>{{ row.maxConcurrent || 3 }}</dd></div>
+            <div><dt>绑定</dt><dd>
+              <template v-if="row.role === 2">{{ (row.buildings || []).join('、') || '—' }}</template>
+              <template v-else-if="row.role === 3 && row.buildingId">{{ buildingName(row.buildingId) || '#' + row.buildingId }}</template>
+              <template v-else>—</template>
+            </dd></div>
+          </dl>
+          <footer class="m-actions">
+            <el-button size="small" type="primary" plain @click="openEdit(row)">编辑</el-button>
+            <el-button size="small" type="warning" plain @click="openReset(row)">重置密码</el-button>
+            <el-button v-if="row.status === 1 && row.role !== 1" size="small" type="danger" plain @click="disable(row)">停用</el-button>
+            <el-button v-else-if="row.status === 0" size="small" type="success" plain @click="enable(row)">启用</el-button>
+          </footer>
+        </article>
+      </div>
       <el-empty v-if="!loading && list.length === 0" description="暂无账号" class="empty" />
     </section>
 
@@ -133,6 +160,10 @@ import {
   apiUpdateUser,
 } from '../api'
 import AdminShell from '../components/AdminShell.vue'
+import { useIsMobile } from '../composables/useViewport'
+
+// V9.7.2：≤767px 用卡片列表替代表格
+const { isMobile } = useIsMobile()
 
 const list = ref<AdminUser[]>([])
 const buildings = ref<AdminBuilding[]>([])
@@ -374,5 +405,73 @@ onMounted(() => {
   color: #94a3b8;
   font-size: 12px;
   line-height: 1.5;
+}
+/* ---------- V9.7.2 移动端卡片（仅 ≤767px 渲染） ---------- */
+
+.m-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.m-card {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(46, 68, 112, 0.08);
+}
+
+.m-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.m-title {
+  flex: 1;
+  margin: 0;
+  color: var(--pc-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.m-meta {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.m-meta div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.m-meta dt {
+  flex: 0 0 64px;
+  color: var(--pc-light);
+  font-size: 12px;
+}
+
+.m-meta dd {
+  margin: 0;
+  color: var(--pc-sub);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.m-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(120, 145, 190, 0.16);
+}
+
+.m-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

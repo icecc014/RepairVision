@@ -20,7 +20,7 @@
         <el-tag type="warning" effect="plain">待审批 {{ pendingCount }}</el-tag>
       </div>
 
-      <el-table :data="list" v-loading="loading" border stripe>
+      <el-table v-if="!isMobile" :data="list" v-loading="loading" border stripe>
         <el-table-column prop="workerName" label="工人" width="120">
           <template #default="{ row }">{{ row.workerName || ('#' + row.workerId) }}</template>
         </el-table-column>
@@ -46,6 +46,27 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-else class="m-cards">
+        <article v-for="row in list" :key="row.id || (row.workerId + row.startDate)" class="m-card">
+          <header class="m-head">
+            <h4 class="m-title">{{ row.workerName || ('#' + row.workerId) }}</h4>
+            <el-tag :type="statusType(row.status)" size="small">{{ row.statusText }}</el-tag>
+          </header>
+          <dl class="m-meta">
+            <div><dt>请假区间</dt><dd>{{ row.startDate }} ~ {{ row.endDate }}</dd></div>
+            <div><dt>原因</dt><dd>{{ row.reason || '—' }}</dd></div>
+            <div><dt>审批意见</dt><dd>{{ row.reviewNote || '—' }}</dd></div>
+            <div><dt>提交时间</dt><dd>{{ row.createdAt }}</dd></div>
+          </dl>
+          <footer class="m-actions">
+            <el-button v-if="row.status === 1" size="small" type="success" plain @click="openReview(row, 2)">通过</el-button>
+            <el-button v-if="row.status === 1" size="small" type="danger" plain @click="openReview(row, 3)">驳回</el-button>
+            <el-button v-if="row.status === 2" size="small" plain @click="cancelLeave(row)">撤销</el-button>
+            <span v-if="row.status !== 1 && row.status !== 2" class="muted">—</span>
+          </footer>
+        </article>
+      </div>
       <el-empty v-if="!loading && list.length === 0" description="暂无请假申请" class="empty" />
     </section>
 
@@ -98,6 +119,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AdminUser, LeaveItem } from '../api'
 import { apiAdminLeaveCancel, apiAdminLeaveCreate, apiAdminLeaves, apiAdminLeaveReview, apiAdminUsers } from '../api'
 import AdminShell from '../components/AdminShell.vue'
+import { useIsMobile } from '../composables/useViewport'
+
+// V9.7.2：≤767px 用卡片列表替代表格
+const { isMobile } = useIsMobile()
 
 const list = ref<LeaveItem[]>([])
 const loading = ref(false)
@@ -260,5 +285,73 @@ onMounted(() => {
 }
 .empty {
   padding: 24px 0;
+}
+/* ---------- V9.7.2 移动端卡片（仅 ≤767px 渲染） ---------- */
+
+.m-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.m-card {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(46, 68, 112, 0.08);
+}
+
+.m-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.m-title {
+  flex: 1;
+  margin: 0;
+  color: var(--pc-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.m-meta {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.m-meta div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.m-meta dt {
+  flex: 0 0 64px;
+  color: var(--pc-light);
+  font-size: 12px;
+}
+
+.m-meta dd {
+  margin: 0;
+  color: var(--pc-sub);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.m-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(120, 145, 190, 0.16);
+}
+
+.m-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

@@ -59,7 +59,7 @@
         报修台账明细
         <el-tag type="info" effect="plain" size="small">共 {{ total }} 条</el-tag>
       </div>
-      <el-table :data="records" v-loading="loading" border stripe>
+      <el-table v-if="!isMobile" :data="records" v-loading="loading" border stripe>
         <el-table-column prop="createdAt" label="报修时间" width="170" />
         <el-table-column prop="buildingName" label="楼栋" width="130">
           <template #default="{ row }">{{ row.buildingName || '—' }}</template>
@@ -100,6 +100,29 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-else class="m-cards">
+        <article v-for="row in records" :key="row.id || row.createdAt" class="m-card">
+          <header class="m-head">
+            <h4 class="m-title">{{ row.buildingName || '—' }} {{ row.room }}</h4>
+            <span class="status-badge" :class="'st' + row.status">{{ row.statusText }}</span>
+          </header>
+          <dl class="m-meta">
+            <div><dt>报修时间</dt><dd>{{ row.createdAt }}</dd></div>
+            <div><dt>故障类型</dt><dd>{{ row.faultTypeName || row.faultType }}</dd></div>
+            <div><dt>故障描述</dt><dd>{{ row.description || '—' }}</dd></div>
+            <div><dt>来源</dt><dd>
+              <el-tag v-if="row.source === 'public' || row.source === 'student'" type="warning" size="small">公共报修</el-tag>
+              <span v-else>宿管报修</span>
+            </dd></div>
+            <div><dt>处理工人</dt><dd>{{ row.workerName || '—' }}</dd></div>
+            <div><dt>完工时间</dt><dd>{{ row.completedAt || '—' }}</dd></div>
+          </dl>
+          <footer class="m-actions">
+            <el-button size="small" @click="openDetail(row)">详情</el-button>
+          </footer>
+        </article>
+      </div>
       <el-empty v-if="!loading && records.length === 0" description="当前筛选条件下暂无报修记录" class="table-empty" />
       <div v-if="total > query.size" class="pager">
         <el-pagination
@@ -173,6 +196,10 @@ import {
   apiAdminRepairRecords,
 } from '../api'
 import AdminShell from '../components/AdminShell.vue'
+import { useIsMobile } from '../composables/useViewport'
+
+// V9.7.2：≤767px 用卡片列表替代表格
+const { isMobile } = useIsMobile()
 
 const records = ref<RepairRecordItem[]>([])
 const buildings = ref<AdminBuilding[]>([])
@@ -484,5 +511,73 @@ onMounted(() => {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+}
+/* ---------- V9.7.2 移动端卡片（仅 ≤767px 渲染） ---------- */
+
+.m-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.m-card {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(46, 68, 112, 0.08);
+}
+
+.m-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.m-title {
+  flex: 1;
+  margin: 0;
+  color: var(--pc-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.m-meta {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.m-meta div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.m-meta dt {
+  flex: 0 0 64px;
+  color: var(--pc-light);
+  font-size: 12px;
+}
+
+.m-meta dd {
+  margin: 0;
+  color: var(--pc-sub);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.m-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(120, 145, 190, 0.16);
+}
+
+.m-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>
