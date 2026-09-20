@@ -129,7 +129,7 @@
                 :class="[`k-${b.kind}`, { selected: selectedId === b.id, editing: editingId === b.id }]"
                 :style="blockStyle(b)"
                 @pointerdown.stop.prevent="onBlockDown(b, $event)"
-                @dblclick.stop="enterEdit(b)"
+                @dblclick.stop="isMobile ? warnPcOnly() : enterEdit(b)"
               >
                 <span class="block-label">{{ labelOf(b) }}</span>
                 <template v-if="editingId === b.id">
@@ -200,7 +200,7 @@
             <div class="prop-row">
               <span class="prop-label">操作</span>
             <div class="prop-pair">
-              <el-button size="small" @click="editingId = editingId === selectedBlock.id ? null : selectedBlock.id">
+              <el-button size="small" @click="isMobile ? warnPcOnly() : (editingId = editingId === selectedBlock.id ? null : selectedBlock.id)">
                 {{ editingId === selectedBlock.id ? '完成编辑' : '进入编辑' }}
               </el-button>
               <el-button size="small" type="danger" plain @click="removeSelected">删除图元</el-button>
@@ -1394,6 +1394,10 @@ function onWheelZoom(e: WheelEvent) {
   const rect = sc.getBoundingClientRect()
   const step = e.deltaY < 0 ? 1.12 : 1 / 1.12
   setZoom(zoom.value * step, { x: e.clientX - rect.left, y: e.clientY - rect.top })
+}
+// V9.7.4 移动端：画布/图元编辑相关操作统一提示改用电脑端
+function warnPcOnly() {
+  ElMessage.warning('画布编辑需要在电脑端操作')
 }
 </script>
 
