@@ -15,6 +15,7 @@ $adminPort = if ($env:WEB_PORT) { $env:WEB_PORT } else { '8080' }
 $publicPort = if ($env:PUBLIC_PORT) { $env:PUBLIC_PORT } else { '8081' }
 Write-Host ''
 Write-Host '本机访问入口：' -ForegroundColor Cyan
+Write-Host ('  统一入口 http://localhost:{0}/        （按角色自动跳转）' -f $adminPort)
 Write-Host ('  管理端   http://localhost:{0}/admin/' -f $adminPort)
 Write-Host ('  宿管端   http://localhost:{0}/dorm' -f $adminPort)
 Write-Host ('  工人端   http://localhost:{0}/worker' -f $adminPort)

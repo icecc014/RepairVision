@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>RepairVision · 统一登录</title>
+  <meta name="description" content="校园维修工单智能调度与 2D/3D 可视化系统 · 统一登录入口" />
+  <link rel="icon" href="/m/favicon.svg" />
+  <link rel="stylesheet" href="/login/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <!-- 品牌区 -->
+      <aside class="brand">
+        <div class="brand-head">
+          <span class="logo" aria-hidden="true">RV</span>
+          <div class="brand-title">
+            <h1>RepairVision</h1>
+            <p>校园维修工单智能调度<br />与 2D / 3D 可视化系统</p>
+          </div>
+        </div>
+        <ul class="features">
+          <li><span class="dot g1"></span>报修 → 智能派单 → 维修 → 完工闭环</li>
+          <li><span class="dot g2"></span>路网距离 + 负载均衡的派单评分</li>
+          <li><span class="dot g3"></span>区域概览与楼宇 2D / 3D 可视化</li>
+        </ul>
+        <p class="brand-foot">毕业设计演示环境 · 单域名统一入口</p>
+      </aside>
+
+      <!-- 操作区 -->
+      <div class="panel">
+        <!-- 已登录态：避免退出后又被自动跳回，提供「继续 / 切换账号」两条路 -->
+        <div class="signed" id="signed" hidden>
+          <h2>你已登录</h2>
+          <p class="signed-user" id="signedUser"></p>
+          <button class="btn primary block" id="continueBtn" type="button">进入系统</button>
+          <button class="btn ghost block" id="switchBtn" type="button">切换账号（退出登录）</button>
+        </div>
+
+        <form class="form" id="loginForm" novalidate>
+          <h2>统一登录</h2>
+          <p class="hint">管理员 / 宿管 / 维修工人共用此入口，登录后按账号角色自动跳转</p>
+
+          <div class="alert" id="alert" hidden></div>
+
+          <label class="field">
+            <span class="label">账号</span>
+            <input id="username" name="username" type="text" autocomplete="username"
+                   placeholder="如 admin / dorm1 / water1" required />
+          </label>
+
+          <label class="field">
+            <span class="label">密码</span>
+            <span class="pwd">
+              <input id="password" name="password" type="password" autocomplete="current-password"
+                     placeholder="默认 admin123" required />
+              <button class="eye" id="togglePwd" type="button" aria-label="显示密码">显示</button>
+            </span>
+          </label>
+
+          <button class="btn primary block" id="submitBtn" type="submit">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-text">登 录</span>
+          </button>
+
+          <div class="demo">
+            <span class="demo-title">演示账号（密码均为 admin123）</span>
+            <div class="chips" id="demoChips">
+              <button class="chip" type="button" data-username="admin">管理员</button>
+              <button class="chip" type="button" data-username="dorm1">宿管 dorm1</button>
+              <button class="chip" type="button" data-username="water1">水工 water1</button>
+              <button class="chip" type="button" data-username="elec1">电工 elec1</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="divider"><span>或</span></div>
+
+        <a class="btn public block" href="/report">我要报修（学生 / 教师，无需登录）</a>
+        <p class="foot">/admin/ 管理端 · /m/dorm 宿管端 · /m/worker 工人端 · /report 公共报修</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/login/app.js"></script>
+</body>
+</html>

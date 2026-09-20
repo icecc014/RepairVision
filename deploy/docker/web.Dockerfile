@@ -16,4 +16,6 @@ FROM nginx:1.27.0-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=pc-builder /src/pc/dist /usr/share/nginx/html/admin
 COPY --from=mobile-builder /src/m/dist /usr/share/nginx/html/m
+# V9 统一登录页（纯静态，无构建步骤、无新增依赖）
+COPY frontend/login /usr/share/nginx/html/login
 EXPOSE 80
