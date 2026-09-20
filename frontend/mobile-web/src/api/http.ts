@@ -5,8 +5,13 @@ const http = axios.create({
   timeout: 30000,
 })
 
+// V9 统一登录：优先本标签页登录态（sessionStorage），回退统一登录页写入的共享登录态（localStorage）
+function readToken(): string {
+  return sessionStorage.getItem('rv_token') || localStorage.getItem('rv_token') || ''
+}
+
 http.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('rv_token')
+  const token = readToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

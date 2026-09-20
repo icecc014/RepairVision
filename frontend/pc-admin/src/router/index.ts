@@ -39,6 +39,12 @@ const router = createRouter({
 router.beforeEach((to) => {
   const auth = useAuthStore()
   const requiresAuth = to.meta.requiresAuth as boolean | undefined
+  // V9 统一登录：工人(2)/宿管(3) 的共享登录态不得进入管理端，清理后回统一登录页
+  if (auth.token && auth.user && auth.user.role !== 1) {
+    auth.logout()
+    window.location.href = '/login/'
+    return false
+  }
   if (requiresAuth && !auth.token) {
     return { path: '/login' }
   }

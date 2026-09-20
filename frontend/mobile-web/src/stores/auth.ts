@@ -3,7 +3,8 @@ import type { UserInfo } from '../api'
 
 function readUser(): UserInfo | null {
   try {
-    const raw = sessionStorage.getItem('rv_user')
+    // V9 统一登录：本标签页（sessionStorage）优先，回退 localStorage 中的共享登录态
+    const raw = sessionStorage.getItem('rv_user') || localStorage.getItem('rv_user')
     return raw ? (JSON.parse(raw) as UserInfo) : null
   } catch {
     return null
@@ -12,7 +13,7 @@ function readUser(): UserInfo | null {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: sessionStorage.getItem('rv_token') || '',
+    token: sessionStorage.getItem('rv_token') || localStorage.getItem('rv_token') || '',
     user: readUser(),
   }),
   actions: {
