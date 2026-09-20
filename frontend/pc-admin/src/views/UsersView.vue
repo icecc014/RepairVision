@@ -90,9 +90,13 @@
           <el-input v-model="form.username" :disabled="!!editingId" placeholder="登录账号" />
         </el-form-item>
 
-        <el-form-item v-if="!editingId" label="初始密码">
-          <el-input v-model="form.password" placeholder="至少6位" />
-        </el-form-item>
+        <el-form-item :label="editingId ? '重置密码' : '初始密码'">
+        <el-input
+          v-model="form.password"
+          show-password
+          :placeholder="editingId ? '留空表示不修改密码' : '至少6位'"
+        />
+      </el-form-item>
         <el-form-item label="姓名">
           <el-input v-model="form.name" placeholder="真实姓名" />
         </el-form-item>
@@ -275,6 +279,11 @@ async function save() {
     ElMessage.warning('请完整填写账号信息')
     return
   }
+  // V9.8：编辑时填了密码才做重置，长度先校验
+  if (form.password && form.password.length < 6) {
+    ElMessage.warning('新密码至少6位')
+    return
+  }
   saving.value = true
   try {
     if (editingId.value) {
@@ -289,6 +298,12 @@ async function save() {
         maxConcurrent: form.maxConcurrent,
         jobType: form.role === 2 ? form.jobType : 0,
       })
+      // V9.8 方案A2：编辑里填了密码 → 重置并使其在其它端的旧登录态失效
+      if (form.password) {
+        await apiResetPassword(editingId.value, form.password)
+        ElMessage.success('密码已更新，该账号在其它端需用新密码重新登录')
+        form.password = ''
+      }
     } else {
       await apiCreateUser({
         username: form.username.trim(),
