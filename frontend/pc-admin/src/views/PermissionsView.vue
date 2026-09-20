@@ -13,7 +13,7 @@
     <section class="panel">
       <div class="panel-title">边界保护</div>
       <el-alert type="success" :closable="false" title="已实施" description="管理员账号不可停用/改角色；楼栋删除前检查工单引用；移动端按 /m/dorm 与 /m/worker 路由守卫角色；401/403 自动回登录。" />
-      <el-alert style="margin-top:10px" type="warning" :closable="false" title="演示环境注意" description="所有演示账号密码为 admin123，正式答辩/部署前请修改 .env 与种子账号。" />
+      <el-alert style="margin-top:10px" type="warning" :closable="false" title="演示环境注意" description="宿管/工人演示账号默认密码 admin123；管理员密码已单独轮换，由项目负责人提供。正式答辩/部署前请修改 .env 与种子账号。" />
     </section>
   </AdminShell>
 </template>
