@@ -104,7 +104,7 @@
           <el-button size="small" @click="fitToCanvas">适应窗口</el-button>
           <span class="toolbar-tip">单格 24px 固定正方形；画布装不下时直接按住拖动查看（PC 与手机一致）。快捷键：鼠标在画布上时按 + / - 缩放，F 适应窗口</span>
         </div>
-        <div class="canvas-scroll" ref="scrollRef" @pointerenter="canvasHover = true" @pointerleave="canvasHover = false">
+        <div class="canvas-scroll" ref="scrollRef" @pointerenter="canvasHover = true" @pointerleave="canvasHover = false" @wheel="onWheelZoom">
           <div class="canvas-stage" :style="stageStyle">
             <div
               ref="canvasRef"
@@ -627,7 +627,8 @@ function onBlockDown(b: CampusBlock, ev: PointerEvent) {
   // V6.1 查看模式：点击图元只做选中查看，不移动
   if (mode.value !== 'edit') {
     selectedId.value = b.id
-    // 查看模式：仅高亮当前图元
+    // V9.7.6 查看模式：选中图元后立即允许拖动平移（修复"点过图元就拖不动"）
+    startPan(ev)
     return
   }
   // 空格 + 拖动 / 鼠标中键：优先平移画布
@@ -1384,6 +1385,16 @@ onUnmounted(() => {
   window.removeEventListener('touchmove', onPinchMove)
   window.removeEventListener('touchend', onPinchEnd)
 })
+// V9.7.6 桌面端：鼠标滚轮缩放（以光标为锚点）；编辑模式保持原生滚动
+function onWheelZoom(e: WheelEvent) {
+  if (mode.value === 'edit') return
+  const sc = scrollRef.value
+  if (!sc) return
+  e.preventDefault()
+  const rect = sc.getBoundingClientRect()
+  const step = e.deltaY < 0 ? 1.12 : 1 / 1.12
+  setZoom(zoom.value * step, { x: e.clientX - rect.left, y: e.clientY - rect.top })
+}
 </script>
 
 <style scoped>
