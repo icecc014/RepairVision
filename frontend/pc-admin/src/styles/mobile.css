@@ -69,3 +69,32 @@
     word-break: break-word;
   }
 }
+
+/* ===== V9.7.5 移动端：工具栏/筛选行统一换行 + 控件占满 =====
+   背景：各页工具栏使用内联固定宽度（如 width:150px / 130px / 200px），
+   窄屏下相加超出视口导致控件"跑出范围"。 */
+@media (max-width: 767px) {
+  .toolbar,
+  [class*="toolbar"],
+  [class*="filter-bar"],
+  [class*="filter-row"],
+  [class*="search-bar"] {
+    display: flex;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .toolbar .el-select,
+  .toolbar .el-input,
+  .toolbar .el-date-editor,
+  [class*="toolbar"] .el-select,
+  [class*="toolbar"] .el-input,
+  [class*="toolbar"] .el-date-editor,
+  [class*="filter-bar"] .el-select,
+  [class*="filter-bar"] .el-input,
+  [class*="filter-row"] .el-select,
+  [class*="filter-row"] .el-input,
+  [class*="search-bar"] .el-input {
+    width: 100% !important;
+  }
+}
